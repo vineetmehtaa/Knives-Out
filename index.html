@@ -3,18 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KNIVES OUT | COORDINATION</title>
+<title>KNIVES OUT | FULL OPS</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
 :root {
-  --ink: #0c0b09; --ink2: #141210; --ink3: #1c1a17; --ink4: #242220;
-  --seam: #2e2b26; --seam2: #3d3930;
-  --blade: #d4a017; --blade2: #a07810;
-  --blood: #8b1a1a; --blood2: #6b1010; --blood3: #3d0808;
-  --cream: #f0ead8; --cream2: #c8c0a8; --cream3: #7a7060;
-  --alive: #3a7d44; --alive2: #255c2d;
+  --ink: #0c0b09; --ink2: #141210; --ink3: #1c1a17;
+  --seam: #2e2b26; --blade: #d4a017;
+  --blood: #8b1a1a; --cream: #f0ead8; --cream2: #c8c0a8; --cream3: #7a7060;
+  --alive: #3a7d44; --ghost: #5c4a8a; --ghost2: #9b85d4;
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: var(--ink); color: var(--cream2); font-family: 'Courier Prime', monospace; min-height: 100vh; line-height: 1.6; overflow-x: hidden; }
@@ -23,7 +21,6 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
 .page { display: none; min-height: 100vh; position: relative; z-index: 1; padding-bottom: 50px; }
 .page.active { display: block; }
 #page-login { display: flex; align-items: center; justify-content: center; height: 100vh; background: radial-gradient(ellipse at 40% 30%, #1a0d0d 0%, var(--ink) 65%); overflow: hidden; }
-#page-login.active { display: flex; }
 
 .login-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--blade); padding: 40px; width: min(420px, 92vw); animation: riseUp .5s ease; }
 .logo { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 900; font-style: italic; color: var(--cream); text-align: center; letter-spacing: 3px; }
@@ -37,17 +34,15 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
 .tab-content.active { display: block; }
 
 label { display: block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); margin-bottom: 5px; }
-input { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); padding: 10px; margin-bottom: 15px; outline: none; }
-input:focus { border-color: var(--blade); }
+input, select { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); padding: 10px; margin-bottom: 15px; outline: none; }
 
 .btn { display: block; width: 100%; padding: 12px; font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border: none; font-weight: 700; text-align: center; }
 .btn-blade { background: var(--blade); color: var(--ink); }
 .btn-blood { background: var(--blood); color: var(--cream); }
-.btn-outline { background: transparent; color: var(--cream2); border: 1px solid var(--seam2); width: auto; padding: 6px 12px; font-size: 10px; }
+.btn-outline { background: transparent; color: var(--cream2); border: 1px solid var(--seam2); width: auto; padding: 6px 12px; font-size: 10px; cursor: pointer; }
 
 nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 55px; position: sticky; top: 0; z-index: 100; }
 .nav-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: var(--cream); }
-.nav-logo span { color: var(--blade); }
 .main { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
 
 .player-status-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--alive); padding: 40px; text-align: center; margin-bottom: 20px; }
@@ -59,13 +54,12 @@ nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 
 .tab { padding: 12px 20px; font-size: 10px; letter-spacing: 2px; color: var(--cream3); cursor: pointer; border: none; background: none; }
 .tab.active { color: var(--cream); border-bottom: 2px solid var(--blade); }
 
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th { text-align: left; padding: 12px; background: var(--ink3); color: var(--cream3); font-size: 9px; text-transform: uppercase; }
-td { padding: 12px; border-bottom: 1px solid var(--seam); }
-
 .mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 25px; }
 .stat-box { background: var(--ink2); border: 1px solid var(--seam); padding: 15px; text-align: center; }
-.stat-num { font-size: 28px; font-family: 'Playfair Display'; color: var(--cream); }
+
+.vote-card { background: var(--ink3); border: 1px solid var(--ghost); padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.alert { padding: 10px; font-size: 11px; margin-bottom: 15px; border-left: 3px solid; }
+.alert-blood { background: var(--blood3); border-color: var(--blood); color: var(--blood); }
 
 @keyframes riseUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 .hidden { display: none !important; }
@@ -84,13 +78,13 @@ td { padding: 12px; border-bottom: 1px solid var(--seam); }
     <div id="auth-login" class="tab-content active">
       <label>Username</label><input type="text" id="login-username">
       <label>Password</label><input type="password" id="login-password">
-      <div id="login-error" class="error-msg" style="color:var(--blood); font-size:10px; margin-bottom:10px;"></div>
+      <div id="login-error" style="color:var(--blood); font-size:10px; margin-bottom:10px;"></div>
       <button class="btn btn-blade" onclick="doLogin()">ENTER GAME</button>
     </div>
     <div id="auth-signup" class="tab-content">
       <label>Username</label><input type="text" id="signup-username">
       <label>Password</label><input type="password" id="signup-password">
-      <label>Mod Key (Optional)</label><input type="password" id="signup-mod-password">
+      <label>Mod Password</label><input type="password" id="signup-mod-password">
       <button class="btn btn-blade" onclick="doSignup()">CREATE ACCOUNT</button>
     </div>
   </div>
@@ -102,23 +96,27 @@ td { padding: 12px; border-bottom: 1px solid var(--seam); }
     <div class="player-status-card" id="status-card">
       <div class="status-label">STATUS</div>
       <div class="status-value" id="p-status">ALIVE</div>
-      <div class="target-section">
+      <div id="target-ui">
         <div class="status-label">CURRENT TARGET</div>
         <div class="target-name" id="p-target">WAITING...</div>
+        <div id="immune-warning" class="hidden">⚠ TARGET IS IMMUNE</div>
       </div>
     </div>
-    <div class="card">
+    <div id="ghost-vote-section" class="hidden" style="background:var(--ink2); padding:20px; border:1px solid var(--ghost); margin-bottom:20px;">
+        <div class="status-label" style="color:var(--ghost2)">👻 GHOST REVIVAL VOTE</div>
+        <div id="vote-list" style="margin-top:15px;"></div>
+    </div>
+    <div id="action-card" class="card">
       <div class="tabs">
         <button class="tab active" onclick="switchKillTab('killer')">I KILLED</button>
         <button class="tab" onclick="switchKillTab('victim')">I AM DEAD</button>
       </div>
       <div id="kill-killer" class="tab-content active">
-        <button class="btn btn-blood" onclick="genCode()">GENERATE CODE</button>
-        <div id="code-box" class="hidden" style="margin-top:20px; font-size:32px; text-align:center; background:var(--blood3); padding:20px; border:1px solid var(--blood); color:var(--blood); font-family:'Playfair Display';"></div>
+        <button class="btn btn-blood" onclick="genCode()">GENERATE KILL CODE</button>
+        <div id="code-box" class="hidden" style="margin-top:20px; font-size:32px; text-align:center; background:var(--blood3); padding:20px; border:1px solid var(--blood); color:var(--blood);"></div>
       </div>
       <div id="kill-victim" class="tab-content">
-        <label>Enter code from killer</label>
-        <input type="text" id="victim-input" placeholder="6-DIGIT CODE">
+        <label>Enter code</label><input type="text" id="victim-input">
         <button class="btn btn-blood" onclick="confirmDeath()">CONFIRM DEATH</button>
       </div>
     </div>
@@ -129,34 +127,40 @@ td { padding: 12px; border-bottom: 1px solid var(--seam); }
   <nav><div class="nav-logo">KNIVES<span>OUT</span> <span>MOD</span></div><button class="btn-outline" onclick="location.reload()">LOGOUT</button></nav>
   <div class="main">
     <div class="tabs">
-      <button class="tab active" onclick="switchModTab('dashboard')">DASHBOARD</button>
-      <button class="tab" onclick="switchModTab('players')">PLAYERS</button>
+      <button class="tab active" onclick="switchModTab('dashboard')">STATS</button>
+      <button class="tab" onclick="switchModTab('immunity')">IMMUNITY</button>
+      <button class="tab" onclick="switchModTab('ghost')">GHOST</button>
       <button class="tab" onclick="switchModTab('settings')">SETTINGS</button>
     </div>
-    
     <div id="mod-tab-dashboard" class="tab-content active">
       <div class="mod-grid" id="mod-stats"></div>
-      <div class="card"><div class="status-label">LIVE CHAIN</div><div id="mod-chain" style="margin-top:15px;"></div></div>
+      <div class="card"><div class="status-label">CHAIN</div><div id="mod-chain" style="margin-top:15px;"></div></div>
     </div>
-
-    <div id="mod-tab-players" class="tab-content">
+    <div id="mod-tab-immunity" class="tab-content">
       <div class="card">
-        <table><thead><tr><th>NAME</th><th>PASS</th><th>STATUS</th><th>TARGET</th></tr></thead><tbody id="mod-table"></tbody></table>
+        <label>Immune Slots</label><input type="number" id="imm-slots" value="2">
+        <button class="btn btn-blade" onclick="saveImmunity()">SAVE SLOTS</button>
+        <hr style="margin:20px 0; border:0; border-top:1px solid var(--seam);">
+        <select id="imm-select"></select>
+        <button class="btn btn-outline" style="width:100%;" onclick="grantImmunity()">GRANT IMMUNITY</button>
+        <div id="imm-list" style="margin-top:15px; font-size:11px;"></div>
       </div>
     </div>
-
+    <div id="mod-tab-ghost" class="tab-content">
+      <div class="card">
+        <button class="btn btn-blade" onclick="toggleGhostVote()">TOGGLE GHOST VOTE</button>
+      </div>
+    </div>
     <div id="mod-tab-settings" class="tab-content">
       <div class="card">
-        <button class="btn btn-blade" onclick="startGame()">⚔ START GAME & SHUFFLE</button>
-        <div style="margin:20px 0; border-top:1px solid var(--seam);"></div>
-        <button class="btn btn-blood" onclick="resetGame()">RESET DATABASE</button>
+        <button class="btn btn-blade" onclick="startGame()">⚔ START GAME</button>
+        <button class="btn btn-blood" style="margin-top:20px;" onclick="resetGame()">WIPE DATABASE</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// --- CONFIG & INIT ---
 const config = {
   apiKey: "AIzaSyBEBdPwtgVpOEXJZD-n19nusn95Cxmar_E",
   authDomain: "knives-out-78089.firebaseapp.com",
@@ -171,12 +175,11 @@ let db, gameState, currentUser, currentIsMod;
   firebase.initializeApp(config);
   db = firebase.database();
   db.ref('/game').on('value', snap => {
-    gameState = snap.val() || { players: [], mods: [], codes: {}, modPassword: 'moderator' };
+    gameState = snap.val() || { players: [], mods: [], codes: {}, immunity: { slots: 2, players: [] }, ghost: { voting: false, votes: {} }, modPassword: 'moderator' };
     updateUI();
   });
 })();
 
-// --- AUTH ---
 function switchAuthTab(t) {
   document.querySelectorAll('#page-login .tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('#page-login .tab-content').forEach(c => c.classList.remove('active'));
@@ -191,9 +194,11 @@ function doLogin() {
   if (player && p === player.password) {
     currentUser = player.name;
     currentIsMod = (gameState.mods || []).includes(player.name);
+    // Explicitly hide login page and show the appropriate dashboard
+    document.getElementById('page-login').classList.remove('active');
     showPage(currentIsMod ? 'mod' : 'player');
   } else {
-    document.getElementById('login-error').textContent = "Wrong username or password.";
+    document.getElementById('login-error').textContent = "Access Denied.";
   }
 }
 
@@ -201,9 +206,7 @@ async function doSignup() {
   const u = document.getElementById('signup-username').value.trim();
   const p = document.getElementById('signup-password').value;
   const mk = document.getElementById('signup-mod-password').value;
-  if (!u || !p) return alert("Fill all fields");
-  if (gameState.players.find(pl => pl.name === u)) return alert("Taken");
-
+  if (gameState.players.find(pl => pl.name === u)) return alert("Username taken");
   const newP = { name: u, password: p, status: 'alive', target: '', kills: 0 };
   gameState.players.push(newP);
   if (mk === gameState.modPassword) {
@@ -212,26 +215,108 @@ async function doSignup() {
   }
   await db.ref('/game').update({ players: gameState.players, mods: gameState.mods });
   currentUser = u;
+  document.getElementById('page-login').classList.remove('active');
   showPage((gameState.mods || []).includes(u) ? 'mod' : 'player');
 }
 
-// --- NAVIGATION ---
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' }); // NO MORE SCROLLING ISSUE
+  window.scrollTo(0,0);
+}
+
+async function startGame() {
+  const players = gameState.players.filter(p => !(gameState.mods || []).includes(p.name));
+  if (players.length < 2) return alert("Need more players.");
+  let shuffled = [...players].sort(() => Math.random() - 0.5);
+  shuffled.forEach((p, i) => {
+    let idx = gameState.players.findIndex(pl => pl.name === p.name);
+    gameState.players[idx].target = shuffled[(i + 1) % shuffled.length].name;
+  });
+  await db.ref('/game').update({ players: gameState.players, gameStarted: true });
+}
+
+async function genCode() {
+  const p = gameState.players.find(pl => pl.name === currentUser);
+  if (gameState.immunity.players.includes(p.target)) return alert("Target is Immune!");
+  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+  if(!gameState.codes) gameState.codes = {};
+  gameState.codes[code] = { killer: p.name, victim: p.target };
+  await db.ref('/game/codes').update(gameState.codes);
+  document.getElementById('code-box').textContent = code;
+  document.getElementById('code-box').classList.remove('hidden');
+}
+
+async function confirmDeath() {
+  const code = document.getElementById('victim-input').value.toUpperCase();
+  const entry = (gameState.codes || {})[code];
+  if (entry && entry.victim === currentUser) {
+    const k = gameState.players.find(pl => pl.name === entry.killer);
+    const v = gameState.players.find(pl => pl.name === entry.victim);
+    k.target = v.target;
+    v.status = 'dead';
+    v.target = 'ELIMINATED';
+    delete gameState.codes[code];
+    await db.ref('/game').update({ players: gameState.players, codes: gameState.codes });
+  }
+}
+
+async function saveImmunity() {
+  gameState.immunity.slots = document.getElementById('imm-slots').value;
+  await db.ref('/game/immunity').update(gameState.immunity);
+}
+
+async function grantImmunity() {
+  const u = document.getElementById('imm-select').value;
+  if (!gameState.immunity.players) gameState.immunity.players = [];
+  if (gameState.immunity.players.length >= gameState.immunity.slots) return alert("Slots full");
+  if (!gameState.immunity.players.includes(u)) gameState.immunity.players.push(u);
+  await db.ref('/game/immunity').update(gameState.immunity);
+}
+
+async function toggleGhostVote() {
+  gameState.ghost.voting = !gameState.ghost.voting;
+  await db.ref('/game/ghost').update(gameState.ghost);
+}
+
+async function castVote(v) {
+  if (!gameState.ghost.votes) gameState.ghost.votes = {};
+  gameState.ghost.votes[currentUser] = v;
+  await db.ref('/game/ghost/votes').update(gameState.ghost.votes);
+}
+
+function updateUI() {
+  if (currentUser) {
+    const p = gameState.players.find(pl => pl.name === currentUser);
+    document.getElementById('p-status').textContent = p.status.toUpperCase();
+    document.getElementById('p-target').textContent = p.target || "WAITING...";
+    
+    const isImmune = p.target && gameState.immunity.players && gameState.immunity.players.includes(p.target);
+    document.getElementById('immune-warning').className = isImmune ? "alert alert-blood" : "hidden";
+
+    const ghostSect = document.getElementById('ghost-vote-section');
+    if (gameState.ghost.voting && p.status === 'dead') {
+        ghostSect.classList.remove('hidden');
+        document.getElementById('vote-list').innerHTML = gameState.players.filter(pl => pl.status === 'dead').map(d => `
+            <div class="vote-card"><span>${d.name}</span><button class="btn btn-outline" onclick="castVote('${d.name}')">VOTE</button></div>`).join('');
+    } else { ghostSect.classList.add('hidden'); }
+  }
+
+  if (currentIsMod) {
+    const active = gameState.players.filter(p => !gameState.mods.includes(p.name));
+    document.getElementById('mod-stats').innerHTML = `<div class="stat-box"><div>${active.filter(p=>p.status==='alive').length}</div>ALIVE</div><div class="stat-box"><div>${active.filter(p=>p.status==='dead').length}</div>DEAD</div>`;
+    document.getElementById('mod-chain').innerHTML = active.map(p => `<div>${p.name} → ${p.target}</div>`).join('');
+    document.getElementById('imm-select').innerHTML = active.map(p => `<option>${p.name}</option>`).join('');
+    document.getElementById('imm-list').innerHTML = (gameState.immunity.players || []).map(p => `<span>[${p}] </span>`).join('');
+  }
 }
 
 function switchModTab(t) {
   document.querySelectorAll('#page-mod .tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('#page-mod .tab-content').forEach(c => c.classList.remove('active'));
-  
-  // Highlighting correct button
   const btn = Array.from(document.querySelectorAll('#page-mod .tab')).find(b => b.innerText.toLowerCase() === t);
   if(btn) btn.classList.add('active');
-  
   document.getElementById('mod-tab-' + t).classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function switchKillTab(t) {
@@ -242,68 +327,7 @@ function switchKillTab(t) {
   document.getElementById('kill-' + t).classList.add('active');
 }
 
-// --- GAME ACTIONS ---
-async function startGame() {
-  if (gameState.players.length < 2) return alert("Need 2+ players");
-  let shuffled = [...gameState.players].sort(() => Math.random() - 0.5);
-  shuffled.forEach((p, i) => {
-    let idx = gameState.players.findIndex(pl => pl.name === p.name);
-    gameState.players[idx].target = shuffled[(i + 1) % shuffled.length].name;
-  });
-  await db.ref('/game').update({ players: gameState.players, gameStarted: true });
-  alert("Game Started! Targets assigned.");
-}
-
-async function genCode() {
-  const p = gameState.players.find(pl => pl.name === currentUser);
-  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-  if(!gameState.codes) gameState.codes = {};
-  gameState.codes[code] = { killer: p.name, victim: p.target };
-  await db.ref('/game/codes').update(gameState.codes);
-  document.getElementById('code-box').textContent = code;
-  document.getElementById('code-box').classList.remove('hidden');
-}
-
-async function confirmDeath() {
-  const c = document.getElementById('victim-input').value.toUpperCase();
-  const entry = (gameState.codes || {})[c];
-  if (entry && entry.victim === currentUser) {
-    const k = gameState.players.find(pl => pl.name === entry.killer);
-    const v = gameState.players.find(pl => pl.name === entry.victim);
-    k.target = v.target;
-    v.status = 'dead';
-    v.target = 'ELIMINATED';
-    delete gameState.codes[c];
-    await db.ref('/game').update({ players: gameState.players, codes: gameState.codes });
-    alert("You are now dead.");
-  } else {
-    alert("Invalid Code");
-  }
-}
-
-async function resetGame() { if(confirm("Wipe all?")) await db.ref('/game').remove(); location.reload(); }
-
-// --- UI UPDATES ---
-function updateUI() {
-  if (currentUser) {
-    const p = gameState.players.find(pl => pl.name === currentUser);
-    if (p) {
-      document.getElementById('p-status').textContent = p.status.toUpperCase();
-      document.getElementById('p-target').textContent = p.target || "WAITING...";
-      document.getElementById('status-card').style.borderTopColor = p.status === 'dead' ? 'var(--blood)' : 'var(--alive)';
-    }
-  }
-  
-  const stats = document.getElementById('mod-stats');
-  if (stats) {
-    const alive = gameState.players.filter(p => p.status === 'alive').length;
-    const dead = gameState.players.filter(p => p.status === 'dead').length;
-    stats.innerHTML = `<div class="stat-box"><div class="stat-num" style="color:var(--alive)">${alive}</div><div class="status-label">ALIVE</div></div><div class="stat-box"><div class="stat-num" style="color:var(--blood)">${dead}</div><div class="status-label">DEAD</div></div>`;
-    
-    document.getElementById('mod-table').innerHTML = gameState.players.map(p => `<tr><td>${p.name}</td><td>${p.password}</td><td>${p.status}</td><td>${p.target}</td></tr>`).join('');
-    document.getElementById('mod-chain').innerHTML = gameState.players.map(p => `<div style="margin-bottom:5px; font-size:11px;">${p.name} <span style="color:var(--cream3)">→</span> <span style="color:var(--blade)">${p.target}</span></div>`).join('');
-  }
-}
+async function resetGame() { if(confirm("WIPE?")) await db.ref('/game').remove(); location.reload(); }
 </script>
 </body>
 </html>

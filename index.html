@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KNIVES OUT</title>
+<title>KNIVES OUT | COORDINATION</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -14,379 +14,296 @@
   --blade: #d4a017; --blade2: #a07810;
   --blood: #8b1a1a; --blood2: #6b1010; --blood3: #3d0808;
   --cream: #f0ead8; --cream2: #c8c0a8; --cream3: #7a7060;
-  --alive: #3a7d44; --alive2: #255c2d; --ghost: #5c4a8a; --ghost2: #9b85d4;
+  --alive: #3a7d44; --alive2: #255c2d;
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { background: var(--ink); color: var(--cream2); font-family: 'Courier Prime', monospace; min-height: 100vh; line-height: 1.6; }
-body::after { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(255,255,255,0.012) 28px, rgba(255,255,255,0.012) 29px), repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(255,255,255,0.006) 28px, rgba(255,255,255,0.006) 29px); pointer-events: none; z-index: 0; }
+body { background: var(--ink); color: var(--cream2); font-family: 'Courier Prime', monospace; min-height: 100vh; line-height: 1.6; overflow-x: hidden; }
+body::after { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(255,255,255,0.012) 28px, rgba(255,255,255,0.012) 29px); pointer-events: none; z-index: 0; }
 
-.page { display: none; min-height: 100vh; position: relative; z-index: 1; }
+.page { display: none; min-height: 100vh; position: relative; z-index: 1; padding-bottom: 50px; }
 .page.active { display: block; }
-#page-login { display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at 40% 30%, #1a0d0d 0%, var(--ink) 65%); }
+#page-login { display: flex; align-items: center; justify-content: center; height: 100vh; background: radial-gradient(ellipse at 40% 30%, #1a0d0d 0%, var(--ink) 65%); overflow: hidden; }
 #page-login.active { display: flex; }
-.login-wrap { width: min(420px, 92vw); animation: riseUp .55s ease; }
-.login-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--blade); padding: 48px 40px 42px; position: relative; }
-.logo { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 900; font-style: italic; color: var(--cream); text-align: center; letter-spacing: 3px; margin-bottom: 2px; }
+
+.login-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--blade); padding: 40px; width: min(420px, 92vw); animation: riseUp .5s ease; }
+.logo { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 900; font-style: italic; color: var(--cream); text-align: center; letter-spacing: 3px; }
 .logo span { color: var(--blade); }
-.logo-sub { text-align: center; font-size: 9px; letter-spacing: 4px; color: var(--cream3); text-transform: uppercase; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--seam); }
+.logo-sub { text-align: center; font-size: 9px; letter-spacing: 4px; color: var(--cream3); text-transform: uppercase; margin-bottom: 24px; border-bottom: 1px solid var(--seam); padding-bottom: 15px; }
 
-.tabs-toggle { display: flex; gap: 0; margin-bottom: 24px; }
-.tab-btn { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--seam); border-bottom: none; color: var(--cream3); font-family: monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+.tabs-toggle { display: flex; margin-bottom: 20px; }
+.tab-btn { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--seam); color: var(--cream3); cursor: pointer; font-size: 10px; letter-spacing: 2px; }
 .tab-btn.active { background: var(--blade); color: var(--ink); font-weight: 700; }
-
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-label { display: block; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); margin-bottom: 5px; margin-top: 4px; }
-input[type=text], input[type=password], select, textarea { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 13px; padding: 10px 12px; outline: none; transition: border-color .2s; margin-bottom: 14px; }
-input:focus, select:focus { border-color: var(--blade2); background: var(--ink4); }
+label { display: block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); margin-bottom: 5px; }
+input { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); padding: 10px; margin-bottom: 15px; outline: none; }
+input:focus { border-color: var(--blade); }
 
-.error-msg { color: var(--blood); font-size: 11px; letter-spacing: 1px; margin: -10px 0 12px 0; min-height: 14px; }
-
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 24px; font-family: monospace; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; border: none; transition: all .18s; font-weight: 700; }
-.btn-blade { background: var(--blade); color: var(--ink); width: 100%; }
+.btn { display: block; width: 100%; padding: 12px; font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border: none; font-weight: 700; text-align: center; }
+.btn-blade { background: var(--blade); color: var(--ink); }
 .btn-blood { background: var(--blood); color: var(--cream); }
-.btn-outline { background: transparent; color: var(--cream2); border: 1px solid var(--seam2); padding: 8px 16px; font-size: 10px; }
-.btn-sm { padding: 6px 12px; font-size: 10px; letter-spacing: 1.5px; }
+.btn-outline { background: transparent; color: var(--cream2); border: 1px solid var(--seam2); width: auto; padding: 6px 12px; font-size: 10px; }
 
-nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
-.nav-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; font-style: italic; letter-spacing: 2px; color: var(--cream); }
+nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 55px; position: sticky; top: 0; z-index: 100; }
+.nav-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: var(--cream); }
 .nav-logo span { color: var(--blade); }
-.nav-right { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--cream3); }
-.nav-user { color: var(--blade); letter-spacing: 1px; font-weight: 700; }
-.badge { display: inline-block; padding: 2px 8px; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
-.badge-mod { background: var(--blade); color: var(--ink); }
-.badge-alive { background: var(--alive2); color: var(--alive); border: 1px solid var(--alive2); }
-.badge-dead { background: var(--blood3); color: var(--blood); border: 1px solid var(--blood2); }
+.main { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
 
-.main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
-.section-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; font-style: italic; letter-spacing: 3px; color: var(--cream); margin-bottom: 6px; }
-.section-sub { font-size: 10px; letter-spacing: 3px; color: var(--cream3); text-transform: uppercase; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--seam); }
-.card { background: var(--ink2); border: 1px solid var(--seam); padding: 24px; margin-bottom: 20px; }
-.card-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
-.card-title::after { content: ''; flex: 1; height: 1px; background: var(--seam); }
+.player-status-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--alive); padding: 40px; text-align: center; margin-bottom: 20px; }
+.status-label { font-size: 9px; letter-spacing: 3px; color: var(--cream3); }
+.status-value { font-family: 'Playfair Display', serif; font-size: 42px; font-style: italic; color: var(--alive); margin: 10px 0; }
+.target-name { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--blade); margin-top: 10px; }
 
-.player-status-card { background: var(--ink2); border: 1px solid var(--seam); padding: 40px; text-align: center; position: relative; overflow: hidden; margin-bottom: 20px; }
-.player-status-card.alive { border-top: 4px solid var(--alive); }
-.status-value { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; font-style: italic; letter-spacing: 4px; }
-.status-value.alive-text { color: var(--alive); }
-.target-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--seam); }
-.target-name { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--blade); letter-spacing: 2px; margin-top: 8px; }
-.code-display { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; letter-spacing: 8px; color: var(--blood); text-align: center; padding: 24px; background: var(--blood3); border: 1px solid var(--blood2); text-shadow: 0 0 20px rgba(139,26,26,0.4); margin: 12px 0; }
-
-.mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.stat-box { background: var(--ink2); border: 1px solid var(--seam); padding: 16px; text-align: center; }
-.stat-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--cream); line-height: 1; }
-.stat-label { font-size: 9px; letter-spacing: 2px; color: var(--cream3); text-transform: uppercase; margin-top: 4px; }
+.tabs { display: flex; border-bottom: 1px solid var(--seam); margin-bottom: 25px; }
+.tab { padding: 12px 20px; font-size: 10px; letter-spacing: 2px; color: var(--cream3); cursor: pointer; border: none; background: none; }
+.tab.active { color: var(--cream); border-bottom: 2px solid var(--blade); }
 
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--seam); background: var(--ink3); font-weight: 700; }
-td { padding: 12px; border-bottom: 1px solid #161610; vertical-align: middle; }
+th { text-align: left; padding: 12px; background: var(--ink3); color: var(--cream3); font-size: 9px; text-transform: uppercase; }
+td { padding: 12px; border-bottom: 1px solid var(--seam); }
 
-.kill-entry { padding: 12px 16px; border-bottom: 1px solid var(--seam); display: flex; gap: 12px; align-items: flex-start; font-size: 12px; }
-.kill-time { color: var(--cream3); font-size: 10px; white-space: nowrap; min-width: 90px; }
+.mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 25px; }
+.stat-box { background: var(--ink2); border: 1px solid var(--seam); padding: 15px; text-align: center; }
+.stat-num { font-size: 28px; font-family: 'Playfair Display'; color: var(--cream); }
 
-.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--seam); margin-bottom: 24px; flex-wrap: wrap; }
-.tab { padding: 11px 18px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; font-weight: 700; background: none; border: none; }
-.tab.active { color: var(--cream); border-bottom-color: var(--blade); }
-
-.settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.mt16 { margin-top: 16px; } .mb16 { margin-bottom: 16px; }
-.flex { display: flex; align-items: center; }
-.flex-between { display: flex; align-items: center; justify-content: space-between; }
-.gap8 { gap: 8px; }
-.text-dim { color: var(--cream3); font-size: 11px; }
-.text-red { color: var(--blood); }
-.text-gold { color: var(--blade); }
-.text-green { color: var(--alive); }
-.divider { border: none; border-top: 1px solid var(--seam); margin: 20px 0; }
-
-.inline-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
-.inline-list li { padding: 4px 10px; background: var(--ink3); border: 1px solid var(--seam); font-size: 11px; display: flex; align-items: center; gap: 8px; }
-.inline-list li .remove { cursor: pointer; color: var(--blood); font-size: 14px; font-weight: 700; }
-
-@keyframes riseUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
+@keyframes riseUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 .hidden { display: none !important; }
-.chain-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--seam); font-size: 12px; }
-.password-cell { font-family: monospace; font-size: 11px; background: var(--ink3); padding: 4px 8px; display: inline-block; }
-
-.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.player-chip { padding: 12px; background: var(--ink2); border: 1px solid var(--seam); text-align: center; font-size: 11px; }
-.chip-name { margin-bottom: 4px; font-weight: 700; }
-.chip-status { font-size: 9px; letter-spacing: 2px; color: var(--cream3); text-transform: uppercase; }
-
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-thumb { background: var(--seam); }
 </style>
 </head>
 <body>
 
 <div id="page-login" class="page active">
-  <div class="login-wrap">
-    <div class="login-card">
-      <div class="logo">KNIVES<span>OUT</span></div>
-      <div class="logo-sub">Murder Mystery Coordination</div>
-
-      <div class="tabs-toggle">
-        <button class="tab-btn active" onclick="switchAuthTab('login')">LOGIN</button>
-        <button class="tab-btn" onclick="switchAuthTab('signup')">SIGN UP</button>
-      </div>
-
-      <div class="tab-content active" id="auth-login">
-        <label>Username</label>
-        <input type="text" id="login-username" placeholder="your codename">
-        <label>Password</label>
-        <input type="password" id="login-password" placeholder="••••••••">
-        <div class="error-msg" id="login-error"></div>
-        <button class="btn btn-blade" onclick="doLogin()">ENTER GAME</button>
-      </div>
-
-      <div class="tab-content" id="auth-signup">
-        <label>New Username</label>
-        <input type="text" id="signup-username" placeholder="your codename">
-        <label>Password</label>
-        <input type="password" id="signup-password" placeholder="••••••••">
-        <label>Moderator Password (optional)</label>
-        <input type="password" id="signup-mod-password" placeholder="leave empty if regular player">
-        <div class="error-msg" id="signup-error"></div>
-        <button class="btn btn-blade" onclick="doSignup()">CREATE ACCOUNT</button>
-      </div>
+  <div class="login-card">
+    <div class="logo">KNIVES<span>OUT</span></div>
+    <div class="logo-sub">Operations Dashboard</div>
+    <div class="tabs-toggle">
+      <button class="tab-btn active" id="btn-tab-login" onclick="switchAuthTab('login')">LOGIN</button>
+      <button class="tab-btn" id="btn-tab-signup" onclick="switchAuthTab('signup')">SIGN UP</button>
+    </div>
+    <div id="auth-login" class="tab-content active">
+      <label>Username</label><input type="text" id="login-username">
+      <label>Password</label><input type="password" id="login-password">
+      <div id="login-error" class="error-msg" style="color:var(--blood); font-size:10px; margin-bottom:10px;"></div>
+      <button class="btn btn-blade" onclick="doLogin()">ENTER GAME</button>
+    </div>
+    <div id="auth-signup" class="tab-content">
+      <label>Username</label><input type="text" id="signup-username">
+      <label>Password</label><input type="password" id="signup-password">
+      <label>Mod Key (Optional)</label><input type="password" id="signup-mod-password">
+      <button class="btn btn-blade" onclick="doSignup()">CREATE ACCOUNT</button>
     </div>
   </div>
 </div>
 
 <div id="page-player" class="page">
-  <nav>
-    <div class="nav-logo">KNIVES<span>OUT</span></div>
-    <div class="nav-right">
-      <span class="nav-user" id="nav-player-name"></span>
-      <span class="badge badge-alive" id="nav-player-badge">ALIVE</span>
-      <button class="btn btn-outline btn-sm" onclick="doLogout()">EXIT</button>
-    </div>
-  </nav>
+  <nav><div class="nav-logo">KNIVES<span>OUT</span></div><button class="btn-outline" onclick="location.reload()">LOGOUT</button></nav>
   <div class="main">
-    <div style="max-width: 580px; margin: 0 auto;">
-      <div class="player-status-card alive" id="player-status-card">
-        <div class="status-label">YOUR STATUS</div>
-        <div class="status-value alive-text" id="player-status-text">ALIVE</div>
-        <div id="player-target-section" class="target-section">
-          <div class="status-label">YOUR TARGET</div>
-          <div class="target-name" id="player-target-name">—</div>
-        </div>
+    <div class="player-status-card" id="status-card">
+      <div class="status-label">STATUS</div>
+      <div class="status-value" id="p-status">ALIVE</div>
+      <div class="target-section">
+        <div class="status-label">CURRENT TARGET</div>
+        <div class="target-name" id="p-target">WAITING...</div>
       </div>
-
-      <div id="player-kill-section" class="card">
-        <div class="card-title">⚔ CONFIRM A KILL</div>
-        <div class="tabs">
-          <button class="tab active" onclick="switchKillTab('killer')">I AM KILLER</button>
-          <button class="tab" onclick="switchKillTab('victim')">I AM VICTIM</button>
-        </div>
-        <div class="tab-content active" id="kill-tab-killer">
-          <button class="btn btn-blood" style="width: 100%;" onclick="generateKillCode()">GENERATE KILL CODE</button>
-          <div id="kill-code-display" class="hidden mt16">
-            <div class="code-display" id="kill-code-value"></div>
-            <div class="text-dim mt8" style="text-align: center;">Expires in 10 minutes</div>
-          </div>
-        </div>
-        <div class="tab-content" id="kill-tab-victim">
-          <label>Code</label>
-          <input type="text" id="victim-code-input" placeholder="6-DIGIT CODE" style="text-transform: uppercase; letter-spacing: 4px; font-size: 18px; text-align: center;">
-          <div class="error-msg" id="victim-code-error"></div>
-          <button class="btn btn-blood" style="width: 100%;" onclick="confirmKillAsVictim()">CONFIRM DEAD</button>
-        </div>
+    </div>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" onclick="switchKillTab('killer')">I KILLED</button>
+        <button class="tab" onclick="switchKillTab('victim')">I AM DEAD</button>
+      </div>
+      <div id="kill-killer" class="tab-content active">
+        <button class="btn btn-blood" onclick="genCode()">GENERATE CODE</button>
+        <div id="code-box" class="hidden" style="margin-top:20px; font-size:32px; text-align:center; background:var(--blood3); padding:20px; border:1px solid var(--blood); color:var(--blood); font-family:'Playfair Display';"></div>
+      </div>
+      <div id="kill-victim" class="tab-content">
+        <label>Enter code from killer</label>
+        <input type="text" id="victim-input" placeholder="6-DIGIT CODE">
+        <button class="btn btn-blood" onclick="confirmDeath()">CONFIRM DEATH</button>
       </div>
     </div>
   </div>
 </div>
 
 <div id="page-mod" class="page">
-  <nav>
-    <div class="nav-logo">KNIVES<span>OUT</span></div>
-    <div class="nav-right">
-      <span class="nav-user" id="nav-mod-name"></span>
-      <span class="badge badge-mod">MOD</span>
-      <button class="btn btn-outline btn-sm" onclick="doLogout()">EXIT</button>
-    </div>
-  </nav>
+  <nav><div class="nav-logo">KNIVES<span>OUT</span> <span>MOD</span></div><button class="btn-outline" onclick="location.reload()">LOGOUT</button></nav>
   <div class="main">
-    <div class="section-title">MODERATOR CONTROL PANEL</div>
     <div class="tabs">
       <button class="tab active" onclick="switchModTab('dashboard')">DASHBOARD</button>
       <button class="tab" onclick="switchModTab('players')">PLAYERS</button>
       <button class="tab" onclick="switchModTab('settings')">SETTINGS</button>
     </div>
-
-    <div class="tab-content active" id="mod-tab-dashboard">
+    
+    <div id="mod-tab-dashboard" class="tab-content active">
       <div class="mod-grid" id="mod-stats"></div>
+      <div class="card"><div class="status-label">LIVE CHAIN</div><div id="mod-chain" style="margin-top:15px;"></div></div>
+    </div>
+
+    <div id="mod-tab-players" class="tab-content">
       <div class="card">
-        <div class="card-title">KILL CHAIN</div>
-        <div id="mod-chain-visual"></div>
+        <table><thead><tr><th>NAME</th><th>PASS</th><th>STATUS</th><th>TARGET</th></tr></thead><tbody id="mod-table"></tbody></table>
       </div>
     </div>
 
-    <div class="tab-content" id="mod-tab-players">
+    <div id="mod-tab-settings" class="tab-content">
       <div class="card">
-        <table>
-          <thead>
-            <tr><th>Name</th><th>Password</th><th>Status</th><th>Target</th><th>Actions</th></tr>
-          </thead>
-          <tbody id="mod-players-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="tab-content" id="mod-tab-settings">
-      <div class="card">
-        <button class="btn btn-blade" style="width: 100%;" id="start-game-btn" onclick="startGame()">⚔ START GAME</button>
-        <hr class="divider">
-        <button class="btn btn-blood" style="width: 100%;" onclick="resetGame()">WIPE ALL DATA</button>
+        <button class="btn btn-blade" onclick="startGame()">⚔ START GAME & SHUFFLE</button>
+        <div style="margin:20px 0; border-top:1px solid var(--seam);"></div>
+        <button class="btn btn-blood" onclick="resetGame()">RESET DATABASE</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// --- AUTOMATIC FIREBASE INITIALIZATION ---
-const firebaseConfig = {
+// --- CONFIG & INIT ---
+const config = {
   apiKey: "AIzaSyBEBdPwtgVpOEXJZD-n19nusn95Cxmar_E",
   authDomain: "knives-out-78089.firebaseapp.com",
   databaseURL: "https://knives-out-78089-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "knives-out-78089",
-  storageBucket: "knives-out-78089.firebasestorage.app",
-  messagingSenderId: "873187343032",
-  appId: "1:873187343032:web:f0d7da214389437965524d",
-  measurementId: "G-5N4DSMSC69"
+  appId: "1:873187343032:web:f0d7da214389437965524d"
 };
 
-let db = null, currentUser = null, currentIsMod = false, gameState = null, currentPage = 'login';
+let db, gameState, currentUser, currentIsMod;
 
-// Initialize Firebase Immediately
-(function() {
-  try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-    setupGameListener();
-  } catch (e) {
-    console.error("Firebase Init Error:", e);
-  }
+(function init() {
+  firebase.initializeApp(config);
+  db = firebase.database();
+  db.ref('/game').on('value', snap => {
+    gameState = snap.val() || { players: [], mods: [], codes: {}, modPassword: 'moderator' };
+    updateUI();
+  });
 })();
 
-function setupGameListener() {
-  db.ref('/game').on('value', snap => {
-    gameState = snap.val() || { players: [], mods: [], gameStarted: false, killLog: [], pendingCodes: {}, modPassword: 'moderator' };
-    if (currentPage === 'player' && currentUser) {
-      const player = gameState.players.find(p => p.name === currentUser);
-      if (player) renderPlayerView(player);
-    } else if (currentPage === 'mod') {
-      renderModView();
-    }
-  });
+// --- AUTH ---
+function switchAuthTab(t) {
+  document.querySelectorAll('#page-login .tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#page-login .tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('btn-tab-' + t).classList.add('active');
+  document.getElementById('auth-' + t).classList.add('active');
 }
 
-// Authentication Logic
-async function doLogin() {
-  const user = document.getElementById('login-username').value.trim();
-  const pass = document.getElementById('login-password').value;
-  const err = document.getElementById('login-error');
-  
-  const player = gameState.players.find(p => p.name.toLowerCase() === user.toLowerCase());
-  if (player && pass === player.password) {
+function doLogin() {
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  const player = gameState.players.find(pl => pl.name.toLowerCase() === u.toLowerCase());
+  if (player && p === player.password) {
     currentUser = player.name;
     currentIsMod = (gameState.mods || []).includes(player.name);
-    currentIsMod ? enterMod() : enterPlayer();
+    showPage(currentIsMod ? 'mod' : 'player');
   } else {
-    err.textContent = "Invalid credentials.";
+    document.getElementById('login-error').textContent = "Wrong username or password.";
   }
 }
 
 async function doSignup() {
-  const user = document.getElementById('signup-username').value.trim();
-  const pass = document.getElementById('signup-password').value;
-  const modP = document.getElementById('signup-mod-password').value;
-  
-  if (gameState.players.find(p => p.name === user)) { alert("Username taken"); return; }
+  const u = document.getElementById('signup-username').value.trim();
+  const p = document.getElementById('signup-password').value;
+  const mk = document.getElementById('signup-mod-password').value;
+  if (!u || !p) return alert("Fill all fields");
+  if (gameState.players.find(pl => pl.name === u)) return alert("Taken");
 
-  const newPlayer = { name: user, password: pass, status: 'alive', target: null, kills: 0 };
-  gameState.players.push(newPlayer);
-  
-  if (modP === gameState.modPassword) {
+  const newP = { name: u, password: p, status: 'alive', target: '', kills: 0 };
+  gameState.players.push(newP);
+  if (mk === gameState.modPassword) {
     if (!gameState.mods) gameState.mods = [];
-    gameState.mods.push(user);
+    gameState.mods.push(u);
   }
-
   await db.ref('/game').update({ players: gameState.players, mods: gameState.mods });
-  currentUser = user;
-  enterPlayer();
+  currentUser = u;
+  showPage((gameState.mods || []).includes(u) ? 'mod' : 'player');
 }
 
-function enterPlayer() { showPage('player'); }
-function enterMod() { showPage('mod'); }
-function showPage(id) { 
+// --- NAVIGATION ---
+function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  currentPage = id;
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // NO MORE SCROLLING ISSUE
 }
 
-function doLogout() { location.reload(); }
+function switchModTab(t) {
+  document.querySelectorAll('#page-mod .tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#page-mod .tab-content').forEach(c => c.classList.remove('active'));
+  
+  // Highlighting correct button
+  const btn = Array.from(document.querySelectorAll('#page-mod .tab')).find(b => b.innerText.toLowerCase() === t);
+  if(btn) btn.classList.add('active');
+  
+  document.getElementById('mod-tab-' + t).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-// Game Logic
+function switchKillTab(t) {
+  document.querySelectorAll('#page-player .tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#page-player .tab-content').forEach(c => c.classList.remove('active'));
+  const btn = Array.from(document.querySelectorAll('#page-player .tab')).find(b => b.innerText.toLowerCase().includes(t));
+  if(btn) btn.classList.add('active');
+  document.getElementById('kill-' + t).classList.add('active');
+}
+
+// --- GAME ACTIONS ---
 async function startGame() {
   if (gameState.players.length < 2) return alert("Need 2+ players");
-  const shuffled = [...gameState.players].sort(() => Math.random() - 0.5);
+  let shuffled = [...gameState.players].sort(() => Math.random() - 0.5);
   shuffled.forEach((p, i) => {
-    const realIdx = gameState.players.findIndex(pl => pl.name === p.name);
-    gameState.players[realIdx].target = shuffled[(i + 1) % shuffled.length].name;
+    let idx = gameState.players.findIndex(pl => pl.name === p.name);
+    gameState.players[idx].target = shuffled[(i + 1) % shuffled.length].name;
   });
-  await db.ref('/game').update({ gameStarted: true, players: gameState.players });
+  await db.ref('/game').update({ players: gameState.players, gameStarted: true });
+  alert("Game Started! Targets assigned.");
 }
 
-async function generateKillCode() {
-  const player = gameState.players.find(p => p.name === currentUser);
+async function genCode() {
+  const p = gameState.players.find(pl => pl.name === currentUser);
   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-  if (!gameState.pendingCodes) gameState.pendingCodes = {};
-  gameState.pendingCodes[code] = { killer: player.name, victim: player.target, expires: Date.now() + 600000 };
-  await db.ref('/game/pendingCodes').update(gameState.pendingCodes);
-  document.getElementById('kill-code-value').textContent = code;
-  document.getElementById('kill-code-display').classList.remove('hidden');
+  if(!gameState.codes) gameState.codes = {};
+  gameState.codes[code] = { killer: p.name, victim: p.target };
+  await db.ref('/game/codes').update(gameState.codes);
+  document.getElementById('code-box').textContent = code;
+  document.getElementById('code-box').classList.remove('hidden');
 }
 
-async function confirmKillAsVictim() {
-  const code = document.getElementById('victim-code-input').value.toUpperCase();
-  const entry = (gameState.pendingCodes || {})[code];
+async function confirmDeath() {
+  const c = document.getElementById('victim-input').value.toUpperCase();
+  const entry = (gameState.codes || {})[c];
   if (entry && entry.victim === currentUser) {
-    const killer = gameState.players.find(p => p.name === entry.killer);
-    const victim = gameState.players.find(p => p.name === entry.victim);
-    killer.target = victim.target;
-    victim.status = 'dead';
-    delete gameState.pendingCodes[code];
-    await db.ref('/game').update({ players: gameState.players, pendingCodes: gameState.pendingCodes });
-    alert("Elimination confirmed.");
+    const k = gameState.players.find(pl => pl.name === entry.killer);
+    const v = gameState.players.find(pl => pl.name === entry.victim);
+    k.target = v.target;
+    v.status = 'dead';
+    v.target = 'ELIMINATED';
+    delete gameState.codes[c];
+    await db.ref('/game').update({ players: gameState.players, codes: gameState.codes });
+    alert("You are now dead.");
+  } else {
+    alert("Invalid Code");
   }
 }
 
-// Rendering
-function renderPlayerView(p) {
-  document.getElementById('nav-player-name').textContent = p.name;
-  document.getElementById('player-status-text').textContent = p.status.toUpperCase();
-  document.getElementById('player-target-name').textContent = p.target || "WAITING...";
-  document.getElementById('player-kill-section').style.display = p.status === 'dead' ? 'none' : 'block';
-}
+async function resetGame() { if(confirm("Wipe all?")) await db.ref('/game').remove(); location.reload(); }
 
-function renderModView() {
-  const tbody = document.getElementById('mod-players-tbody');
-  tbody.innerHTML = gameState.players.map(p => `<tr><td>${p.name}</td><td>${p.password}</td><td>${p.status}</td><td>${p.target}</td><td><button onclick="modKill('${p.name}')">KILL</button></td></tr>`).join('');
+// --- UI UPDATES ---
+function updateUI() {
+  if (currentUser) {
+    const p = gameState.players.find(pl => pl.name === currentUser);
+    if (p) {
+      document.getElementById('p-status').textContent = p.status.toUpperCase();
+      document.getElementById('p-target').textContent = p.target || "WAITING...";
+      document.getElementById('status-card').style.borderTopColor = p.status === 'dead' ? 'var(--blood)' : 'var(--alive)';
+    }
+  }
+  
+  const stats = document.getElementById('mod-stats');
+  if (stats) {
+    const alive = gameState.players.filter(p => p.status === 'alive').length;
+    const dead = gameState.players.filter(p => p.status === 'dead').length;
+    stats.innerHTML = `<div class="stat-box"><div class="stat-num" style="color:var(--alive)">${alive}</div><div class="status-label">ALIVE</div></div><div class="stat-box"><div class="stat-num" style="color:var(--blood)">${dead}</div><div class="status-label">DEAD</div></div>`;
+    
+    document.getElementById('mod-table').innerHTML = gameState.players.map(p => `<tr><td>${p.name}</td><td>${p.password}</td><td>${p.status}</td><td>${p.target}</td></tr>`).join('');
+    document.getElementById('mod-chain').innerHTML = gameState.players.map(p => `<div style="margin-bottom:5px; font-size:11px;">${p.name} <span style="color:var(--cream3)">→</span> <span style="color:var(--blade)">${p.target}</span></div>`).join('');
+  }
 }
-
-function switchAuthTab(t) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('auth-' + t).classList.add('active');
-}
-
-async function resetGame() { if(confirm("RESET?")) await db.ref('/game').remove(); location.reload(); }
 </script>
 </body>
 </html>

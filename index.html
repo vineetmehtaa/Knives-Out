@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KNIVES OUT</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<style>
+:root {
+  --ink: #0c0b09; --ink2: #141210; --ink3: #1c1a17; --ink4: #242220;
+  --seam: #2e2b26; --seam2: #3d3930;
+  --blade: #d4a017; --blade2: #a07810;
+  --blood: #8b1a1a; --blood2: #6b1010; --blood3: #3d0808;
+  --cream: #f0ead8; --cream2: #c8c0a8; --cream3: #7a7060;
+  --alive: #3a7d44; --alive2: #255c2d; --ghost: #5c4a8a; --ghost2: #9b85d4;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--ink); color: var(--cream2); font-family: 'Courier Prime', monospace; min-height: 100vh; line-height: 1.6; }
+body::after { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(255,255,255,0.012) 28px, rgba(255,255,255,0.012) 29px), repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(255,255,255,0.006) 28px, rgba(255,255,255,0.006) 29px); pointer-events: none; z-index: 0; }
+
+#firebase-init { position: fixed; inset: 0; background: var(--ink); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+.init-gate { width: min(500px, 90vw); background: var(--ink2); border: 2px solid var(--blade); padding: 40px; }
+.init-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; color: var(--cream); margin-bottom: 8px; }
+.init-subtitle { color: var(--cream3); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px; }
+.init-step { background: var(--ink3); border-left: 3px solid var(--blade); padding: 16px; margin-bottom: 12px; font-size: 12px; line-height: 1.8; }
+.init-step-title { font-weight: 700; color: var(--blade); margin-bottom: 6px; }
+.init-step code { background: var(--ink4); color: var(--blade); padding: 2px 8px; display: inline-block; font-size: 11px; }
+.init-input { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 12px; padding: 10px; margin: 12px 0; outline: none; }
+.init-input:focus { border-color: var(--blade); }
+.init-btn { width: 100%; padding: 12px; background: var(--blade); color: var(--ink); border: none; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 12px; }
+.init-btn:hover { background: #e0b020; }
+
+.page { display: none; min-height: 100vh; position: relative; z-index: 1; }
+.page.active { display: block; }
+#page-login { display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at 40% 30%, #1a0d0d 0%, var(--ink) 65%); }
+#page-login.active { display: flex; }
+.login-wrap { width: min(420px, 92vw); animation: riseUp .55s ease; }
+.login-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--blade); padding: 48px 40px 42px; position: relative; }
+.logo { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 900; font-style: italic; color: var(--cream); text-align: center; letter-spacing: 3px; margin-bottom: 2px; }
+.logo span { color: var(--blade); }
+.logo-sub { text-align: center; font-size: 9px; letter-spacing: 4px; color: var(--cream3); text-transform: uppercase; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--seam); }
+
+.tabs-toggle { display: flex; gap: 0; margin-bottom: 24px; }
+.tab-btn { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--seam); border-bottom: none; color: var(--cream3); font-family: monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+.tab-btn.active { background: var(--blade); color: var(--ink); font-weight: 700; }
+.tab-btn:first-child { border-left: 1px solid var(--seam); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+label { display: block; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); margin-bottom: 5px; margin-top: 4px; }
+input[type=text], input[type=password], select, textarea { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 13px; padding: 10px 12px; outline: none; transition: border-color .2s; margin-bottom: 14px; }
+input:focus, select:focus { border-color: var(--blade2); background: var(--ink4); }
+
+.error-msg { color: var(--blood); font-size: 11px; letter-spacing: 1px; margin: -10px 0 12px 0; min-height: 14px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 24px; font-family: monospace; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; border: none; transition: all .18s; font-weight: 700; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-blade { background: var(--blade); color: var(--ink); width: 100%; }
+.btn-blade:hover:not(:disabled) { background: #e0b020; }
+.btn-blood { background: var(--blood); color: var(--cream); }
+.btn-blood:hover:not(:disabled) { background: #a02020; }
+.btn-outline { background: transparent; color: var(--cream2); border: 1px solid var(--seam2); padding: 8px 16px; font-size: 10px; }
+.btn-outline:hover:not(:disabled) { border-color: var(--cream2); }
+.btn-sm { padding: 6px 12px; font-size: 10px; letter-spacing: 1.5px; }
+
+nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
+.nav-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; font-style: italic; letter-spacing: 2px; color: var(--cream); }
+.nav-logo span { color: var(--blade); }
+.nav-right { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--cream3); }
+.nav-user { color: var(--blade); letter-spacing: 1px; font-weight: 700; }
+.badge { display: inline-block; padding: 2px 8px; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+.badge-mod { background: var(--blade); color: var(--ink); }
+.badge-alive { background: var(--alive2); color: var(--alive); border: 1px solid var(--alive2); }
+.badge-dead { background: var(--blood3); color: var(--blood); border: 1px solid var(--blood2); }
+.badge-immune { background: #1a2a4a; color: #7db8ff; border: 1px solid #3a5a8a; }
+.badge-ghost { background: #2a1f4a; color: var(--ghost2); border: 1px solid var(--ghost); }
+
+.main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+.section-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; font-style: italic; letter-spacing: 3px; color: var(--cream); margin-bottom: 6px; }
+.section-sub { font-size: 10px; letter-spacing: 3px; color: var(--cream3); text-transform: uppercase; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--seam); }
+.card { background: var(--ink2); border: 1px solid var(--seam); padding: 24px; margin-bottom: 20px; }
+.card-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.card-title::after { content: ''; flex: 1; height: 1px; background: var(--seam); }
+
+.player-status-card { background: var(--ink2); border: 1px solid var(--seam); padding: 40px; text-align: center; position: relative; overflow: hidden; margin-bottom: 20px; }
+.player-status-card.alive { border-top: 4px solid var(--alive); }
+.player-status-card.dead { border-top: 4px solid var(--blood); opacity: 0.7; }
+.player-status-card.immune { border-top: 4px solid #7db8ff; }
+.player-status-card.ghost { border-top: 4px solid var(--ghost2); }
+.status-label { font-size: 9px; letter-spacing: 4px; color: var(--cream3); text-transform: uppercase; margin-bottom: 8px; }
+.status-value { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; font-style: italic; letter-spacing: 4px; }
+.status-value.alive-text { color: var(--alive); }
+.status-value.dead-text { color: var(--blood); }
+.status-value.ghost-text { color: var(--ghost2); }
+.target-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--seam); }
+.target-name { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--blade); letter-spacing: 2px; margin-top: 8px; }
+.code-display { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; letter-spacing: 8px; color: var(--blood); text-align: center; padding: 24px; background: var(--blood3); border: 1px solid var(--blood2); text-shadow: 0 0 20px rgba(139,26,26,0.4); margin: 12px 0; }
+
+.mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-box { background: var(--ink2); border: 1px solid var(--seam); padding: 16px; text-align: center; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--cream); line-height: 1; }
+.stat-label { font-size: 9px; letter-spacing: 2px; color: var(--cream3); text-transform: uppercase; margin-top: 4px; }
+.stat-num.red { color: var(--blood); }
+.stat-num.green { color: var(--alive); }
+.stat-num.gold { color: var(--blade); }
+.stat-num.purple { color: var(--ghost2); }
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--seam); background: var(--ink3); font-weight: 700; }
+td { padding: 12px; border-bottom: 1px solid #161610; vertical-align: middle; }
+tr.dead-row td { opacity: 0.5; color: var(--cream3); }
+tr.immune-row td { color: #7db8ff; }
+tr.ghost-row td { color: var(--ghost2); }
+tr:hover td { background: rgba(255,255,255,0.01); }
+
+.kill-entry { padding: 12px 16px; border-bottom: 1px solid var(--seam); display: flex; gap: 12px; align-items: flex-start; font-size: 12px; }
+.kill-entry:last-child { border-bottom: none; }
+.kill-time { color: var(--cream3); font-size: 10px; white-space: nowrap; min-width: 90px; }
+
+.vote-card { background: var(--ink3); border: 1px solid var(--ghost); padding: 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.vote-bar { height: 3px; background: var(--seam); margin-top: 6px; position: relative; }
+.vote-bar-fill { height: 100%; background: var(--ghost); transition: width .4s; }
+
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--seam); margin-bottom: 24px; flex-wrap: wrap; }
+.tab { padding: 11px 18px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; font-weight: 700; background: none; border: none; }
+.tab.active { color: var(--cream); border-bottom-color: var(--blade); }
+
+.settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .settings-row { grid-template-columns: 1fr; } .mod-grid { grid-template-columns: 1fr 1fr; } }
+
+.mt8 { margin-top: 8px; } .mt16 { margin-top: 16px; } .mt24 { margin-top: 24px; }
+.mb8 { margin-bottom: 8px; } .mb16 { margin-bottom: 16px; }
+.flex { display: flex; align-items: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.gap8 { gap: 8px; } .gap12 { gap: 12px; }
+.text-dim { color: var(--cream3); font-size: 11px; }
+.text-red { color: var(--blood); }
+.text-gold { color: var(--blade); }
+.text-green { color: var(--alive); }
+.text-purple { color: var(--ghost2); }
+.full-width { width: 100%; }
+.divider { border: none; border-top: 1px solid var(--seam); margin: 20px 0; }
+
+.inline-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.inline-list li { padding: 4px 10px; background: var(--ink3); border: 1px solid var(--seam); font-size: 11px; display: flex; align-items: center; gap: 8px; }
+.inline-list li .remove { cursor: pointer; color: var(--blood); font-size: 14px; line-height: 1; font-weight: 700; }
+
+@keyframes riseUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.alert { padding: 12px 16px; font-size: 12px; margin-bottom: 14px; border-left: 3px solid; }
+.alert-red { background: var(--blood3); border-color: var(--blood); color: var(--blood); }
+.alert-purple { background: #1a1333; border-color: var(--ghost); color: var(--ghost2); }
+
+.hidden { display: none !important; }
+.chain-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--seam); font-size: 12px; }
+.chain-item:last-child { border-bottom: none; }
+
+.password-cell { font-family: monospace; font-size: 11px; background: var(--ink3); padding: 4px 8px; display: inline-block; }
+
+.player-chip { padding: 12px; background: var(--ink2); border: 1px solid var(--seam); text-align: center; font-size: 11px; }
+.player-chip.alive { border-left: 3px solid var(--alive); }
+.player-chip.dead { border-left: 3px solid var(--blood); opacity: 0.5; }
+.player-chip.ghost { border-left: 3px solid var(--ghost2); }
+
+.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.chip-name { margin-bottom: 4px; font-weight: 700; }
+.chip-status { font-size: 9px; letter-spacing: 2px; color: var(--cream3); text-transform: uppercase; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--seam); }
+
+textarea { resize: vertical; }
+</style>
+</head>
+<body>
+
+<!-- Firebase Init Gate -->
+<div id="firebase-init">
+  <div class="init-gate">
+    <div class="init-title">KNIVES OUT</div>
+    <div class="init-subtitle">Real-Time Coordination System</div>
+    
+    <div class="init-step">
+      <div class="init-step-title">1. Create Firebase (Free)</div>
+      Visit <code>firebase.google.com</code> → Create new project
+    </div>
+
+    <div class="init-step">
+      <div class="init-step-title">2. Enable Realtime Database</div>
+      In project console → Realtime Database → Create → Start in test mode
+    </div>
+
+    <div class="init-step">
+      <div class="init-step-title">3. Paste Your Config</div>
+      Project Settings (⚙) → "Your apps" → Create web app → Copy the config object below:
+    </div>
+
+    <textarea id="firebase-config" class="init-input" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
+
+    <button class="init-btn" onclick="initFirebase()">INITIALIZE</button>
+    <div id="firebase-error" style="color: var(--blood); font-size: 11px; margin-top: 12px; min-height: 14px;"></div>
+  </div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div id="page-login" class="page">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="logo">KNIVES<span>OUT</span></div>
+      <div class="logo-sub">Murder Mystery Coordination</div>
+
+      <div class="tabs-toggle">
+        <button class="tab-btn active" onclick="switchAuthTab('login')">LOGIN</button>
+        <button class="tab-btn" onclick="switchAuthTab('signup')">SIGN UP</button>
+      </div>
+
+      <div class="tab-content active" id="auth-login">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="your codename">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+        <div class="error-msg" id="login-error"></div>
+        <button class="btn btn-blade" onclick="doLogin()">ENTER GAME</button>
+      </div>
+
+      <div class="tab-content" id="auth-signup">
+        <label>New Username</label>
+        <input type="text" id="signup-username" placeholder="your codename">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="••••••••">
+        <label>Moderator Password (optional)</label>
+        <input type="password" id="signup-mod-password" placeholder="leave empty if regular player">
+        <div class="error-msg" id="signup-error"></div>
+        <button class="btn btn-blade" onclick="doSignup()">CREATE ACCOUNT</button>
+        <div class="text-dim mt16" style="text-align: center;">Moderator creates initial setup.<br>Players sign up here.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER PAGE -->
+<div id="page-player" class="page">
+  <nav>
+    <div class="nav-logo">KNIVES<span>OUT</span></div>
+    <div class="nav-right">
+      <span class="nav-user" id="nav-player-name"></span>
+      <span class="badge badge-alive" id="nav-player-badge">ALIVE</span>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()">EXIT</button>
+    </div>
+  </nav>
+  <div class="main">
+    <div style="max-width: 580px; margin: 0 auto;">
+      <div class="player-status-card alive" id="player-status-card">
+        <div class="status-label">YOUR STATUS</div>
+        <div class="status-value alive-text" id="player-status-text">ALIVE</div>
+        <div id="player-target-section" class="target-section">
+          <div class="status-label">YOUR TARGET</div>
+          <div class="target-name" id="player-target-name">—</div>
+          <div class="text-dim mt8" id="player-immune-note" style="display:none;">⚠ Target is immune</div>
+        </div>
+        <div id="player-ghost-section" class="target-section hidden">
+          <div class="alert alert-purple">👻 You are a GHOST. Hunt before time expires.</div>
+          <div class="status-label">GHOST TARGET</div>
+          <div class="target-name" id="player-ghost-target">—</div>
+          <div class="status-label mt16">TIME REMAINING</div>
+          <div style="font-family: 'Playfair Display', serif; font-size: 28px; color: var(--ghost2); letter-spacing: 2px;" id="ghost-timer-display">24:00:00</div>
+        </div>
+      </div>
+
+      <div id="player-voting-section" class="card hidden">
+        <div class="card-title">👻 GHOST REVIVAL VOTE</div>
+        <div class="alert alert-purple mb16">Dead players are voting. Select who to revive.</div>
+        <div id="vote-candidates-list"></div>
+        <div id="player-already-voted" class="text-dim hidden">✓ Your vote cast.</div>
+      </div>
+
+      <div id="player-kill-section" class="card">
+        <div class="card-title">⚔ CONFIRM A KILL</div>
+        <div class="tabs">
+          <button class="tab active" onclick="switchKillTab('killer')">I AM KILLER</button>
+          <button class="tab" onclick="switchKillTab('victim')">I AM VICTIM</button>
+        </div>
+        <div class="tab-content active" id="kill-tab-killer">
+          <p class="text-dim mb16">Generate a code. Show it to victim.</p>
+          <button class="btn btn-blood" style="width: 100%;" onclick="generateKillCode()">GENERATE KILL CODE</button>
+          <div id="kill-code-display" class="hidden mt16">
+            <div class="code-display" id="kill-code-value"></div>
+            <div class="text-dim mt8" style="text-align: center;">Expires in 10 minutes</div>
+          </div>
+        </div>
+        <div class="tab-content" id="kill-tab-victim">
+          <p class="text-dim mb16">Enter code from killer.</p>
+          <label>Code</label>
+          <input type="text" id="victim-code-input" placeholder="6-DIGIT CODE" style="text-transform: uppercase; letter-spacing: 4px; font-size: 18px; text-align: center;">
+          <div class="error-msg" id="victim-code-error"></div>
+          <button class="btn btn-blood" style="width: 100%;" onclick="confirmKillAsVictim()">CONFIRM DEAD</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS PAGE -->
+<div id="page-status" class="page">
+  <nav>
+    <div class="nav-logo">KNIVES<span>OUT</span></div>
+    <div class="nav-right">
+      <span class="nav-user" id="nav-status-name"></span>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()">EXIT</button>
+    </div>
+  </nav>
+  <div class="main">
+    <div class="section-title">GAME STATUS</div>
+    <div class="section-sub" id="status-game-name-display">Live board</div>
+    <div class="mod-grid" id="status-stats"></div>
+    <div class="card">
+      <div class="card-title">SUSPECTS</div>
+      <div class="status-grid" id="status-player-grid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">CASE LOG</div>
+      <div id="status-kill-log-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODERATOR PAGE -->
+<div id="page-mod" class="page">
+  <nav>
+    <div class="nav-logo">KNIVES<span>OUT</span></div>
+    <div class="nav-right">
+      <span class="nav-user" id="nav-mod-name"></span>
+      <span class="badge badge-mod">MOD</span>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()">EXIT</button>
+    </div>
+  </nav>
+  <div class="main">
+    <div class="section-title">MODERATOR CONTROL PANEL</div>
+    <div class="section-sub" id="mod-game-name-display">Full authority</div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchModTab('dashboard')">DASHBOARD</button>
+      <button class="tab" onclick="switchModTab('players')">PLAYERS & PASSWORDS</button>
+      <button class="tab" onclick="switchModTab('kills')">KILL LOG</button>
+      <button class="tab" onclick="switchModTab('immunity')">IMMUNITY</button>
+      <button class="tab" onclick="switchModTab('ghost')">GHOST RULE</button>
+      <button class="tab" onclick="switchModTab('settings')">SETTINGS</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="tab-content active" id="mod-tab-dashboard">
+      <div class="mod-grid" id="mod-stats"></div>
+      <div class="card">
+        <div class="card-title">KILL CHAIN ASSIGNMENTS</div>
+        <div id="mod-chain-visual" style="max-height: 400px; overflow-y: auto;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">RECENT KILLS</div>
+        <div id="mod-recent-kills"></div>
+      </div>
+    </div>
+
+    <!-- PLAYERS & PASSWORDS -->
+    <div class="tab-content" id="mod-tab-players">
+      <div class="card">
+        <div class="card-title">ALL PLAYERS & PASSWORDS</div>
+        <div class="text-dim mb16">✓ You can view all player passwords here. Share securely.</div>
+        <table id="mod-players-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Password</th>
+              <th>Status</th>
+              <th>Target</th>
+              <th>Kills</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="mod-players-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- KILL LOG -->
+    <div class="tab-content" id="mod-tab-kills">
+      <div class="card">
+        <div class="card-title">FULL CASE LOG</div>
+        <div id="mod-kill-log-full"></div>
+      </div>
+    </div>
+
+    <!-- IMMUNITY -->
+    <div class="tab-content" id="mod-tab-immunity">
+      <div class="card">
+        <div class="card-title">IMMUNITY CONFIGURATION</div>
+        <div class="settings-row mb16">
+          <div>
+            <label>Max Immune Players</label>
+            <input type="number" id="immunity-slots" min="0" max="50" value="2">
+          </div>
+          <div>
+            <label>Window Start</label>
+            <input type="time" id="immunity-start" value="20:00">
+          </div>
+        </div>
+        <div class="settings-row mb16">
+          <div>
+            <label>Window End</label>
+            <input type="time" id="immunity-end" value="22:00">
+          </div>
+        </div>
+        <button class="btn btn-blade" style="width: 100%;" onclick="saveImmunitySettings()">SAVE</button>
+
+        <hr class="divider">
+        <div class="card-title mt16">GRANT / REVOKE</div>
+        <div class="settings-row">
+          <div>
+            <label>Player</label>
+            <select id="immunity-player-select"></select>
+          </div>
+          <div style="display: flex; align-items: flex-end; gap: 8px;">
+            <button class="btn btn-blade" onclick="grantImmunity()">GRANT</button>
+            <button class="btn btn-outline" onclick="revokeImmunity()">REVOKE</button>
+          </div>
+        </div>
+
+        <div class="card-title mt16">IMMUNE NOW</div>
+        <ul class="inline-list" id="immune-players-list"></ul>
+      </div>
+    </div>
+
+    <!-- GHOST -->
+    <div class="tab-content" id="mod-tab-ghost">
+      <div class="card">
+        <div class="card-title">GHOST RULE SETUP</div>
+        <div class="settings-row mb16">
+          <div>
+            <label>Deaths to Unlock Ghost Vote</label>
+            <input type="number" id="ghost-death-threshold" min="1" max="50" value="3">
+          </div>
+          <div>
+            <label>Ghost Kill Window (hours)</label>
+            <input type="number" id="ghost-kill-hours" min="1" max="168" value="24">
+          </div>
+        </div>
+        <button class="btn btn-blade" style="width: 100%;" onclick="saveGhostSettings()">SAVE</button>
+
+        <hr class="divider">
+        <div class="flex-between mb16">
+          <div class="card-title" style="margin-bottom: 0;">VOTING</div>
+          <div class="flex gap8">
+            <button class="btn btn-alive btn-sm" onclick="openGhostVote()">OPEN</button>
+            <button class="btn btn-blood btn-sm" onclick="closeGhostVote()">CLOSE</button>
+          </div>
+        </div>
+        <div id="ghost-vote-status" class="text-dim mb16"></div>
+        <div id="ghost-vote-results" class="hidden">
+          <div class="card-title">VOTE TALLY</div>
+          <div id="ghost-vote-tally"></div>
+          <button class="btn btn-blood" style="width: 100%; margin-top: 16px;" onclick="reviveGhostWinner()">REVIVE WINNER</button>
+        </div>
+
+        <hr class="divider">
+        <div class="card-title">ACTIVE GHOSTS</div>
+        <div id="ghost-list-mod"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab-content" id="mod-tab-settings">
+      <div class="card">
+        <div class="card-title">GAME CONFIGURATION</div>
+        <div id="settings-game-started-warning" class="alert alert-gold hidden">⚠ Game running. Player list locked.</div>
+        <label>Game Name</label>
+        <input type="text" id="settings-game-name" placeholder="Operation Nightfall">
+        <label>Game Password (all players)</label>
+        <input type="text" id="settings-game-password" placeholder="shared password">
+        <label>Moderator Password</label>
+        <input type="text" id="settings-mod-password" placeholder="mod password">
+
+        <hr class="divider">
+        <div class="card-title">ADD PLAYERS</div>
+        <div id="settings-game-started-players">
+          <p class="text-dim mb16">Add before starting game.</p>
+          <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <input type="text" id="new-player-name" placeholder="Name" style="margin-bottom: 0; flex: 1;">
+            <input type="text" id="new-player-password" placeholder="Pass" style="margin-bottom: 0; flex: 1;">
+            <button class="btn btn-outline btn-sm" onclick="addPlayer()">ADD</button>
+          </div>
+          <ul class="inline-list mb16" id="players-pending-list"></ul>
+        </div>
+
+        <hr class="divider">
+        <div class="card-title">MODERATORS</div>
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <input type="text" id="new-mod-name" placeholder="Username" style="margin-bottom: 0; flex: 1;">
+          <button class="btn btn-outline btn-sm" onclick="addMod()">ADD</button>
+        </div>
+        <ul class="inline-list mb16" id="mods-list"></ul>
+
+        <hr class="divider">
+        <button class="btn btn-blade" style="width: 100%; margin-bottom: 16px;" id="start-game-btn" onclick="startGame()">⚔ START GAME</button>
+        <button class="btn btn-outline" style="width: 100%;" onclick="saveSettings()">SAVE SETTINGS</button>
+
+        <hr class="divider">
+        <div class="card-title">DANGER ZONE</div>
+        <button class="btn btn-blood" style="width: 100%;" onclick="resetGame()">WIPE ALL DATA</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let db = null, firebaseReady = false, currentUser = null, currentIsMod = false, currentPage = 'login', gameState = null;
+
+function initFirebase() {
+  const configText = document.getElementById('firebase-config').value.trim();
+  const errEl = document.getElementById('firebase-error');
+  errEl.textContent = '';
+  try {
+    const config = JSON.parse(configText);
+    firebase.initializeApp(config);
+    db = firebase.database();
+    firebaseReady = true;
+    document.getElementById('firebase-init').style.display = 'none';
+    setupGame();
+  } catch (e) {
+    errEl.textContent = 'Invalid JSON: ' + e.message;
+  }
+}
+
+function setupGame() {
+  if (!db) return;
+  db.ref('/game').on('value', snap => {
+    gameState = snap.val() || getDefaultState();
+    if (currentPage === 'player' && currentUser) {
+      const player = gameState.players.find(p => p.name === currentUser);
+      if (player) renderPlayerView(player);
+    } else if (currentPage === 'mod') {
+      renderModView();
+    } else if (currentPage === 'status') {
+      renderStatusPage();
+    }
+  });
+}
+
+function getDefaultState() {
+  return {
+    gameName: 'Operation Nightfall', gamePassword: 'shadow', modPassword: 'moderator',
+    gameStarted: false, players: [], mods: [], killLog: [], pendingCodes: {},
+    immunity: { slots: 2, start: '20:00', end: '22:00', active: false, immunePlayers: [] },
+    ghost: { deathThreshold: 3, killHours: 24, voteOpen: false, votedPlayers: [], revived: [] }
+  };
+}
+
+async function updateGameState(updates) {
+  if (!db) return;
+  return db.ref('/game').update(updates).catch(e => console.error(e));
+}
+
+async function getGameState() {
+  if (!db) return getDefaultState();
+  const snap = await db.ref('/game').once('value');
+  return snap.val() || getDefaultState();
+}
+
+function switchAuthTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('auth-' + tab).classList.add('active');
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  if (!username || !password) { errEl.textContent = 'Enter username and password.'; return; }
+
+  const state = await getGameState();
+  if (state.mods.includes(username) && password === state.modPassword) {
+    currentUser = username; currentIsMod = true; enterMod(); return;
+  }
+
+  const player = state.players.find(p => p.name.toLowerCase() === username.toLowerCase());
+  if (player && (password === player.password || password === state.gamePassword)) {
+    currentUser = player.name; currentIsMod = state.mods.includes(username); enterPlayer(); return;
+  }
+
+  errEl.textContent = 'Invalid credentials.';
+}
+
+async function doSignup() {
+  const username = document.getElementById('signup-username').value.trim();
+  const password = document.getElementById('signup-password').value.trim();
+  const modPass = document.getElementById('signup-mod-password').value.trim();
+  const errEl = document.getElementById('signup-error');
+  errEl.textContent = '';
+
+  if (!username || !password) { errEl.textContent = 'Enter username and password.'; return; }
+
+  const state = await getGameState();
+  if (state.players.find(p => p.name.toLowerCase() === username.toLowerCase())) { errEl.textContent = 'Username exists.'; return; }
+  if (state.mods.find(m => m.toLowerCase() === username.toLowerCase())) { errEl.textContent = 'Username exists as moderator.'; return; }
+
+  let isMod = false;
+  if (modPass) {
+    if (modPass !== state.modPassword) { errEl.textContent = 'Invalid moderator password.'; return; }
+    isMod = true;
+  }
+
+  const newPlayer = {
+    name: username, password, status: 'alive', target: null, kills: 0, lastKill: null,
+    ghostTarget: null, votes: null
+  };
+
+  state.players.push(newPlayer);
+  if (isMod && !state.mods.includes(username)) { state.mods.push(username); }
+
+  await updateGameState({ players: state.players, mods: state.mods });
+
+  currentUser = username; currentIsMod = isMod;
+  isMod ? enterMod() : enterPlayer();
+}
+
+function doLogout() {
+  currentUser = null; currentIsMod = false;
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('signup-username').value = '';
+  document.getElementById('signup-password').value = '';
+  document.getElementById('signup-mod-password').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('signup-error').textContent = '';
+  showPage('login');
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  currentPage = id;
+}
+
+function enterPlayer() {
+  const player = gameState.players.find(p => p.name === currentUser);
+  if (!player) return;
+  document.getElementById('nav-player-name').textContent = currentUser.toUpperCase();
+  renderPlayerView(player);
+  showPage('player');
+}
+
+function enterMod() {
+  document.getElementById('nav-mod-name').textContent = currentUser.toUpperCase();
+  renderModView();
+  showPage('mod');
+}
+
+function renderPlayerView(player) {
+  const card = document.getElementById('player-status-card');
+  const statusText = document.getElementById('player-status-text');
+  const badge = document.getElementById('nav-player-badge');
+  const targetSection = document.getElementById('player-target-section');
+  const ghostSection = document.getElementById('player-ghost-section');
+  const killSection = document.getElementById('player-kill-section');
+  const votingSection = document.getElementById('player-voting-section');
+
+  card.className = 'player-status-card';
+  ghostSection.classList.add('hidden');
+  targetSection.style.display = '';
+  killSection.style.display = '';
+  document.getElementById('player-immune-note').style.display = 'none';
+  votingSection.classList.add('hidden');
+
+  if (!gameState.gameStarted) {
+    statusText.textContent = 'WAITING';
+    statusText.className = 'status-value';
+    statusText.style.color = 'var(--blade)';
+    card.classList.add('alive');
+    targetSection.style.display = 'none';
+    killSection.style.display = 'none';
+    return;
+  }
+
+  if (player.status === 'dead') {
+    card.classList.add('dead');
+    statusText.textContent = 'ELIMINATED';
+    statusText.className = 'status-value dead-text';
+    badge.textContent = 'DEAD';
+    badge.className = 'badge badge-dead';
+    targetSection.style.display = 'none';
+    killSection.style.display = 'none';
+    if (gameState.ghost.voteOpen) {
+      votingSection.classList.remove('hidden');
+      renderVotingPanel(player);
+    }
+    return;
+  }
+
+  if (player.status === 'ghost') {
+    card.classList.add('ghost');
+    statusText.textContent = 'GHOST';
+    statusText.className = 'status-value ghost-text';
+    badge.textContent = 'GHOST';
+    badge.className = 'badge badge-ghost';
+    targetSection.style.display = 'none';
+    ghostSection.classList.remove('hidden');
+    document.getElementById('player-ghost-target').textContent = player.ghostTarget || player.target || '—';
+    const ghostEntry = gameState.ghost.revived.find(r => r.name === player.name);
+    if (ghostEntry) { updateGhostTimer(ghostEntry.expiresAt); }
+    return;
+  }
+
+  card.classList.add('alive');
+  statusText.textContent = 'ALIVE';
+  statusText.className = 'status-value alive-text';
+  badge.textContent = 'ALIVE';
+  badge.className = 'badge badge-alive';
+
+  const isImmune = gameState.immunity.immunePlayers.includes(player.name);
+  if (isImmune) {
+    card.className = 'player-status-card immune';
+    statusText.textContent = 'IMMUNE';
+    statusText.className = 'status-value';
+    statusText.style.color = '#7db8ff';
+    badge.textContent = 'IMMUNE';
+    badge.className = 'badge badge-immune';
+  }
+
+  document.getElementById('player-target-name').textContent = player.target || '—';
+  const target = gameState.players.find(p => p.name === player.target);
+  if (target && gameState.immunity.immunePlayers.includes(target.name)) {
+    document.getElementById('player-immune-note').style.display = '';
+  }
+}
+
+function renderVotingPanel(player) {
+  const list = document.getElementById('vote-candidates-list');
+  const alreadyVoted = document.getElementById('player-already-voted');
+  const hasVoted = gameState.ghost.votedPlayers.includes(player.name);
+
+  if (hasVoted) {
+    list.innerHTML = '';
+    alreadyVoted.classList.remove('hidden');
+    return;
+  }
+  alreadyVoted.classList.add('hidden');
+
+  const dead = gameState.players.filter(p => p.status === 'dead');
+  const voteCounts = {};
+  dead.forEach(p => { voteCounts[p.name] = 0; });
+  gameState.players.forEach(p => { if (p.votes && voteCounts[p.votes] !== undefined) voteCounts[p.votes]++; });
+  const total = Object.values(voteCounts).reduce((a, b) => a + b, 0);
+
+  list.innerHTML = dead.map(p => `
+    <div class="vote-card">
+      <div style="flex: 1;">
+        <div style="font-size: 13px;">${p.name}</div>
+        <div class="vote-bar"><div class="vote-bar-fill" style="width: ${total > 0 ? Math.round((voteCounts[p.name]||0)/total*100) : 0}%"></div></div>
+        <div class="text-dim" style="font-size: 10px; margin-top: 4px;">${voteCounts[p.name]||0} vote(s)</div>
+      </div>
+      <button class="btn btn-ghost-btn btn-sm" onclick="castVote('${p.name}')">VOTE</button>
+    </div>
+  `).join('');
+}
+
+async function castVote(targetName) {
+  const player = gameState.players.find(p => p.name === currentUser);
+  if (!player || player.status !== 'dead' || gameState.ghost.votedPlayers.includes(player.name)) return;
+  player.votes = targetName;
+  gameState.ghost.votedPlayers.push(player.name);
+  await updateGameState({ players: gameState.players, 'ghost/votedPlayers': gameState.ghost.votedPlayers });
+  renderVotingPanel(player);
+}
+
+function updateGhostTimer(expiresAt) {
+  const el = document.getElementById('ghost-timer-display');
+  const remaining = new Date(expiresAt) - new Date();
+  if (remaining <= 0) { el.textContent = 'EXPIRED'; return; }
+  const h = Math.floor(remaining / 3600000);
+  const m = Math.floor((remaining % 3600000) / 60000);
+  const s = Math.floor((remaining % 60000) / 1000);
+  el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  setTimeout(() => updateGhostTimer(expiresAt), 1000);
+}
+
+function switchKillTab(tab) {
+  document.querySelectorAll('#page-player .tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#page-player .tab-content').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('kill-tab-' + tab).classList.add('active');
+}
+
+async function generateKillCode() {
+  const player = gameState.players.find(p => p.name === currentUser);
+  if (!player || player.status === 'dead') return;
+  const target = player.status === 'ghost' ? (player.ghostTarget || player.target) : player.target;
+  if (!target) return;
+  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const expires = Date.now() + 10 * 60 * 1000;
+  gameState.pendingCodes[code] = { killer: player.name, victim: target, expires };
+  await updateGameState({ pendingCodes: gameState.pendingCodes });
+  document.getElementById('kill-code-value').textContent = code;
+  document.getElementById('kill-code-display').classList.remove('hidden');
+}
+
+async function confirmKillAsVictim() {
+  const code = document.getElementById('victim-code-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('victim-code-error');
+  errEl.textContent = '';
+  const entry = gameState.pendingCodes[code];
+  if (!entry) { errEl.textContent = 'Invalid code.'; return; }
+  if (Date.now() > entry.expires) { errEl.textContent = 'Code expired.'; return; }
+  if (entry.victim.toLowerCase() !== currentUser.toLowerCase()) { errEl.textContent = 'Code not for you.'; return; }
+
+  await processKill(entry.killer, entry.victim);
+  delete gameState.pendingCodes[code];
+  await updateGameState({ killLog: gameState.killLog, players: gameState.players, pendingCodes: gameState.pendingCodes });
+  document.getElementById('victim-code-input').value = '';
+  const player = gameState.players.find(p => p.name === currentUser);
+  renderPlayerView(player);
+  alert(`Kill confirmed. ${entry.victim} eliminated.`);
+}
+
+async function processKill(killerName, victimName) {
+  const killer = gameState.players.find(p => p.name === killerName);
+  const victim = gameState.players.find(p => p.name === victimName);
+  if (!killer || !victim) return;
+  const isGhostKill = killer.status === 'ghost';
+  killer.kills = (killer.kills || 0) + 1;
+  killer.lastKill = victimName;
+  if (isGhostKill) {
+    killer.ghostTarget = victim.target;
+    victim.status = 'dead';
+  } else {
+    killer.target = victim.target;
+    victim.status = 'dead';
+  }
+  gameState.killLog.push({ killer: killerName, victim: victimName, time: new Date().toISOString(), ghost: isGhostKill });
+}
+
+function renderStatusPage() {
+  const statsEl = document.getElementById('status-stats');
+  const gridEl = document.getElementById('status-player-grid');
+  const logEl = document.getElementById('status-kill-log-list');
+  document.getElementById('status-game-name-display').textContent = gameState.gameName;
+  const alive = gameState.players.filter(p => p.status === 'alive' || p.status === 'ghost').length;
+  const dead = gameState.players.filter(p => p.status === 'dead').length;
+  const total = gameState.players.length;
+  const ghosts = gameState.players.filter(p => p.status === 'ghost').length;
+  statsEl.innerHTML = `
+    <div class="stat-box"><div class="stat-num green">${alive}</div><div class="stat-label">Alive</div></div>
+    <div class="stat-box"><div class="stat-num red">${dead}</div><div class="stat-label">Dead</div></div>
+    <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
+    <div class="stat-box"><div class="stat-num purple">${ghosts}</div><div class="stat-label">Ghosts</div></div>
+  `;
+  gridEl.innerHTML = gameState.players.map(p => {
+    const isImmune = gameState.immunity.immunePlayers.includes(p.name);
+    const cls = p.status === 'dead' ? 'dead' : (isImmune ? 'immune' : (p.status === 'ghost' ? 'ghost' : 'alive'));
+    const statusLabel = p.status === 'dead' ? 'DEAD' : (isImmune ? 'IMMUNE' : (p.status === 'ghost' ? 'GHOST' : 'ALIVE'));
+    return `<div class="player-chip ${cls}"><div class="chip-name">${p.name}</div><div class="chip-status">${statusLabel}</div>${p.kills ? `<div class="text-dim" style="font-size: 10px; margin-top: 2px;">${p.kills} kill(s)</div>` : ''}</div>`;
+  }).join('');
+  logEl.innerHTML = gameState.killLog.length === 0
+    ? '<div class="text-dim" style="padding: 16px;">No kills yet.</div>'
+    : [...gameState.killLog].reverse().map(k => `
+      <div class="kill-entry">
+        <div class="kill-time">${formatTime(k.time)}</div>
+        <div><span style="color: var(--cream);">${k.killer}</span><span class="text-dim"> eliminated </span><span class="text-red">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
+      </div>`).join('');
+}
+
+function renderModView() {
+  document.getElementById('mod-game-name-display').textContent = gameState.gameName;
+  renderModDashboard();
+  renderModPlayers();
+  renderModKillLog();
+  renderModImmunity();
+  renderModGhost();
+  renderModSettings();
+}
+
+function renderModDashboard() {
+  const statsEl = document.getElementById('mod-stats');
+  const chainEl = document.getElementById('mod-chain-visual');
+  const recentEl = document.getElementById('mod-recent-kills');
+  const alive = gameState.players.filter(p => p.status === 'alive').length;
+  const dead = gameState.players.filter(p => p.status === 'dead').length;
+  const immune = gameState.immunity.immunePlayers.length;
+  const ghosts = gameState.players.filter(p => p.status === 'ghost').length;
+  statsEl.innerHTML = `
+    <div class="stat-box"><div class="stat-num green">${alive}</div><div class="stat-label">Alive</div></div>
+    <div class="stat-box"><div class="stat-num red">${dead}</div><div class="stat-label">Dead</div></div>
+    <div class="stat-box"><div class="stat-num gold">${immune}</div><div class="stat-label">Immune</div></div>
+    <div class="stat-box"><div class="stat-num purple">${ghosts}</div><div class="stat-label">Ghosts</div></div>
+    <div class="stat-box"><div class="stat-num">${gameState.players.length}</div><div class="stat-label">Total</div></div>
+    <div class="stat-box"><div class="stat-num red">${gameState.killLog.length}</div><div class="stat-label">Kills</div></div>
+  `;
+  chainEl.innerHTML = gameState.players.map(p => {
+    const isImmune = gameState.immunity.immunePlayers.includes(p.name);
+    const statusBadge = p.status === 'dead' ? '<span class="badge badge-dead">DEAD</span>' : (isImmune ? '<span class="badge badge-immune">IMMUNE</span>' : (p.status === 'ghost' ? '<span class="badge badge-ghost">GHOST</span>' : '<span class="badge badge-alive">ALIVE</span>'));
+    return `<div class="chain-item">${statusBadge}<span style="flex: 1;">${p.name}</span>${p.status !== 'dead' ? `<span style="color: var(--cream3);">→</span> <span class="text-gold">${p.target || '—'}</span>` : `<span class="text-dim">Target: ${p.target || '—'}</span>`}${p.kills ? `<span class="text-dim" style="margin-left: 12px;">⚔ ${p.kills}</span>` : ''}</div>`;
+  }).join('');
+  recentEl.innerHTML = gameState.killLog.length === 0
+    ? '<div class="text-dim" style="padding: 12px;">No kills yet.</div>'
+    : [...gameState.killLog].reverse().slice(0, 10).map(k => `
+      <div class="kill-entry">
+        <div class="kill-time">${formatTime(k.time)}</div>
+        <div><span style="color: var(--cream);">${k.killer}</span><span class="text-dim"> → </span><span class="text-red">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
+      </div>`).join('');
+}
+
+function renderModPlayers() {
+  const tbody = document.getElementById('mod-players-tbody');
+  tbody.innerHTML = gameState.players.map(p => {
+    const isImmune = gameState.immunity.immunePlayers.includes(p.name);
+    const rowClass = p.status === 'dead' ? 'dead-row' : (isImmune ? 'immune-row' : (p.status === 'ghost' ? 'ghost-row' : ''));
+    const statusBadge = p.status === 'dead' ? '<span class="badge badge-dead">DEAD</span>' : (isImmune ? '<span class="badge badge-immune">IMMUNE</span>' : (p.status === 'ghost' ? '<span class="badge badge-ghost">GHOST</span>' : '<span class="badge badge-alive">ALIVE</span>'));
+    return `<tr class="${rowClass}">
+      <td>${p.name}${gameState.mods.includes(p.name) ? ' <span class="badge badge-mod">MOD</span>' : ''}</td>
+      <td><span class="password-cell">${p.password}</span></td>
+      <td>${statusBadge}</td>
+      <td class="text-gold">${p.target || '—'}</td>
+      <td>${p.kills || 0}</td>
+      <td><div class="flex gap8">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${p.name}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${p.name}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${p.name}')">TARGET</button></div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderModKillLog() {
+  const el = document.getElementById('mod-kill-log-full');
+  el.innerHTML = gameState.killLog.length === 0
+    ? '<div class="text-dim" style="padding: 16px;">No kills yet.</div>'
+    : [...gameState.killLog].reverse().map((k, i) => `
+      <div class="kill-entry">
+        <div class="kill-time">${formatTime(k.time)}</div>
+        <div><span style="color: var(--cream);">${k.killer}</span><span class="text-dim"> eliminated </span><span class="text-red">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
+        <button class="btn btn-blood btn-sm" style="margin-left: auto;" onclick="modUndoKill(${gameState.killLog.length - 1 - i})">UNDO</button>
+      </div>`).join('');
+}
+
+function renderModImmunity() {
+  const sel = document.getElementById('immunity-player-select');
+  sel.innerHTML = gameState.players.filter(p => p.status !== 'dead').map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+  document.getElementById('immunity-slots').value = gameState.immunity.slots;
+  document.getElementById('immunity-start').value = gameState.immunity.start;
+  document.getElementById('immunity-end').value = gameState.immunity.end;
+  const listEl = document.getElementById('immune-players-list');
+  listEl.innerHTML = gameState.immunity.immunePlayers.length === 0
+    ? '<li style="border: none; color: var(--cream3);">No one is immune.</li>'
+    : gameState.immunity.immunePlayers.map(name => `<li>${name} <button class="remove" onclick="modRevokeImmunity('${name}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
+}
+
+function renderModGhost() {
+  const statusEl = document.getElementById('ghost-vote-status');
+  const resultsEl = document.getElementById('ghost-vote-results');
+  const listEl = document.getElementById('ghost-list-mod');
+  document.getElementById('ghost-death-threshold').value = gameState.ghost.deathThreshold;
+  document.getElementById('ghost-kill-hours').value = gameState.ghost.killHours;
+  const deadCount = gameState.players.filter(p => p.status === 'dead').length;
+  const threshold = gameState.ghost.deathThreshold;
+  statusEl.innerHTML = `Deaths: <span class="${deadCount >= threshold ? 'text-green' : 'text-dim'}">${deadCount}</span> / ${threshold}. Vote is <strong>${gameState.ghost.voteOpen ? '<span class="text-purple">OPEN</span>' : 'CLOSED'}</strong>.`;
+  if (gameState.ghost.voteOpen) {
+    resultsEl.classList.remove('hidden');
+    const tallyEl = document.getElementById('ghost-vote-tally');
+    const dead = gameState.players.filter(p => p.status === 'dead');
+    const voteCounts = {};
+    dead.forEach(p => { voteCounts[p.name] = 0; });
+    gameState.players.forEach(p => { if (p.votes && voteCounts[p.votes] !== undefined) voteCounts[p.votes]++; });
+    const total = Object.values(voteCounts).reduce((a,b) => a+b, 0);
+    tallyEl.innerHTML = dead.map(p => `
+      <div class="vote-card">
+        <div style="flex: 1;"><div>${p.name}</div><div class="vote-bar"><div class="vote-bar-fill" style="width: ${total > 0 ? Math.round((voteCounts[p.name]||0)/total*100) : 0}%"></div></div></div>
+        <div class="text-purple">${voteCounts[p.name]||0} vote(s)</div>
+      </div>`).join('');
+  } else {
+    resultsEl.classList.add('hidden');
+  }
+  listEl.innerHTML = gameState.ghost.revived.length === 0
+    ? '<div class="text-dim">No active ghosts.</div>'
+    : gameState.ghost.revived.map(g => {
+        const player = gameState.players.find(p => p.name === g.name);
+        const remaining = new Date(g.expiresAt) - new Date();
+        const h = Math.max(0, Math.floor(remaining / 3600000));
+        const m = Math.max(0, Math.floor((remaining % 3600000) / 60000));
+        return `<div class="kill-entry"><span class="badge badge-ghost">GHOST</span><span style="flex: 1;">${g.name}</span><span class="text-dim">Target: ${player?.ghostTarget || '—'}</span><span class="text-purple">${h}h ${m}m</span><button class="btn btn-blood btn-sm" onclick="modEliminateGhost('${g.name}')">KILL</button></div>`;
+      }).join('');
+}
+
+function renderModSettings() {
+  document.getElementById('settings-game-name').value = gameState.gameName;
+  document.getElementById('settings-game-password').value = gameState.gamePassword;
+  document.getElementById('settings-mod-password').value = gameState.modPassword;
+  const warning = document.getElementById('settings-game-started-warning');
+  const startBtn = document.getElementById('start-game-btn');
+  if (gameState.gameStarted) {
+    warning.classList.remove('hidden');
+    startBtn.textContent = '✓ GAME IN PROGRESS';
+    startBtn.disabled = true;
+    document.getElementById('settings-game-started-players').style.opacity = '0.5';
+    document.getElementById('settings-game-started-players').style.pointerEvents = 'none';
+  } else {
+    warning.classList.add('hidden');
+    startBtn.textContent = '⚔ START GAME';
+    startBtn.disabled = false;
+    document.getElementById('settings-game-started-players').style.opacity = '';
+    document.getElementById('settings-game-started-players').style.pointerEvents = '';
+  }
+  renderPendingPlayers();
+  renderModsList();
+}
+
+function renderPendingPlayers() {
+  const el = document.getElementById('players-pending-list');
+  el.innerHTML = gameState.players.map(p => `<li>${p.name} <button class="remove" onclick="removePlayer('${p.name}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
+}
+
+function renderModsList() {
+  const el = document.getElementById('mods-list');
+  el.innerHTML = gameState.mods.map(m => `<li>${m} <button class="remove" onclick="removeMod('${m}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
+}
+
+function switchModTab(tab) {
+  document.querySelectorAll('#page-mod .tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#page-mod .tab-content').forEach(t => t.classList.remove('active'));
+  const tabs = document.querySelectorAll('#page-mod .tab');
+  const tabMap = ['dashboard','players','kills','immunity','ghost','settings'];
+  const idx = tabMap.indexOf(tab);
+  if (tabs[idx]) tabs[idx].classList.add('active');
+  document.getElementById('mod-tab-' + tab).classList.add('active');
+}
+
+async function addPlayer() {
+  const name = document.getElementById('new-player-name').value.trim();
+  const pass = document.getElementById('new-player-password').value.trim();
+  if (!name || !pass) { alert('Enter name and password.'); return; }
+  if (gameState.players.find(p => p.name.toLowerCase() === name.toLowerCase())) { alert('Exists.'); return; }
+  gameState.players.push({ name, password: pass, status: 'alive', target: null, kills: 0, lastKill: null, ghostTarget: null, votes: null });
+  await updateGameState({ players: gameState.players });
+  document.getElementById('new-player-name').value = '';
+  document.getElementById('new-player-password').value = '';
+  renderPendingPlayers();
+}
+
+async function removePlayer(name) {
+  if (gameState.gameStarted) { alert('Cannot remove after game started.'); return; }
+  gameState.players = gameState.players.filter(p => p.name !== name);
+  await updateGameState({ players: gameState.players });
+  renderPendingPlayers();
+}
+
+async function addMod() {
+  const name = document.getElementById('new-mod-name').value.trim();
+  if (!name) return;
+  if (!gameState.mods.includes(name)) { gameState.mods.push(name); await updateGameState({ mods: gameState.mods }); }
+  document.getElementById('new-mod-name').value = '';
+  renderModsList();
+}
+
+async function removeMod(name) {
+  if (gameState.mods.length <= 1) { alert('Keep at least one moderator.'); return; }
+  gameState.mods = gameState.mods.filter(m => m !== name);
+  await updateGameState({ mods: gameState.mods });
+  renderModsList();
+}
+
+async function saveSettings() {
+  gameState.gameName = document.getElementById('settings-game-name').value.trim() || gameState.gameName;
+  gameState.gamePassword = document.getElementById('settings-game-password').value.trim() || gameState.gamePassword;
+  gameState.modPassword = document.getElementById('settings-mod-password').value.trim() || gameState.modPassword;
+  await updateGameState({ gameName: gameState.gameName, gamePassword: gameState.gamePassword, modPassword: gameState.modPassword });
+  alert('Saved.');
+}
+
+async function startGame() {
+  if (gameState.players.length < 2) { alert('Need at least 2 players.'); return; }
+  if (gameState.gameStarted) { alert('Already started.'); return; }
+  const shuffled = [...gameState.players].sort(() => Math.random() - 0.5);
+  for (let i = 0; i < shuffled.length; i++) {
+    const nextIdx = (i + 1) % shuffled.length;
+    const player = gameState.players.find(p => p.name === shuffled[i].name);
+    player.target = shuffled[nextIdx].name;
+  }
+  gameState.gameStarted = true;
+  await updateGameState({ gameStarted: true, players: gameState.players });
+  renderModView();
+  alert('Game started! Kill chain assigned.');
+}
+
+async function resetGame() {
+  if (!confirm('WIPE ALL DATA?')) return;
+  if (!confirm('Final warning. Permanent?')) return;
+  if (!db) return;
+  await db.ref('/game').remove();
+  gameState = getDefaultState();
+  doLogout();
+}
+
+async function saveImmunitySettings() {
+  const slots = parseInt(document.getElementById('immunity-slots').value);
+  gameState.immunity.slots = isNaN(slots) ? 2 : slots;
+  gameState.immunity.start = document.getElementById('immunity-start').value;
+  gameState.immunity.end = document.getElementById('immunity-end').value;
+  await updateGameState({ immunity: gameState.immunity });
+  renderModImmunity();
+  alert('Saved.');
+}
+
+async function grantImmunity() {
+  const name = document.getElementById('immunity-player-select').value;
+  if (!name) return;
+  if (gameState.immunity.immunePlayers.length >= gameState.immunity.slots) { alert(`Max ${gameState.immunity.slots} slots.`); return; }
+  if (!gameState.immunity.immunePlayers.includes(name)) {
+    gameState.immunity.immunePlayers.push(name);
+    await updateGameState({ immunity: gameState.immunity });
+  }
+  renderModImmunity();
+}
+
+async function revokeImmunity() {
+  const name = document.getElementById('immunity-player-select').value;
+  gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== name);
+  await updateGameState({ immunity: gameState.immunity });
+  renderModImmunity();
+}
+
+async function modRevokeImmunity(name) {
+  gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== name);
+  await updateGameState({ immunity: gameState.immunity });
+  renderModImmunity();
+}
+
+async function saveGhostSettings() {
+  gameState.ghost.deathThreshold = parseInt(document.getElementById('ghost-death-threshold').value) || 3;
+  gameState.ghost.killHours = parseInt(document.getElementById('ghost-kill-hours').value) || 24;
+  await updateGameState({ ghost: gameState.ghost });
+  alert('Saved.');
+}
+
+async function openGhostVote() {
+  const deadCount = gameState.players.filter(p => p.status === 'dead').length;
+  if (deadCount < gameState.ghost.deathThreshold) { alert(`Need ${gameState.ghost.deathThreshold} deaths. Currently ${deadCount}.`); return; }
+  gameState.ghost.voteOpen = true;
+  gameState.ghost.votedPlayers = [];
+  gameState.players.forEach(p => { p.votes = null; });
+  await updateGameState({ 'ghost/voteOpen': true, 'ghost/votedPlayers': [], players: gameState.players });
+  renderModGhost();
+}
+
+async function closeGhostVote() {
+  gameState.ghost.voteOpen = false;
+  await updateGameState({ 'ghost/voteOpen': false });
+  renderModGhost();
+}
+
+async function reviveGhostWinner() {
+  const dead = gameState.players.filter(p => p.status === 'dead');
+  const voteCounts = {};
+  dead.forEach(p => { voteCounts[p.name] = 0; });
+  gameState.players.forEach(p => { if (p.votes && voteCounts[p.votes] !== undefined) voteCounts[p.votes]++; });
+  const winner = Object.entries(voteCounts).sort((a, b) => b[1] - a[1])[0];
+  if (!winner || winner[1] === 0) { alert('No votes.'); return; }
+  const winnerName = winner[0];
+  const player = gameState.players.find(p => p.name === winnerName);
+  if (!player) return;
+  const alive = gameState.players.filter(p => p.status === 'alive' && p.name !== winnerName);
+  if (alive.length === 0) { alert('No alive targets.'); return; }
+  const newTarget = alive[Math.floor(Math.random() * alive.length)].name;
+  player.status = 'ghost';
+  player.ghostTarget = newTarget;
+  const expiresAt = new Date(Date.now() + gameState.ghost.killHours * 3600000).toISOString();
+  gameState.ghost.revived.push({ name: winnerName, expiresAt });
+  gameState.ghost.voteOpen = false;
+  await updateGameState({ players: gameState.players, ghost: gameState.ghost });
+  renderModView();
+  alert(`${winnerName} revived as GHOST targeting ${newTarget}!`);
+}
+
+async function modEliminateGhost(name) {
+  if (!confirm(`Kill ghost ${name}?`)) return;
+  const player = gameState.players.find(p => p.name === name);
+  if (player) player.status = 'dead';
+  gameState.ghost.revived = gameState.ghost.revived.filter(r => r.name !== name);
+  await updateGameState({ players: gameState.players, ghost: gameState.ghost });
+  renderModView();
+}
+
+async function modRevivePlayer(name) {
+  const player = gameState.players.find(p => p.name === name);
+  if (!player) return;
+  player.status = 'alive';
+  await updateGameState({ players: gameState.players });
+  renderModView();
+}
+
+async function modKillPlayer(name) {
+  if (!confirm(`Eliminate ${name}?`)) return;
+  const player = gameState.players.find(p => p.name === name);
+  if (!player) return;
+  const killer = gameState.players.find(p => p.target === name && p.status !== 'dead');
+  if (killer) killer.target = player.target;
+  player.status = 'dead';
+  gameState.killLog.push({ killer: 'MOD', victim: name, time: new Date().toISOString(), ghost: false });
+  await updateGameState({ players: gameState.players, killLog: gameState.killLog });
+  renderModView();
+}
+
+async function modEditTarget(name) {
+  const player = gameState.players.find(p => p.name === name);
+  if (!player) return;
+  const newTarget = prompt(`New target for ${name}:`, player.target || '');
+  if (!newTarget) return;
+  const targetPlayer = gameState.players.find(p => p.name.toLowerCase() === newTarget.toLowerCase());
+  if (!targetPlayer) { alert('Not found.'); return; }
+  player.target = targetPlayer.name;
+  await updateGameState({ players: gameState.players });
+  renderModView();
+}
+
+async function modUndoKill(index) {
+  if (!confirm('Undo kill?')) return;
+  const kill = gameState.killLog[index];
+  if (!kill) return;
+  const victim = gameState.players.find(p => p.name === kill.victim);
+  if (victim) victim.status = 'alive';
+  gameState.killLog.splice(index, 1);
+  await updateGameState({ players: gameState.players, killLog: gameState.killLog });
+  renderModView();
+}
+
+function formatTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Auto-focus on typing
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-password').addEventListener('keyup', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('login-username').addEventListener('keyup', e => { if (e.key === 'Enter') doLogin(); });
+});
+</script>
+</body>
+</html>

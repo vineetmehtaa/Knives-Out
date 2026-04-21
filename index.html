@@ -1062,9 +1062,14 @@ function renderPlayerView(player) {
              isPrep = now >= prepStart || now < start;
          }
          
-         // If it is past the end time, window is closed, and they missed the claim
-         if (!isPrep && !hasClaimed && now >= end) {
-             isMissed = true;
+         // Only show the missed timer if it's within 15 minutes of the window closing
+         if (!isPrep && !hasClaimed) {
+             let minsSinceEnd = now - end;
+             if (minsSinceEnd < 0) minsSinceEnd += 1440; // Handle midnight wrap-around
+             
+             if (minsSinceEnd >= 0 && minsSinceEnd < 15) {
+                 isMissed = true;
+             }
          }
       }
     }
@@ -1103,7 +1108,14 @@ function renderPlayerView(player) {
           endDate.setHours(endH, endM, 0, 0);
           
           let diff = istDate.getTime() - endDate.getTime();
-          if (diff < 0) diff = 0; 
+          
+          // Adjust for midnight crossing in live clock
+          if (diff < -80000000) { 
+              endDate.setDate(endDate.getDate() - 1);
+              diff = istDate.getTime() - endDate.getTime();
+          } else if (diff < 0) {
+              diff = 0; 
+          }
           
           const m = Math.floor(diff / 60000);
           const s = Math.floor((diff % 60000) / 1000);

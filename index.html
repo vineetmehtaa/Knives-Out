@@ -1536,11 +1536,15 @@ async function confirmGhost() {
   
   gameState.players.forEach(p => p.votes = null);
   
+  // Clean up ghost state properties locally BEFORE updating Firebase
+  gameState.ghost.phase = 0;
+  gameState.ghost.pendingGhost = null;
+  gameState.ghost.votedPlayers = []; // Wipe the voted list for the next time
+  
+  // Send the cleanly updated objects to the database
   await updateGameState({ 
       players: gameState.players, 
-      ghost: gameState.ghost, 
-      'ghost/phase': 0, 
-      'ghost/pendingGhost': null
+      ghost: gameState.ghost
   });
   
   renderModGhost();

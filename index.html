@@ -1104,7 +1104,7 @@ function renderVotingPanel(player) {
   } else if (phase === 2 && player.status === 'dead') {
     candidates = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
     title = `🎯 STAGE 2: TARGET FOR ${gameState.ghost.pendingGhost}`;
-    instruction = `Vote for the alive player that ${gameState.ghost.pendingGhost} must assassinate.`;
+    instruction = `Vote for the alive player that the ghost must assassinate.`;
   } else {
     section.classList.add('hidden');
     return;
@@ -1446,7 +1446,7 @@ function renderModGhost() {
 
     html += `
       <div class="flex-between mb16">
-        <div class="card-title" style="margin-bottom: 0;">STAGE 2: TARGET FOR ${gameState.ghost.pendingGhost}</div>
+        <div class="card-title" style="margin-bottom: 0;">TARGET FOR GHOST:</div>
         <button class="btn btn-blood btn-sm" onclick="cancelGhostVoting()">CANCEL VOTING</button>
       </div>
 

@@ -17,12 +17,12 @@
   --alive: #3a7d44; --alive2: #255c2d; --ghost: #5c4a8a; --ghost2: #9b85d4;
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { background: var(--ink); color: var(--cream2); font-family: 'Courier Prime', monospace; min-height: 100vh; line-height: 1.6; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { background: var(--ink); color: var(--cream2); font-family: 'Courier Prime', monospace; min-height: 100vh; line-height: 1.6; overflow-x: hidden; }
 body::after { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(255,255,255,0.012) 28px, rgba(255,255,255,0.012) 29px), repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(255,255,255,0.006) 28px, rgba(255,255,255,0.006) 29px); pointer-events: none; z-index: 0; }
 
 #firebase-init { position: fixed; inset: 0; background: var(--ink); z-index: 9999; display: none; align-items: center; justify-content: center; }
-.init-gate { width: min(500px, 90vw); background: var(--ink2); border: 2px solid var(--blade); padding: 40px; }
+.init-gate { width: min(500px, 90vw); background: var(--ink2); border: 2px solid var(--blade); padding: 40px; margin: 0 auto; }
 .init-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; color: var(--cream); margin-bottom: 8px; }
 .init-subtitle { color: var(--cream3); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px; }
 .init-step { background: var(--ink3); border-left: 3px solid var(--blade); padding: 16px; margin-bottom: 12px; font-size: 12px; line-height: 1.8; }
@@ -37,7 +37,7 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
 .page.active { display: block; }
 #page-login { align-items: center; justify-content: center; background: radial-gradient(ellipse at 40% 30%, #1a0d0d 0%, var(--ink) 65%); }
 #page-login.active { display: flex; }
-.login-wrap { width: min(420px, 92vw); animation: riseUp .55s ease; }
+.login-wrap { width: min(420px, 92vw); margin: 0 auto; animation: riseUp .55s ease; }
 .login-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--blade); padding: 48px 40px 42px; position: relative; }
 .logo { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 900; font-style: italic; color: var(--cream); text-align: center; letter-spacing: 3px; margin-bottom: 2px; }
 .logo span { color: var(--blade); }
@@ -52,12 +52,12 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
 .tab-content.active { display: block; }
 
 label { display: block; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); margin-bottom: 5px; margin-top: 4px; }
-input[type=text], input[type=password], select, textarea { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 13px; padding: 10px 12px; outline: none; transition: border-color .2s; margin-bottom: 14px; }
+input[type=text], input[type=password], select, textarea { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 13px; padding: 10px 12px; outline: none; transition: border-color .2s; margin-bottom: 14px; box-sizing: border-box; }
 input:focus, select:focus { border-color: var(--blade2); background: var(--ink4); }
 
 .error-msg { color: var(--blood); font-size: 11px; letter-spacing: 1px; margin: -10px 0 12px 0; min-height: 14px; }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 24px; font-family: monospace; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; border: none; transition: all .18s; font-weight: 700; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 24px; font-family: monospace; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; border: none; transition: all .18s; font-weight: 700; box-sizing: border-box; text-align: center; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .btn-blade { background: var(--blade); color: var(--ink); width: 100%; }
 .btn-blade:hover:not(:disabled) { background: #e0b020; }
@@ -71,12 +71,12 @@ input:focus, select:focus { border-color: var(--blade2); background: var(--ink4)
 .btn-outline:hover:not(:disabled) { border-color: var(--cream2); }
 .btn-sm { padding: 6px 12px; font-size: 10px; letter-spacing: 1.5px; }
 
-nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
+nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; }
 .nav-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; font-style: italic; letter-spacing: 2px; color: var(--cream); }
 .nav-logo span { color: var(--blade); }
-.nav-right { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--cream3); }
+.nav-right { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--cream3); flex-wrap: wrap; }
 .nav-user { color: var(--blade); letter-spacing: 1px; font-weight: 700; }
-.badge { display: inline-block; padding: 2px 8px; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+.badge { display: inline-block; padding: 2px 8px; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; white-space: nowrap; }
 .badge-mod { background: var(--blade); color: var(--ink); }
 .badge-alive { background: var(--alive2); color: var(--alive); border: 1px solid var(--alive2); }
 .badge-dead { background: var(--blood3); color: var(--blood); border: 1px solid var(--blood2); }
@@ -86,10 +86,10 @@ nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 
 .badge-conn-reconnecting { background: #2b220d; color: var(--blade); border: 1px solid #7a5c14; }
 .badge-conn-offline { background: var(--blood3); color: var(--blood); border: 1px solid var(--blood2); }
 
-.main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
-.section-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; font-style: italic; letter-spacing: 3px; color: var(--cream); margin-bottom: 6px; }
+.main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; width: 100%; }
+.section-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; font-style: italic; letter-spacing: 3px; color: var(--cream); margin-bottom: 6px; word-wrap: break-word; }
 .section-sub { font-size: 10px; letter-spacing: 3px; color: var(--cream3); text-transform: uppercase; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--seam); }
-.card { background: var(--ink2); border: 1px solid var(--seam); padding: 24px; margin-bottom: 20px; }
+.card { background: var(--ink2); border: 1px solid var(--seam); padding: 24px; margin-bottom: 20px; overflow-x: auto; }
 .card-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
 .card-title::after { content: ''; flex: 1; height: 1px; background: var(--seam); }
 
@@ -104,10 +104,10 @@ nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 
 .status-value.dead-text { color: var(--blood); }
 .status-value.ghost-text { color: var(--ghost2); }
 .target-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--seam); }
-.target-name { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--blade); letter-spacing: 2px; margin-top: 8px; }
-.code-display { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; letter-spacing: 8px; color: var(--blood); text-align: center; padding: 24px; background: var(--blood3); border: 1px solid var(--blood2); text-shadow: 0 0 20px rgba(139,26,26,0.4); margin: 12px 0; }
+.target-name { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--blade); letter-spacing: 2px; margin-top: 8px; word-wrap: break-word; }
+.code-display { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; letter-spacing: 8px; color: var(--blood); text-align: center; padding: 24px; background: var(--blood3); border: 1px solid var(--blood2); text-shadow: 0 0 20px rgba(139,26,26,0.4); margin: 12px 0; word-wrap: break-word; }
 
-.mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
 .stat-box { background: var(--ink2); border: 1px solid var(--seam); padding: 16px; text-align: center; }
 .stat-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--cream); line-height: 1; }
 .stat-label { font-size: 9px; letter-spacing: 2px; color: var(--cream3); text-transform: uppercase; margin-top: 4px; }
@@ -116,7 +116,8 @@ nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 
 .stat-num.gold { color: var(--blade); }
 .stat-num.purple { color: var(--ghost2); }
 
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; min-width: 600px; border-collapse: collapse; font-size: 12px; }
 th { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--seam); background: var(--ink3); font-weight: 700; }
 td { padding: 12px; border-bottom: 1px solid #161610; vertical-align: middle; }
 tr.dead-row td { opacity: 0.5; color: var(--cream3); }
@@ -124,32 +125,43 @@ tr.immune-row td { color: #7db8ff; }
 tr.ghost-row td { color: var(--ghost2); }
 tr:hover td { background: rgba(255,255,255,0.01); }
 
-.kill-entry { padding: 12px 16px; border-bottom: 1px solid var(--seam); display: flex; gap: 12px; align-items: flex-start; font-size: 12px; }
+.kill-entry { padding: 12px 16px; border-bottom: 1px solid var(--seam); display: flex; gap: 12px; align-items: flex-start; font-size: 12px; flex-wrap: wrap; }
 .kill-entry:last-child { border-bottom: none; }
 .kill-time { color: var(--cream3); font-size: 10px; white-space: nowrap; min-width: 90px; }
 
-.vote-card { background: var(--ink3); border: 1px solid var(--ghost); padding: 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.vote-card { background: var(--ink3); border: 1px solid var(--ghost); padding: 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .vote-bar { height: 3px; background: var(--seam); margin-top: 6px; position: relative; }
 .vote-bar-fill { height: 100%; background: var(--ghost); transition: width .4s; }
 
+.candidate-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 16px; }
+.candidate-list label { display: flex; align-items: center; gap: 8px; background: var(--ink3); padding: 10px; border: 1px solid var(--seam); cursor: pointer; text-transform: none; font-size: 11px; margin: 0; color: var(--cream); }
+.candidate-list label:hover { border-color: var(--ghost); }
+.candidate-list input[type="checkbox"] { width: auto; margin: 0; }
+
 .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--seam); margin-bottom: 24px; flex-wrap: wrap; }
-.tab { padding: 11px 18px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; font-weight: 700; background: none; border: none; }
+.tab { padding: 11px 18px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; font-weight: 700; background: none; border: none; flex: 1 1 auto; text-align: center; }
 .tab.active { color: var(--cream); border-bottom-color: var(--blade); }
 
 .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 600px) { .settings-row { grid-template-columns: 1fr; } .mod-grid { grid-template-columns: 1fr 1fr; } }
+
+@media (max-width: 600px) { 
+  .settings-row { grid-template-columns: 1fr; } 
+  .mod-grid { grid-template-columns: 1fr 1fr; } 
+  .player-status-card { padding: 24px 16px; }
+  .code-display { font-size: 32px; letter-spacing: 4px; padding: 16px; }
+}
+
 @media (max-width: 720px) {
-  nav { height: auto; padding: 10px 14px; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
-  .nav-right { width: 100%; justify-content: space-between; }
+  nav { height: auto; padding: 12px 14px; gap: 12px; align-items: flex-start; flex-direction: column; }
+  .nav-right { width: 100%; justify-content: flex-start; }
   .main { padding: 22px 14px; }
   .target-name { font-size: 28px; }
-  .code-display { font-size: 38px; letter-spacing: 5px; }
 }
 
 .mt8 { margin-top: 8px; } .mt16 { margin-top: 16px; } .mt24 { margin-top: 24px; }
 .mb8 { margin-bottom: 8px; } .mb16 { margin-bottom: 16px; }
 .flex { display: flex; align-items: center; }
-.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .gap8 { gap: 8px; } .gap12 { gap: 12px; }
 .text-dim { color: var(--cream3); font-size: 11px; }
 .text-red { color: var(--blood); }
@@ -165,13 +177,13 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 
 @keyframes riseUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-.alert { padding: 12px 16px; font-size: 12px; margin-bottom: 14px; border-left: 3px solid; }
+.alert { padding: 12px 16px; font-size: 12px; margin-bottom: 14px; border-left: 3px solid; word-wrap: break-word; }
 .alert-red { background: var(--blood3); border-color: var(--blood); color: var(--blood); }
 .alert-purple { background: #1a1333; border-color: var(--ghost); color: var(--ghost2); }
 .alert-gold { background: #2b220d; border-color: var(--blade); color: var(--blade); }
 
 .hidden { display: none !important; }
-.chain-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--seam); font-size: 12px; }
+.chain-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--seam); font-size: 12px; flex-wrap: wrap; }
 .chain-item:last-child { border-bottom: none; }
 
 .password-cell { font-family: monospace; font-size: 11px; background: var(--ink3); padding: 4px 8px; display: inline-block; }
@@ -181,17 +193,16 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 .player-chip.dead { border-left: 3px solid var(--blood); opacity: 0.5; }
 .player-chip.ghost { border-left: 3px solid var(--ghost2); }
 
-.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.chip-name { margin-bottom: 4px; font-weight: 700; }
+.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.chip-name { margin-bottom: 4px; font-weight: 700; word-wrap: break-word; }
 .chip-status { font-size: 9px; letter-spacing: 2px; color: var(--cream3); text-transform: uppercase; }
 
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: var(--ink); }
 ::-webkit-scrollbar-thumb { background: var(--seam); }
 
 textarea { resize: vertical; }
 
-/* NEW FEATURE STYLES */
 .secret-container { display: none; opacity: 0; transition: opacity 0.2s ease; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--seam); }
 .secret-container.visible { display: block; opacity: 1; }
 .hold-btn { width: 100%; padding: 16px; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream2); font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; user-select: none; -webkit-user-select: none; }
@@ -303,9 +314,9 @@ textarea { resize: vertical; }
 
       <div id="player-voting-section" class="card hidden">
         <div class="card-title">👻 GHOST REVIVAL VOTE</div>
-        <div class="alert alert-purple mb16">Dead players are voting. Select who to revive.</div>
+        <div class="alert alert-purple mb16" id="player-voting-alert">Select who to vote for.</div>
         <div id="vote-candidates-list"></div>
-        <div id="player-already-voted" class="text-dim hidden">✓ Your vote cast.</div>
+        <div id="player-already-voted" class="text-dim hidden mt16">✓ Your vote has been cast. Waiting for moderator to proceed.</div>
       </div>
 
       <div id="player-immunity-claim-section" class="card hidden">
@@ -403,19 +414,21 @@ textarea { resize: vertical; }
       <div class="card">
         <div class="card-title">ALL PLAYERS & PASSWORDS</div>
         <div class="text-dim mb16">✓ You can view all player passwords here. Share securely.</div>
-        <table id="mod-players-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Password</th>
-              <th>Status</th>
-              <th>Target</th>
-              <th>Kills</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="mod-players-tbody"></tbody>
-        </table>
+        <div class="table-responsive">
+          <table id="mod-players-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Password</th>
+                <th>Status</th>
+                <th>Target</th>
+                <th>Kills</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="mod-players-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -496,22 +509,8 @@ textarea { resize: vertical; }
         <button class="btn btn-blade" style="width: 100%;" onclick="saveGhostSettings()">SAVE</button>
 
         <hr class="divider">
-        <div class="flex-between mb16">
-          <div class="card-title" style="margin-bottom: 0;">2-STAGE VOTING</div>
-          <div class="flex gap8">
-            <button class="btn btn-alive btn-sm" onclick="openGhostVoteStage1()">START STAGE 1 (ALIVE VOTE)</button>
-            <button class="btn btn-blood btn-sm" onclick="closeGhostVote()">CANCEL / CLOSE</button>
-          </div>
-        </div>
-        <div id="ghost-vote-status" class="text-dim mb16"></div>
-        <div id="ghost-vote-results" class="hidden">
-          <div class="card-title" id="ghost-vote-phase-title">VOTE TALLY</div>
-          <div id="ghost-vote-tally"></div>
-          <div class="flex gap8 mt16">
-            <button class="btn btn-outline" style="flex: 1;" onclick="clearVotes()">CLEAR VOTES</button>
-            <button class="btn btn-blade" style="flex: 1;" id="ghost-proceed-btn" onclick="proceedGhostVote()">PROCEED</button>
-          </div>
-        </div>
+        
+        <div id="ghost-mod-panel"></div>
 
         <hr class="divider">
         <div class="card-title">ACTIVE GHOSTS</div>
@@ -600,6 +599,14 @@ function initFirebase() {
     firebaseReady = true;
     document.getElementById('firebase-init').style.display = 'none';
     setupGame();
+
+    // Routine ghost expiration checks every 30 seconds
+    setInterval(() => {
+       if (gameState && (currentIsMod || !gameState.mods.includes(currentUser))) {
+           reconcileGhostExpirations();
+       }
+    }, 30000);
+
   } catch (e) {
     errEl.textContent = 'Firebase init error: ' + e.message;
   }
@@ -676,6 +683,7 @@ function normalizeState(raw) {
     ...base.ghost,
     ...(merged.ghost || {}),
     phase: merged.ghost?.phase || 0,
+    candidates: merged.ghost?.candidates || [],
     pendingGhost: merged.ghost?.pendingGhost || null,
     votedPlayers: merged.ghost?.votedPlayers || []
   };
@@ -708,7 +716,7 @@ function getDefaultState() {
     gameStarted: false, players: [], mods: [], killLog: [], pendingCodes: {},
     settings: { immunityEnabled: true, ghostEnabled: true },
     immunity: { slots: 2, start: '20:00', end: '22:00', active: false, immunePlayers: [], claimWindowOpen: false, claims: {}, lastComputedAt: null, manualOverride: null },
-    ghost: { deathThreshold: 3, killHours: 24, phase: 0, pendingGhost: null, votedPlayers: [], revived: [] }
+    ghost: { deathThreshold: 3, killHours: 24, phase: 0, candidates: [], pendingGhost: null, votedPlayers: [], revived: [] }
   };
 }
 
@@ -960,6 +968,7 @@ function renderPlayerView(player) {
   revealBtn.style.display = 'block';
   document.getElementById('secret-info').classList.remove('visible');
 
+  // Player status rendering
   if (player.status === 'dead') {
     card.classList.add('dead');
     statusText.textContent = 'ELIMINATED';
@@ -970,9 +979,7 @@ function renderPlayerView(player) {
     killSection.style.display = 'none';
     claimSection.classList.add('hidden');
     
-    if (gameState.ghost.phase > 0) {
-      renderVotingPanel(player);
-    }
+    if (gameState.ghost.phase === 3) renderVotingPanel(player);
     return;
   }
 
@@ -997,12 +1004,13 @@ function renderPlayerView(player) {
   badge.textContent = 'ALIVE';
   badge.className = 'badge badge-alive';
 
-  if (gameState.ghost.phase > 0) {
+  if (gameState.ghost.phase === 1) {
     renderVotingPanel(player);
   }
 
   document.getElementById('player-target-name').textContent = player.target || '—';
 
+  // Immunity view
   const windowOpen = Boolean(gameState.immunity.claimWindowOpen);
   const sortedClaims = getSortedClaimEntries();
   const claimedIndex = sortedClaims.findIndex(([name]) => name === player.name);
@@ -1038,21 +1046,23 @@ function renderVotingPanel(player) {
   const section = document.getElementById('player-voting-section');
   const phase = gameState.ghost.phase || 0;
   
-  if (phase === 0) { section.classList.add('hidden'); return; }
-  
-  const hasVoted = gameState.ghost.votedPlayers.includes(player.name);
-  let candidates = [];
+  const hasVoted = Boolean(player.votes);
+  let candidatesNames = gameState.ghost.candidates || [];
   let title = '';
   let instruction = '';
 
+  // Mods cannot vote.
+  if (isModUser(gameState, player.name)) {
+      section.classList.add('hidden');
+      return;
+  }
+
   if (phase === 1 && player.status === 'alive') {
-    candidates = gameState.players.filter(p => p.status === 'dead');
-    title = '👻 VOTE TO REVIVE';
-    instruction = 'Vote for a dead player to bring them back as a ghost.';
-  } else if (phase === 2 && player.status === 'dead') {
-    candidates = gameState.players.filter(p => p.status === 'alive');
-    title = `🎯 ASSIGN TARGET FOR ${gameState.ghost.pendingGhost}`;
-    instruction = `Vote for who ${gameState.ghost.pendingGhost} must assassinate to steal their life.`;
+    title = '👻 STAGE 1: VOTE TO REVIVE';
+    instruction = 'Vote for one of the dead candidates selected by the moderator to give them a second chance.';
+  } else if (phase === 3 && player.status === 'dead') {
+    title = `🎯 STAGE 2: TARGET FOR ${gameState.ghost.pendingGhost}`;
+    instruction = `Vote for the alive player that ${gameState.ghost.pendingGhost} must assassinate.`;
   } else {
     section.classList.add('hidden');
     return;
@@ -1060,30 +1070,29 @@ function renderVotingPanel(player) {
 
   section.classList.remove('hidden');
   document.querySelector('#player-voting-section .card-title').textContent = title;
-  document.querySelector('#player-voting-section .alert').textContent = instruction;
+  document.getElementById('player-voting-alert').textContent = instruction;
 
   if (hasVoted) {
     list.innerHTML = '';
     document.getElementById('player-already-voted').classList.remove('hidden');
     return;
   }
+  
   document.getElementById('player-already-voted').classList.add('hidden');
-
-  list.innerHTML = candidates.map(p => `
+  list.innerHTML = candidatesNames.map(name => `
     <div class="vote-card">
-      <div style="flex: 1;">${p.name}</div>
-      <button class="btn btn-ghost-btn btn-sm" onclick="castVote('${p.name}')">VOTE</button>
+      <div style="flex: 1;">${name}</div>
+      <button class="btn btn-ghost-btn btn-sm" onclick="castVote('${name}')">VOTE</button>
     </div>
   `).join('');
 }
 
 async function castVote(targetName) {
   const player = gameState.players.find(p => p.name === currentUser);
-  if (!player || gameState.ghost.votedPlayers.includes(player.name)) return;
+  if (!player || player.votes) return;
   player.votes = targetName;
-  gameState.ghost.votedPlayers.push(player.name);
-  await updateGameState({ players: gameState.players, 'ghost/votedPlayers': gameState.ghost.votedPlayers });
-  renderVotingPanel(player);
+  await updateGameState({ players: gameState.players });
+  renderPlayerView(player);
 }
 
 function updateGhostTimer(expiresAt) {
@@ -1140,7 +1149,7 @@ async function confirmKillAsVictim() {
 
   await processKill(entry.killer, entry.victim);
   delete gameState.pendingCodes[code];
-  await updateGameState({ killLog: gameState.killLog, players: gameState.players, pendingCodes: gameState.pendingCodes });
+  await updateGameState({ killLog: gameState.killLog, players: gameState.players, pendingCodes: gameState.pendingCodes, ghost: gameState.ghost });
   document.getElementById('victim-code-input').value = '';
   
   const player = gameState.players.find(p => p.name === currentUser);
@@ -1160,10 +1169,20 @@ async function processKill(killerName, victimName) {
   const victimPrevTarget = victim.target || null;
   const victimPrevGhostTarget = victim.ghostTarget || null;
   
+  let previousAssassinName = null;
+
   killer.kills = (killer.kills || 0) + 1;
   killer.lastKill = victimName;
   
   if (isGhostKill) {
+    // Re-route the active kill chain: 
+    // Whoever was targeting the victim now targets the ghost
+    const previousAssassin = gameState.players.find(p => p.target === victimName && p.status === 'alive');
+    if (previousAssassin) {
+      previousAssassin.target = killer.name;
+      previousAssassinName = previousAssassin.name;
+    }
+    
     killer.status = 'alive';
     killer.target = victim.target;
     killer.ghostTarget = null;
@@ -1179,7 +1198,7 @@ async function processKill(killerName, victimName) {
     victim: victimName,
     time: new Date().toISOString(),
     ghost: isGhostKill,
-    undo: { killerPrevTarget, killerPrevGhostTarget, victimPrevStatus, victimPrevTarget, victimPrevGhostTarget }
+    undo: { killerPrevTarget, killerPrevGhostTarget, victimPrevStatus, victimPrevTarget, victimPrevGhostTarget, chainBypassKiller: previousAssassinName }
   });
 }
 
@@ -1188,17 +1207,21 @@ function renderStatusPage() {
   const gridEl = document.getElementById('status-player-grid');
   const logEl = document.getElementById('status-kill-log-list');
   document.getElementById('status-game-name-display').textContent = gameState.gameName;
-  const alive = gameState.players.filter(p => p.status === 'alive' || p.status === 'ghost').length;
-  const dead = gameState.players.filter(p => p.status === 'dead').length;
-  const total = gameState.players.length;
-  const ghosts = gameState.players.filter(p => p.status === 'ghost').length;
+  
+  // Isolate non-moderator players
+  const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
+  
+  const alive = realPlayers.filter(p => p.status === 'alive' || p.status === 'ghost').length;
+  const dead = realPlayers.filter(p => p.status === 'dead').length;
+  const total = realPlayers.length;
+  const ghosts = realPlayers.filter(p => p.status === 'ghost').length;
   statsEl.innerHTML = `
     <div class="stat-box"><div class="stat-num green">${alive}</div><div class="stat-label">Alive</div></div>
     <div class="stat-box"><div class="stat-num red">${dead}</div><div class="stat-label">Dead</div></div>
     <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
     <div class="stat-box"><div class="stat-num purple">${ghosts}</div><div class="stat-label">Ghosts</div></div>
   `;
-  gridEl.innerHTML = gameState.players.map(p => {
+  gridEl.innerHTML = realPlayers.map(p => {
     const isImmune = gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
     const cls = p.status === 'dead' ? 'dead' : (isImmune ? 'immune' : (p.status === 'ghost' ? 'ghost' : 'alive'));
     const statusLabel = p.status === 'dead' ? 'DEAD' : (isImmune ? 'IMMUNE' : (p.status === 'ghost' ? 'GHOST' : 'ALIVE'));
@@ -1227,19 +1250,23 @@ function renderModDashboard() {
   const statsEl = document.getElementById('mod-stats');
   const chainEl = document.getElementById('mod-chain-visual');
   const recentEl = document.getElementById('mod-recent-kills');
-  const alive = gameState.players.filter(p => p.status === 'alive').length;
-  const dead = gameState.players.filter(p => p.status === 'dead').length;
+  
+  // Isolate non-moderator players
+  const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
+  
+  const alive = realPlayers.filter(p => p.status === 'alive').length;
+  const dead = realPlayers.filter(p => p.status === 'dead').length;
   const immune = gameState.settings.immunityEnabled ? gameState.immunity.immunePlayers.length : 0;
-  const ghosts = gameState.players.filter(p => p.status === 'ghost').length;
+  const ghosts = realPlayers.filter(p => p.status === 'ghost').length;
   statsEl.innerHTML = `
     <div class="stat-box"><div class="stat-num green">${alive}</div><div class="stat-label">Alive</div></div>
     <div class="stat-box"><div class="stat-num red">${dead}</div><div class="stat-label">Dead</div></div>
     <div class="stat-box"><div class="stat-num gold">${immune}</div><div class="stat-label">Immune</div></div>
     <div class="stat-box"><div class="stat-num purple">${ghosts}</div><div class="stat-label">Ghosts</div></div>
-    <div class="stat-box"><div class="stat-num">${gameState.players.length}</div><div class="stat-label">Total</div></div>
+    <div class="stat-box"><div class="stat-num">${realPlayers.length}</div><div class="stat-label">Total</div></div>
     <div class="stat-box"><div class="stat-num red">${gameState.killLog.length}</div><div class="stat-label">Kills</div></div>
   `;
-  chainEl.innerHTML = gameState.players.map(p => {
+  chainEl.innerHTML = realPlayers.map(p => {
     const isImmune = gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
     const statusBadge = p.status === 'dead' ? '<span class="badge badge-dead">DEAD</span>' : (isImmune ? '<span class="badge badge-immune">IMMUNE</span>' : (p.status === 'ghost' ? '<span class="badge badge-ghost">GHOST</span>' : '<span class="badge badge-alive">ALIVE</span>'));
     return `<div class="chain-item">${statusBadge}<span style="flex: 1;">${p.name}</span>${p.status !== 'dead' ? `<span style="color: var(--cream3);">→</span> <span class="text-gold">${p.ghostTarget || p.target || '—'}</span>` : `<span class="text-dim">Target: ${p.target || '—'}</span>`}${p.kills ? `<span class="text-dim" style="margin-left: 12px;">⚔ ${p.kills}</span>` : ''}</div>`;
@@ -1255,7 +1282,9 @@ function renderModDashboard() {
 
 function renderModPlayers() {
   const tbody = document.getElementById('mod-players-tbody');
-  tbody.innerHTML = gameState.players.map(p => {
+  const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
+  
+  tbody.innerHTML = realPlayers.map(p => {
     const isImmune = gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
     const rowClass = p.status === 'dead' ? 'dead-row' : (isImmune ? 'immune-row' : (p.status === 'ghost' ? 'ghost-row' : ''));
     const statusBadge = p.status === 'dead' ? '<span class="badge badge-dead">DEAD</span>' : (isImmune ? '<span class="badge badge-immune">IMMUNE</span>' : (p.status === 'ghost' ? '<span class="badge badge-ghost">GHOST</span>' : '<span class="badge badge-alive">ALIVE</span>'));
@@ -1302,35 +1331,118 @@ function renderModImmunity() {
 }
 
 function renderModGhost() {
-  const statusEl = document.getElementById('ghost-vote-status');
-  const resultsEl = document.getElementById('ghost-vote-results');
-  const listEl = document.getElementById('ghost-list-mod');
-  
   document.getElementById('ghost-death-threshold').value = gameState.ghost.deathThreshold;
   document.getElementById('ghost-kill-hours').value = gameState.ghost.killHours;
   
+  const panel = document.getElementById('ghost-mod-panel');
   const phase = gameState.ghost.phase || 0;
-  statusEl.innerHTML = phase === 0 ? 'Voting is <strong>CLOSED</strong>.' : `Voting is <strong>OPEN (STAGE ${phase})</strong>.`;
   
-  if (phase > 0) {
-    resultsEl.classList.remove('hidden');
-    document.getElementById('ghost-vote-phase-title').textContent = phase === 1 ? 'STAGE 1: ALIVE VOTING FOR DEAD' : `STAGE 2: DEAD VOTING FOR ${gameState.ghost.pendingGhost}'S TARGET`;
-    document.getElementById('ghost-proceed-btn').textContent = phase === 1 ? 'PROCEED TO TARGET VOTE' : 'REVIVE GHOST';
+  let html = '';
+  
+  if (phase === 0) {
+    const deadPlayers = gameState.players.filter(p => p.status === 'dead' && !isModUser(gameState, p.name));
+    html += `
+      <div class="flex-between mb16">
+        <div class="card-title" style="margin-bottom: 0;">GHOST VOTING STAGES</div>
+      </div>
+      <p class="text-dim mb16">Phase 0: System Idle. Select which dead players can be voted to return.</p>
+      <div class="candidate-list" id="ghost-phase1-candidates">
+        ${deadPlayers.map(p => `<label><input type="checkbox" value="${p.name}"> ${p.name}</label>`).join('')}
+      </div>
+      ${deadPlayers.length > 0 
+        ? `<button class="btn btn-alive full-width" onclick="startGhostPhase1()">START STAGE 1 (ALIVE VOTING)</button>` 
+        : `<div class="alert alert-purple">No dead players available to revive.</div>`}
+    `;
+  } 
+  else if (phase === 1) {
+    const aliveVoters = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
+    const voted = aliveVoters.filter(p => p.votes);
+    const pending = aliveVoters.filter(p => !p.votes);
     
-    const voters = phase === 1 ? gameState.players.filter(p => p.status === 'alive') : gameState.players.filter(p => p.status === 'dead');
     const voteCounts = {};
-    voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
-    const total = Object.values(voteCounts).reduce((a,b) => a+b, 0);
-    
-    document.getElementById('ghost-vote-tally').innerHTML = Object.entries(voteCounts).sort((a,b)=>b[1]-a[1]).map(([name, count]) => `
-      <div class="vote-card">
-        <div style="flex: 1;"><div>${name}</div><div class="vote-bar"><div class="vote-bar-fill" style="width: ${total > 0 ? Math.round(count/total*100) : 0}%"></div></div></div>
-        <div class="text-purple">${count} vote(s)</div>
-      </div>`).join('') || '<div class="text-dim">Waiting for votes...</div>';
-  } else {
-    resultsEl.classList.add('hidden');
-  }
+    voted.forEach(p => { voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
+    const total = voted.length;
 
+    html += `
+      <div class="flex-between mb16">
+        <div class="card-title" style="margin-bottom: 0;">STAGE 1: ALIVE VOTING FOR GHOST</div>
+        <button class="btn btn-blood btn-sm" onclick="cancelGhostVoting()">CANCEL VOTING</button>
+      </div>
+      
+      <div class="card-title mt16">VOTER ACTIVITY</div>
+      <div class="mb16" style="font-size: 11px;">
+        <span class="text-green">VOTED (${voted.length}):</span> ${voted.map(p=>p.name).join(', ') || 'None'}<br>
+        <span class="text-dim">PENDING (${pending.length}):</span> ${pending.map(p=>p.name).join(', ') || 'None'}
+      </div>
+
+      <div class="card-title">VOTE TALLY</div>
+      <div class="mb16">
+        ${Object.entries(voteCounts).sort((a,b)=>b[1]-a[1]).map(([name, count]) => `
+          <div class="vote-card">
+            <div style="flex: 1;"><div>${name}</div><div class="vote-bar"><div class="vote-bar-fill" style="width: ${total > 0 ? Math.round(count/total*100) : 0}%"></div></div></div>
+            <div class="text-purple">${count} vote(s)</div>
+          </div>`).join('') || '<div class="text-dim">Waiting for votes...</div>'}
+      </div>
+      <div class="flex gap8">
+        <button class="btn btn-outline" style="flex: 1;" onclick="clearVotes()">CLEAR VOTES / REDO</button>
+        <button class="btn btn-blade" style="flex: 1;" onclick="proceedPhase1()">PROCEED TO STAGE 2 SETUP</button>
+      </div>
+    `;
+  }
+  else if (phase === 2) {
+    const alivePlayers = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
+    html += `
+      <div class="flex-between mb16">
+        <div class="card-title" style="margin-bottom: 0;">STAGE 2 SETUP</div>
+        <button class="btn btn-blood btn-sm" onclick="cancelGhostVoting()">CANCEL VOTING</button>
+      </div>
+      <div class="alert alert-purple mb16"><strong>${gameState.ghost.pendingGhost}</strong> won Stage 1 and will return as a ghost! Select alive players to be their potential targets.</div>
+      
+      <div class="candidate-list" id="ghost-phase2-candidates">
+        ${alivePlayers.map(p => `<label><input type="checkbox" value="${p.name}"> ${p.name}</label>`).join('')}
+      </div>
+      <button class="btn btn-alive full-width" onclick="startGhostPhase3()">START STAGE 2 (DEAD VOTING)</button>
+    `;
+  }
+  else if (phase === 3) {
+    const deadVoters = gameState.players.filter(p => p.status === 'dead' && !isModUser(gameState, p.name));
+    const voted = deadVoters.filter(p => p.votes);
+    const pending = deadVoters.filter(p => !p.votes);
+    
+    const voteCounts = {};
+    voted.forEach(p => { voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
+    const total = voted.length;
+
+    html += `
+      <div class="flex-between mb16">
+        <div class="card-title" style="margin-bottom: 0;">STAGE 2: TARGET FOR ${gameState.ghost.pendingGhost}</div>
+        <button class="btn btn-blood btn-sm" onclick="cancelGhostVoting()">CANCEL VOTING</button>
+      </div>
+
+      <div class="card-title mt16">VOTER ACTIVITY</div>
+      <div class="mb16" style="font-size: 11px;">
+        <span class="text-green">VOTED (${voted.length}):</span> ${voted.map(p=>p.name).join(', ') || 'None'}<br>
+        <span class="text-dim">PENDING (${pending.length}):</span> ${pending.map(p=>p.name).join(', ') || 'None'}
+      </div>
+
+      <div class="card-title">VOTE TALLY</div>
+      <div class="mb16">
+        ${Object.entries(voteCounts).sort((a,b)=>b[1]-a[1]).map(([name, count]) => `
+          <div class="vote-card">
+            <div style="flex: 1;"><div>${name}</div><div class="vote-bar"><div class="vote-bar-fill" style="width: ${total > 0 ? Math.round(count/total*100) : 0}%"></div></div></div>
+            <div class="text-purple">${count} vote(s)</div>
+          </div>`).join('') || '<div class="text-dim">Waiting for votes...</div>'}
+      </div>
+      <div class="flex gap8">
+        <button class="btn btn-outline" style="flex: 1;" onclick="clearVotes()">CLEAR VOTES / REDO</button>
+        <button class="btn btn-blade" style="flex: 1;" onclick="confirmGhost()">CONFIRM GHOST AND TARGET</button>
+      </div>
+    `;
+  }
+  
+  panel.innerHTML = html;
+
+  const listEl = document.getElementById('ghost-list-mod');
   listEl.innerHTML = gameState.ghost.revived.length === 0
     ? '<div class="text-dim">No active ghosts.</div>'
     : gameState.ghost.revived.map(g => {
@@ -1340,6 +1452,79 @@ function renderModGhost() {
         const m = Math.max(0, Math.floor((remaining % 3600000) / 60000));
         return `<div class="kill-entry"><span class="badge badge-ghost">GHOST</span><span style="flex: 1;">${g.name}</span><span class="text-dim">Target: ${player?.ghostTarget || '—'}</span><span class="text-purple">${h}h ${m}m</span><button class="btn btn-blood btn-sm" onclick="modEliminateGhost('${g.name}')">KILL</button></div>`;
       }).join('');
+}
+
+// GHOST VOTING LOGIC - MODERATOR
+async function startGhostPhase1() {
+  if (!gameState.settings.ghostEnabled) return alert('Ghost voting is disabled in settings.');
+  const cbs = document.querySelectorAll('#ghost-phase1-candidates input:checked');
+  const candidates = Array.from(cbs).map(c => c.value);
+  if (candidates.length === 0) return alert('Select at least one candidate for Stage 1.');
+  
+  gameState.players.forEach(p => p.votes = null);
+  await updateGameState({ 'ghost/phase': 1, 'ghost/candidates': candidates, 'ghost/pendingGhost': null, players: gameState.players });
+  renderModGhost();
+}
+
+async function proceedPhase1() {
+  const voters = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
+  const voteCounts = {};
+  voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
+  
+  const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+  if (sorted.length === 0) return alert('No votes cast yet.');
+  if (sorted.length > 1 && sorted[0][1] === sorted[1][1]) return alert('TIE DETECTED! Use "CLEAR VOTES / REDO" to restart this stage, or decide manually.');
+
+  const winnerName = sorted[0][0];
+  gameState.players.forEach(p => p.votes = null);
+  await updateGameState({ 'ghost/phase': 2, 'ghost/pendingGhost': winnerName, 'ghost/candidates': [], players: gameState.players });
+  renderModGhost();
+}
+
+async function startGhostPhase3() {
+  const cbs = document.querySelectorAll('#ghost-phase2-candidates input:checked');
+  const candidates = Array.from(cbs).map(c => c.value);
+  if (candidates.length === 0) return alert('Select at least one candidate for Stage 2.');
+  
+  gameState.players.forEach(p => p.votes = null);
+  await updateGameState({ 'ghost/phase': 3, 'ghost/candidates': candidates, players: gameState.players });
+  renderModGhost();
+}
+
+async function confirmGhost() {
+  const voters = gameState.players.filter(p => p.status === 'dead' && !isModUser(gameState, p.name));
+  const voteCounts = {};
+  voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
+  
+  const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+  if (sorted.length === 0) return alert('No votes cast yet.');
+  if (sorted.length > 1 && sorted[0][1] === sorted[1][1]) return alert('TIE DETECTED! Use "CLEAR VOTES / REDO" to restart this stage, or decide manually.');
+
+  const targetName = sorted[0][0];
+  const player = gameState.players.find(p => p.name === gameState.ghost.pendingGhost);
+  if (!player) return;
+  
+  player.status = 'ghost';
+  player.ghostTarget = targetName;
+  const expiresAt = new Date(Date.now() + gameState.ghost.killHours * 3600000).toISOString();
+  gameState.ghost.revived.push({ name: player.name, expiresAt });
+  gameState.players.forEach(p => p.votes = null);
+  
+  await updateGameState({ players: gameState.players, ghost: gameState.ghost, 'ghost/phase': 0 });
+  renderModGhost();
+}
+
+async function clearVotes() {
+  gameState.players.forEach(p => p.votes = null);
+  await updateGameState({ players: gameState.players });
+  renderModGhost();
+}
+
+async function cancelGhostVoting() {
+  if(!confirm("Cancel all voting and return to phase 0?")) return;
+  gameState.players.forEach(p => p.votes = null);
+  await updateGameState({ 'ghost/phase': 0, 'ghost/pendingGhost': null, 'ghost/candidates': [], players: gameState.players });
+  renderModGhost();
 }
 
 function renderModSettings() {
@@ -1546,71 +1731,13 @@ async function saveGhostSettings() {
   alert('Saved.');
 }
 
-async function openGhostVoteStage1() {
-  if (!gameState.settings.ghostEnabled) { alert('Ghost voting is disabled in settings.'); return; }
-  const deadCount = gameState.players.filter(p => p.status === 'dead').length;
-  if (deadCount < gameState.ghost.deathThreshold) { alert(`Need ${gameState.ghost.deathThreshold} deaths. Currently ${deadCount}.`); return; }
-  
-  gameState.players.forEach(p => { p.votes = null; });
-  await updateGameState({ 'ghost/phase': 1, 'ghost/votedPlayers': [], 'ghost/pendingGhost': null, players: gameState.players });
-  renderModGhost();
-}
-
-async function closeGhostVote() {
-  await updateGameState({ 'ghost/phase': 0, 'ghost/pendingGhost': null });
-  renderModGhost();
-}
-
-async function clearVotes() {
-  gameState.players.forEach(p => { p.votes = null; });
-  await updateGameState({ players: gameState.players, 'ghost/votedPlayers': [] });
-  renderModGhost();
-}
-
-async function proceedGhostVote() {
-  const phase = gameState.ghost.phase;
-  const voters = phase === 1 ? gameState.players.filter(p => p.status === 'alive') : gameState.players.filter(p => p.status === 'dead');
-  
-  const voteCounts = {};
-  voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
-  
-  const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
-  if (sorted.length === 0) { alert('No votes cast yet.'); return; }
-  
-  if (sorted.length > 1 && sorted[0][1] === sorted[1][1]) {
-    alert('TIE DETECTED! Instruct players to resolve the tie, or click Clear Votes to start this phase over.');
-    return;
-  }
-
-  const winnerName = sorted[0][0];
-
-  if (phase === 1) {
-    gameState.players.forEach(p => { p.votes = null; });
-    await updateGameState({ 
-      'ghost/phase': 2, 
-      'ghost/pendingGhost': winnerName, 
-      'ghost/votedPlayers': [], 
-      players: gameState.players 
-    });
-    alert(`${winnerName} chosen to be revived! Now moving to Stage 2: Target Selection.`);
-  } else if (phase === 2) {
-    const player = gameState.players.find(p => p.name === gameState.ghost.pendingGhost);
-    if (!player) return;
-    
-    player.status = 'ghost';
-    player.ghostTarget = winnerName;
-    const expiresAt = new Date(Date.now() + gameState.ghost.killHours * 3600000).toISOString();
-    gameState.ghost.revived.push({ name: player.name, expiresAt });
-    
-    await updateGameState({ players: gameState.players, ghost: gameState.ghost, 'ghost/phase': 0 });
-    alert(`${player.name} revived as GHOST targeting ${winnerName}!`);
-  }
-}
-
 async function modEliminateGhost(name) {
   if (!confirm(`Kill ghost ${name}?`)) return;
   const player = gameState.players.find(p => p.name === name);
-  if (player) player.status = 'dead';
+  if (player) {
+    player.status = 'dead';
+    player.ghostTarget = null;
+  }
   gameState.ghost.revived = gameState.ghost.revived.filter(r => r.name !== name);
   await updateGameState({ players: gameState.players, ghost: gameState.ghost });
   renderModView();
@@ -1683,10 +1810,13 @@ async function modUndoKill(index) {
       killer.kills = Math.max(0, (killer.kills || 0) - 1);
       if (killer.lastKill === kill.victim) killer.lastKill = null;
     }
-  } else if (undo?.chainBypassKiller) {
+  } 
+  
+  if (undo?.chainBypassKiller) {
     const chainBypassKiller = gameState.players.find(p => p.name === undo.chainBypassKiller);
     if (chainBypassKiller) chainBypassKiller.target = undo.killerPrevTarget ?? chainBypassKiller.target;
   }
+  
   gameState.killLog.splice(index, 1);
   await updateGameState({ players: gameState.players, killLog: gameState.killLog });
   renderModView();

@@ -61,8 +61,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--blade2); backgro
 @media (min-width: 480px) { .btn { width: auto; } }
 .btn-full { width: 100% !important; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
-.btn-blade { background: var(--blade); color: var(--ink); }
+.btn-blade { background: var(--blade); color: var(--ink); transition: all 0.3s ease; }
 .btn-blade:hover:not(:disabled) { background: #e0b020; }
+.btn-glow { box-shadow: 0 0 15px 2px var(--blade); animation: pulseGlow 1.5s infinite; opacity: 1 !important; }
+@keyframes pulseGlow { 0% { box-shadow: 0 0 10px 1px var(--blade); } 50% { box-shadow: 0 0 20px 4px #e0b020; } 100% { box-shadow: 0 0 10px 1px var(--blade); } }
 .btn-blood { background: var(--blood); color: var(--cream); }
 .btn-blood:hover:not(:disabled) { background: #a02020; }
 .btn-alive { background: var(--alive2); color: var(--alive); border: 1px solid var(--alive); }
@@ -776,8 +778,11 @@ function findPlayerByName(state, username) {
 }
 
 function getCurrentMinutesOfDay() {
+  // Lock clock strictly to Indian Standard Time (IST)
   const now = new Date();
-  return now.getHours() * 60 + now.getMinutes();
+  const istString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const istDate = new Date(istString);
+  return istDate.getHours() * 60 + istDate.getMinutes();
 }
 
 function parseTimeToMinutes(raw) {
@@ -1058,15 +1063,20 @@ function renderPlayerView(player) {
   claimSection.classList.toggle('hidden', !showSection);
 
   if (showSection) {
+    claimBtn.classList.remove('btn-glow'); // Clear glow
     if (hasClaimed) {
-      claimStatus.textContent = `Application for immunity has been applied.`;
+      claimStatus.textContent = `Immunity was submitted for the day.`;
       claimBtn.disabled = true;
+      claimBtn.style.opacity = '0.4';
     } else if (isPrep) {
       claimStatus.textContent = `Window opens in less than 2 minutes. Get ready.`;
       claimBtn.disabled = true;
+      claimBtn.style.opacity = '0.4'; // Faded look
     } else if (windowOpen) {
       claimStatus.textContent = `Claim window is live. Claim now!`;
       claimBtn.disabled = false;
+      claimBtn.style.opacity = '1';
+      claimBtn.classList.add('btn-glow'); // Activate glow
     }
   }
 }
@@ -1272,7 +1282,8 @@ function renderStatusPage() {
     <div class="stat-box"><div class="stat-num purple">${ghosts}</div><div class="stat-label">Ghosts</div></div>
   `;
   gridEl.innerHTML = realPlayers.map(p => {
-    const isImmune = gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
+    // Only Mods can see the immune badge on the public board
+    const isImmune = currentIsMod && gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
     const cls = p.status === 'dead' ? 'dead' : (isImmune ? 'immune' : (p.status === 'ghost' ? 'ghost' : 'alive'));
     const statusLabel = p.status === 'dead' ? 'DEAD' : (isImmune ? 'IMMUNE' : (p.status === 'ghost' ? 'GHOST' : 'ALIVE'));
     return `<div class="player-chip ${cls}"><div class="chip-name">${p.name}</div><div class="chip-status">${statusLabel}</div>${p.kills ? `<div class="text-dim" style="font-size: 10px; margin-top: 4px;">${p.kills} kill(s)</div>` : ''}</div>`;
@@ -1692,8 +1703,15 @@ async function resetGame() {
 async function saveImmunitySettings() {
   const slots = parseInt(document.getElementById('immunity-slots').value);
   gameState.immunity.slots = isNaN(slots) ? 2 : slots;
-  gameState.immunity.start = document.getElementById('immunity-start').value;
-  gameState.immunity.end = document.getElementById('immunity-end').value;
+  
+  const startStr = document.getElementById('immunity-start').value || "20:00";
+  gameState.immunity.start = startStr;
+  
+  // Auto-enforce window end time to be exactly 5 minutes after start time
+  const [h, m] = startStr.split(':').map(Number);
+  const endD = new Date(2000, 0, 1, h, m + 5);
+  gameState.immunity.end = `${String(endD.getHours()).padStart(2, '0')}:${String(endD.getMinutes()).padStart(2, '0')}`;
+  document.getElementById('immunity-end').value = gameState.immunity.end;
   const scheduledOpen = isWithinImmunityWindow();
   gameState.immunity.claimWindowOpen = gameState.immunity.manualOverride === 'open'
     ? true

@@ -512,7 +512,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
           <div>
             <label>Ghost Kill Window (hours)</label>
-            <input type="number" id="ghost-kill-hours" min="1" max="168" value="24">
+            <input type="number" id="ghost-kill-hours" min="0.01" max="168" step="any" value="24">
           </div>
         </div>
         <button class="btn btn-blade btn-full" onclick="saveGhostSettings()">SAVE</button>
@@ -1763,7 +1763,7 @@ async function modClearWindowOverride() {
 
 async function saveGhostSettings() {
   gameState.ghost.deathThreshold = parseInt(document.getElementById('ghost-death-threshold').value) || 3;
-  gameState.ghost.killHours = parseInt(document.getElementById('ghost-kill-hours').value) || 24;
+  gameState.ghost.killHours = parseFloat(document.getElementById('ghost-kill-hours').value) || 24;
   await updateGameState({ ghost: gameState.ghost });
   alert('Saved.');
 }

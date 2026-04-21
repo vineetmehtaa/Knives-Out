@@ -1497,21 +1497,42 @@ async function confirmGhost() {
   voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
   
   const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
-  if (sorted.length === 0) return alert('No votes cast yet.');
+  if (sorted.length === 0) return alert('No votes cast yet. Cannot confirm.');
   if (sorted.length > 1 && sorted[0][1] === sorted[1][1]) return alert('TIE DETECTED! Use "CLEAR VOTES / REDO" to restart this stage, or decide manually.');
 
   const targetName = sorted[0][0];
   const player = gameState.players.find(p => p.name === gameState.ghost.pendingGhost);
-  if (!player) return;
+  
+  if (!player) {
+      alert('Error: Could not find the pending ghost player in the database.');
+      return;
+  }
   
   player.status = 'ghost';
   player.ghostTarget = targetName;
   const expiresAt = new Date(Date.now() + gameState.ghost.killHours * 3600000).toISOString();
+  
+  // Guardrail: Ensure the revived array exists before pushing (Firebase deletes empty arrays)
+  if (!gameState.ghost.revived) gameState.ghost.revived = [];
+  
   gameState.ghost.revived.push({ name: player.name, expiresAt });
+  
+  // Wipe all votes to clean the slate
   gameState.players.forEach(p => p.votes = null);
   
-  await updateGameState({ players: gameState.players, ghost: gameState.ghost, 'ghost/phase': 0 });
+  // Update state and fully reset the Ghost parameters back to Phase 0
+  await updateGameState({ 
+      players: gameState.players, 
+      ghost: gameState.ghost, 
+      'ghost/phase': 0, 
+      'ghost/pendingGhost': null, 
+      'ghost/candidates': [] 
+  });
+  
   renderModGhost();
+  
+  // Provide clear feedback
+  alert(`SUCCESS: ${player.name} has been revived as a GHOST and is now hunting ${targetName}!`);
 }
 
 async function clearVotes() {

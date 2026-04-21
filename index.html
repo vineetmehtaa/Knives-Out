@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KNIVES OUT</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -21,45 +21,47 @@ html { scroll-behavior: smooth; overflow-x: hidden; }
 body { background: var(--ink); color: var(--cream2); font-family: 'Courier Prime', monospace; min-height: 100vh; line-height: 1.6; overflow-x: hidden; }
 body::after { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(255,255,255,0.012) 28px, rgba(255,255,255,0.012) 29px), repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(255,255,255,0.006) 28px, rgba(255,255,255,0.006) 29px); pointer-events: none; z-index: 0; }
 
-#firebase-init { position: fixed; inset: 0; background: var(--ink); z-index: 9999; display: none; align-items: center; justify-content: center; }
-.init-gate { width: min(500px, 90vw); background: var(--ink2); border: 2px solid var(--blade); padding: 40px; margin: 0 auto; }
-.init-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; color: var(--cream); margin-bottom: 8px; }
-.init-subtitle { color: var(--cream3); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px; }
-.init-step { background: var(--ink3); border-left: 3px solid var(--blade); padding: 16px; margin-bottom: 12px; font-size: 12px; line-height: 1.8; }
+#firebase-init { position: fixed; inset: 0; background: var(--ink); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.init-gate { width: 100%; max-width: 500px; background: var(--ink2); border: 2px solid var(--blade); padding: 30px 20px; margin: 0 auto; }
+.init-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: var(--cream); margin-bottom: 8px; text-align: center; }
+.init-subtitle { color: var(--cream3); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px; text-align: center; }
+.init-step { background: var(--ink3); border-left: 3px solid var(--blade); padding: 14px; margin-bottom: 12px; font-size: 11px; line-height: 1.6; }
 .init-step-title { font-weight: 700; color: var(--blade); margin-bottom: 6px; }
-.init-step code { background: var(--ink4); color: var(--blade); padding: 2px 8px; display: inline-block; font-size: 11px; }
-.init-input { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 12px; padding: 10px; margin: 12px 0; outline: none; }
+.init-step code { background: var(--ink4); color: var(--blade); padding: 2px 6px; display: inline-block; font-size: 10px; word-break: break-all; }
+.init-input { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 11px; padding: 12px; margin: 12px 0; outline: none; resize: vertical; min-height: 80px; }
 .init-input:focus { border-color: var(--blade); }
-.init-btn { width: 100%; padding: 12px; background: var(--blade); color: var(--ink); border: none; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 12px; }
+.init-btn { width: 100%; padding: 14px; background: var(--blade); color: var(--ink); border: none; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 12px; font-size: 12px; }
 .init-btn:hover { background: #e0b020; }
 
-.page { display: none; min-height: 100vh; position: relative; z-index: 1; }
+.page { display: none; min-height: 100vh; position: relative; z-index: 1; padding-bottom: 40px; }
 .page.active { display: block; }
-#page-login { align-items: center; justify-content: center; background: radial-gradient(ellipse at 40% 30%, #1a0d0d 0%, var(--ink) 65%); }
+#page-login { align-items: center; justify-content: center; background: radial-gradient(ellipse at 40% 30%, #1a0d0d 0%, var(--ink) 65%); padding: 20px; }
 #page-login.active { display: flex; }
-.login-wrap { width: min(420px, 92vw); margin: 0 auto; animation: riseUp .55s ease; }
-.login-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--blade); padding: 48px 40px 42px; position: relative; }
-.logo { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 900; font-style: italic; color: var(--cream); text-align: center; letter-spacing: 3px; margin-bottom: 2px; }
+.login-wrap { width: 100%; max-width: 420px; margin: 0 auto; animation: riseUp .55s ease; }
+.login-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--blade); padding: 40px 30px; position: relative; }
+.logo { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; font-style: italic; color: var(--cream); text-align: center; letter-spacing: 2px; margin-bottom: 2px; }
 .logo span { color: var(--blade); }
-.logo-sub { text-align: center; font-size: 9px; letter-spacing: 4px; color: var(--cream3); text-transform: uppercase; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--seam); }
+.logo-sub { text-align: center; font-size: 9px; letter-spacing: 3px; color: var(--cream3); text-transform: uppercase; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--seam); }
 
 .tabs-toggle { display: flex; gap: 0; margin-bottom: 24px; }
-.tab-btn { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--seam); border-bottom: none; color: var(--cream3); font-family: monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+.tab-btn { flex: 1; padding: 12px 8px; background: transparent; border: 1px solid var(--seam); border-bottom: none; color: var(--cream3); font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
 .tab-btn.active { background: var(--blade); color: var(--ink); font-weight: 700; }
 .tab-btn:first-child { border-left: 1px solid var(--seam); }
 
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-label { display: block; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); margin-bottom: 5px; margin-top: 4px; }
-input[type=text], input[type=password], select, textarea { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 13px; padding: 10px 12px; outline: none; transition: border-color .2s; margin-bottom: 14px; box-sizing: border-box; }
-input:focus, select:focus { border-color: var(--blade2); background: var(--ink4); }
+label { display: block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); margin-bottom: 6px; margin-top: 6px; }
+input[type=text], input[type=password], input[type=time], input[type=number], select, textarea { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 13px; padding: 12px; outline: none; transition: border-color .2s; margin-bottom: 16px; box-sizing: border-box; -webkit-appearance: none; border-radius: 0; }
+input:focus, select:focus, textarea:focus { border-color: var(--blade2); background: var(--ink4); }
 
-.error-msg { color: var(--blood); font-size: 11px; letter-spacing: 1px; margin: -10px 0 12px 0; min-height: 14px; }
+.error-msg { color: var(--blood); font-size: 11px; letter-spacing: 1px; margin: -10px 0 12px 0; min-height: 14px; word-wrap: break-word; }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 24px; font-family: monospace; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; border: none; transition: all .18s; font-weight: 700; box-sizing: border-box; text-align: center; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 20px; font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border: none; transition: all .18s; font-weight: 700; box-sizing: border-box; text-align: center; width: 100%; border-radius: 0; -webkit-appearance: none; }
+@media (min-width: 480px) { .btn { width: auto; } }
+.btn-full { width: 100% !important; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
-.btn-blade { background: var(--blade); color: var(--ink); width: 100%; }
+.btn-blade { background: var(--blade); color: var(--ink); }
 .btn-blade:hover:not(:disabled) { background: #e0b020; }
 .btn-blood { background: var(--blood); color: var(--cream); }
 .btn-blood:hover:not(:disabled) { background: #a02020; }
@@ -67,16 +69,17 @@ input:focus, select:focus { border-color: var(--blade2); background: var(--ink4)
 .btn-alive:hover:not(:disabled) { background: var(--alive); color: var(--ink); }
 .btn-ghost-btn { background: #211738; color: var(--ghost2); border: 1px solid var(--ghost); }
 .btn-ghost-btn:hover:not(:disabled) { background: #34275a; }
-.btn-outline { background: transparent; color: var(--cream2); border: 1px solid var(--seam2); padding: 8px 16px; font-size: 10px; }
+.btn-outline { background: transparent; color: var(--cream2); border: 1px solid var(--seam2); padding: 10px 16px; font-size: 10px; }
 .btn-outline:hover:not(:disabled) { border-color: var(--cream2); }
-.btn-sm { padding: 6px 12px; font-size: 10px; letter-spacing: 1.5px; }
+.btn-sm { padding: 8px 12px; font-size: 9px; letter-spacing: 1.5px; }
 
-nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; }
+nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 12px; }
 .nav-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; font-style: italic; letter-spacing: 2px; color: var(--cream); }
 .nav-logo span { color: var(--blade); }
-.nav-right { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--cream3); flex-wrap: wrap; }
+.nav-right { display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--cream3); flex-wrap: wrap; width: 100%; justify-content: space-between; }
+@media (min-width: 600px) { .nav-right { width: auto; justify-content: flex-end; } nav { height: 60px; padding: 0 24px; gap: 0; } }
 .nav-user { color: var(--blade); letter-spacing: 1px; font-weight: 700; }
-.badge { display: inline-block; padding: 2px 8px; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; white-space: nowrap; }
+.badge { display: inline-block; padding: 4px 8px; font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; white-space: nowrap; border-radius: 2px; }
 .badge-mod { background: var(--blade); color: var(--ink); }
 .badge-alive { background: var(--alive2); color: var(--alive); border: 1px solid var(--alive2); }
 .badge-dead { background: var(--blood3); color: var(--blood); border: 1px solid var(--blood2); }
@@ -86,77 +89,75 @@ nav { background: var(--ink2); border-bottom: 1px solid var(--seam); padding: 0 
 .badge-conn-reconnecting { background: #2b220d; color: var(--blade); border: 1px solid #7a5c14; }
 .badge-conn-offline { background: var(--blood3); color: var(--blood); border: 1px solid var(--blood2); }
 
-.main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; width: 100%; }
-.section-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; font-style: italic; letter-spacing: 3px; color: var(--cream); margin-bottom: 6px; word-wrap: break-word; }
-.section-sub { font-size: 10px; letter-spacing: 3px; color: var(--cream3); text-transform: uppercase; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--seam); }
-.card { background: var(--ink2); border: 1px solid var(--seam); padding: 24px; margin-bottom: 20px; overflow-x: auto; }
-.card-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
-.card-title::after { content: ''; flex: 1; height: 1px; background: var(--seam); }
+.main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; width: 100%; }
+@media (min-width: 600px) { .main { padding: 32px 24px; } }
+.section-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 900; font-style: italic; letter-spacing: 2px; color: var(--cream); margin-bottom: 6px; word-wrap: break-word; }
+@media (min-width: 600px) { .section-title { font-size: 28px; letter-spacing: 3px; } }
+.section-sub { font-size: 10px; letter-spacing: 2px; color: var(--cream3); text-transform: uppercase; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--seam); }
+.card { background: var(--ink2); border: 1px solid var(--seam); padding: 20px; margin-bottom: 20px; overflow-x: auto; width: 100%; }
+@media (min-width: 600px) { .card { padding: 24px; } }
+.card-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.card-title::after { content: ''; flex: 1; height: 1px; background: var(--seam); min-width: 20px; }
 
-.player-status-card { background: var(--ink2); border: 1px solid var(--seam); padding: 40px; text-align: center; position: relative; overflow: hidden; margin-bottom: 20px; }
+.player-status-card { background: var(--ink2); border: 1px solid var(--seam); padding: 30px 20px; text-align: center; position: relative; overflow: hidden; margin-bottom: 20px; width: 100%; }
+@media (min-width: 600px) { .player-status-card { padding: 40px; } }
 .player-status-card.alive { border-top: 4px solid var(--alive); }
 .player-status-card.dead { border-top: 4px solid var(--blood); opacity: 0.7; }
 .player-status-card.immune { border-top: 4px solid #7db8ff; }
 .player-status-card.ghost { border-top: 4px solid var(--ghost2); }
-.status-label { font-size: 9px; letter-spacing: 4px; color: var(--cream3); text-transform: uppercase; margin-bottom: 8px; }
-.status-value { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; font-style: italic; letter-spacing: 4px; }
+.status-label { font-size: 9px; letter-spacing: 3px; color: var(--cream3); text-transform: uppercase; margin-bottom: 8px; }
+.status-value { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; font-style: italic; letter-spacing: 2px; word-wrap: break-word; }
+@media (min-width: 600px) { .status-value { font-size: 48px; letter-spacing: 4px; } }
 .status-value.alive-text { color: var(--alive); }
 .status-value.dead-text { color: var(--blood); }
 .status-value.ghost-text { color: var(--ghost2); }
-.target-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--seam); }
-.target-name { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--blade); letter-spacing: 2px; margin-top: 8px; word-wrap: break-word; }
-.code-display { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; letter-spacing: 8px; color: var(--blood); text-align: center; padding: 24px; background: var(--blood3); border: 1px solid var(--blood2); text-shadow: 0 0 20px rgba(139,26,26,0.4); margin: 12px 0; word-wrap: break-word; }
+.target-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--seam); }
+.target-name { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: var(--blade); letter-spacing: 1px; margin-top: 8px; word-wrap: break-word; }
+@media (min-width: 600px) { .target-name { font-size: 36px; letter-spacing: 2px; } }
+.code-display { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; letter-spacing: 6px; color: var(--blood); text-align: center; padding: 20px 10px; background: var(--blood3); border: 1px solid var(--blood2); text-shadow: 0 0 20px rgba(139,26,26,0.4); margin: 12px 0; word-wrap: break-word; }
+@media (min-width: 600px) { .code-display { font-size: 52px; letter-spacing: 8px; padding: 24px; } }
 
-.mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.stat-box { background: var(--ink2); border: 1px solid var(--seam); padding: 16px; text-align: center; }
-.stat-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--cream); line-height: 1; }
-.stat-label { font-size: 9px; letter-spacing: 2px; color: var(--cream3); text-transform: uppercase; margin-top: 4px; }
+.mod-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 24px; }
+@media (min-width: 600px) { .mod-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; } }
+.stat-box { background: var(--ink2); border: 1px solid var(--seam); padding: 16px 10px; text-align: center; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: var(--cream); line-height: 1; }
+@media (min-width: 600px) { .stat-num { font-size: 36px; } }
+.stat-label { font-size: 9px; letter-spacing: 1.5px; color: var(--cream3); text-transform: uppercase; margin-top: 6px; }
 .stat-num.red { color: var(--blood); }
 .stat-num.green { color: var(--alive); }
 .stat-num.gold { color: var(--blade); }
 .stat-num.purple { color: var(--ghost2); }
 
-.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-table { width: 100%; min-width: 600px; border-collapse: collapse; font-size: 12px; }
-th { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream3); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--seam); background: var(--ink3); font-weight: 700; }
-td { padding: 12px; border-bottom: 1px solid #161610; vertical-align: middle; }
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 10px; }
+table { width: 100%; min-width: 600px; border-collapse: collapse; font-size: 11px; }
+@media (min-width: 600px) { table { font-size: 12px; } }
+th { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); text-align: left; padding: 10px; border-bottom: 1px solid var(--seam); background: var(--ink3); font-weight: 700; }
+td { padding: 10px; border-bottom: 1px solid #161610; vertical-align: middle; word-break: break-word; }
 tr.dead-row td { opacity: 0.5; color: var(--cream3); }
 tr.immune-row td { color: #7db8ff; }
 tr.ghost-row td { color: var(--ghost2); }
-tr:hover td { background: rgba(255,255,255,0.01); }
+tr:hover td { background: rgba(255,255,255,0.02); }
 
-.kill-entry { padding: 12px 16px; border-bottom: 1px solid var(--seam); display: flex; gap: 12px; align-items: flex-start; font-size: 12px; flex-wrap: wrap; }
+.kill-entry { padding: 12px; border-bottom: 1px solid var(--seam); display: flex; gap: 10px; align-items: flex-start; font-size: 11px; flex-wrap: wrap; }
+@media (min-width: 600px) { .kill-entry { padding: 12px 16px; font-size: 12px; gap: 12px; flex-wrap: nowrap; } }
 .kill-entry:last-child { border-bottom: none; }
-.kill-time { color: var(--cream3); font-size: 10px; white-space: nowrap; min-width: 90px; }
+.kill-time { color: var(--cream3); font-size: 9px; white-space: nowrap; min-width: 75px; }
+@media (min-width: 600px) { .kill-time { font-size: 10px; min-width: 90px; } }
+.kill-action { flex: 1; word-wrap: break-word; min-width: 150px; }
 
-.vote-card { background: var(--ink3); border: 1px solid var(--ghost); padding: 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.vote-bar { height: 3px; background: var(--seam); margin-top: 6px; position: relative; }
-.vote-bar-fill { height: 100%; background: var(--ghost); transition: width .4s; }
+.vote-card { background: var(--ink3); border: 1px solid var(--ghost); padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+@media (min-width: 600px) { .vote-card { padding: 16px; gap: 12px; flex-wrap: nowrap; } }
+.vote-bar { height: 4px; background: var(--seam); margin-top: 8px; position: relative; border-radius: 2px; overflow: hidden; }
+.vote-bar-fill { height: 100%; background: var(--ghost); transition: width .4s ease; }
 
-.candidate-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 16px; }
-.candidate-list label { display: flex; align-items: center; gap: 8px; background: var(--ink3); padding: 10px; border: 1px solid var(--seam); cursor: pointer; text-transform: none; font-size: 11px; margin: 0; color: var(--cream); }
-.candidate-list label:hover { border-color: var(--ghost); }
-.candidate-list input[type="checkbox"] { width: auto; margin: 0; }
-
-.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--seam); margin-bottom: 24px; flex-wrap: wrap; }
-.tab { padding: 11px 18px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; font-weight: 700; background: none; border: none; flex: 1 1 auto; text-align: center; }
+.tabs { display: flex; border-bottom: 1px solid var(--seam); margin-bottom: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { padding: 12px 16px; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--cream3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; font-weight: 700; background: none; border-top: none; border-left: none; border-right: none; white-space: nowrap; flex: 0 0 auto; }
+@media (min-width: 600px) { .tab { font-size: 10px; letter-spacing: 2px; padding: 11px 18px; } .tabs { flex-wrap: wrap; overflow-x: visible; } }
 .tab.active { color: var(--cream); border-bottom-color: var(--blade); }
 
-.settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-@media (max-width: 600px) { 
-  .settings-row { grid-template-columns: 1fr; } 
-  .mod-grid { grid-template-columns: 1fr 1fr; } 
-  .player-status-card { padding: 24px 16px; }
-  .code-display { font-size: 32px; letter-spacing: 4px; padding: 16px; }
-}
-
-@media (max-width: 720px) {
-  nav { height: auto; padding: 12px 14px; gap: 12px; align-items: flex-start; flex-direction: column; }
-  .nav-right { width: 100%; justify-content: flex-start; }
-  .main { padding: 22px 14px; }
-  .target-name { font-size: 28px; }
-}
+.settings-row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 600px) { .settings-row { grid-template-columns: 1fr 1fr; gap: 16px; } }
 
 .mt8 { margin-top: 8px; } .mt16 { margin-top: 16px; } .mt24 { margin-top: 24px; }
 .mb8 { margin-bottom: 8px; } .mb16 { margin-bottom: 16px; }
@@ -171,42 +172,50 @@ tr:hover td { background: rgba(255,255,255,0.01); }
 .full-width { width: 100%; }
 .divider { border: none; border-top: 1px solid var(--seam); margin: 20px 0; }
 
-.inline-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
-.inline-list li { padding: 4px 10px; background: var(--ink3); border: 1px solid var(--seam); font-size: 11px; display: flex; align-items: center; gap: 8px; }
-.inline-list li .remove { cursor: pointer; color: var(--blood); font-size: 14px; line-height: 1; font-weight: 700; }
+.inline-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; }
+.inline-list li { padding: 6px 12px; background: var(--ink3); border: 1px solid var(--seam); font-size: 11px; display: flex; align-items: center; gap: 8px; border-radius: 2px; }
+.inline-list li .remove { cursor: pointer; color: var(--blood); font-size: 16px; line-height: 1; font-weight: 700; background: none; border: none; padding: 0; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; }
+.inline-list li .remove:hover { background: rgba(139,26,26,0.2); }
 
 @keyframes riseUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-.alert { padding: 12px 16px; font-size: 12px; margin-bottom: 14px; border-left: 3px solid; word-wrap: break-word; }
+.alert { padding: 14px 16px; font-size: 11px; margin-bottom: 16px; border-left: 3px solid; word-wrap: break-word; line-height: 1.5; }
+@media (min-width: 600px) { .alert { font-size: 12px; } }
 .alert-red { background: var(--blood3); border-color: var(--blood); color: var(--blood); }
 .alert-purple { background: #1a1333; border-color: var(--ghost); color: var(--ghost2); }
 .alert-gold { background: #2b220d; border-color: var(--blade); color: var(--blade); }
 
 .hidden { display: none !important; }
-.chain-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--seam); font-size: 12px; flex-wrap: wrap; }
+.chain-item { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-bottom: 1px solid var(--seam); font-size: 11px; flex-wrap: wrap; }
+@media (min-width: 600px) { .chain-item { font-size: 12px; padding: 10px 12px; gap: 12px; flex-wrap: nowrap; } }
 .chain-item:last-child { border-bottom: none; }
 
-.password-cell { font-family: monospace; font-size: 11px; background: var(--ink3); padding: 4px 8px; display: inline-block; }
+.password-cell { font-family: monospace; font-size: 10px; background: var(--ink3); padding: 4px 6px; display: inline-block; word-break: break-all; border-radius: 2px; border: 1px solid var(--ink4); }
 
-.player-chip { padding: 12px; background: var(--ink2); border: 1px solid var(--seam); text-align: center; font-size: 11px; }
+.player-chip { padding: 14px 10px; background: var(--ink2); border: 1px solid var(--seam); text-align: center; font-size: 11px; border-radius: 2px; transition: transform 0.2s; }
+.player-chip:hover { transform: translateY(-2px); }
 .player-chip.alive { border-left: 3px solid var(--alive); }
-.player-chip.dead { border-left: 3px solid var(--blood); opacity: 0.5; }
+.player-chip.dead { border-left: 3px solid var(--blood); opacity: 0.6; }
+.player-chip.immune { border-left: 3px solid #7db8ff; }
 .player-chip.ghost { border-left: 3px solid var(--ghost2); }
 
-.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.chip-name { margin-bottom: 4px; font-weight: 700; word-wrap: break-word; }
-.chip-status { font-size: 9px; letter-spacing: 2px; color: var(--cream3); text-transform: uppercase; }
+.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-bottom: 24px; }
+@media (min-width: 600px) { .status-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; } }
+.chip-name { margin-bottom: 4px; font-weight: 700; word-wrap: break-word; font-size: 12px; }
+.chip-status { font-size: 8px; letter-spacing: 1.5px; color: var(--cream3); text-transform: uppercase; }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--ink); }
-::-webkit-scrollbar-thumb { background: var(--seam); }
+::-webkit-scrollbar-thumb { background: var(--seam2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--cream3); }
 
-textarea { resize: vertical; }
-
-.secret-container { display: none; opacity: 0; transition: opacity 0.2s ease; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--seam); }
+.secret-container { display: none; opacity: 0; transition: opacity 0.3s ease; margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--seam); }
 .secret-container.visible { display: block; opacity: 1; }
-.hold-btn { width: 100%; padding: 16px; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream2); font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; user-select: none; -webkit-user-select: none; }
-.hold-btn:active { background: var(--seam); color: var(--cream); }
+.hold-btn { width: 100%; padding: 18px 16px; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream2); font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; user-select: none; -webkit-user-select: none; transition: all 0.2s; box-shadow: 0 4px 0 var(--ink4); border-radius: 4px; }
+.hold-btn:active { background: var(--seam); color: var(--cream); transform: translateY(4px); box-shadow: 0 0 0 var(--ink4); }
+
+.flex-btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.flex-btn-group .btn { flex: 1 1 calc(50% - 4px); min-width: 120px; }
 </style>
 </head>
 <body>
@@ -234,7 +243,7 @@ textarea { resize: vertical; }
     <textarea id="firebase-config" class="init-input" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
 
     <button class="init-btn" onclick="initFirebase()">INITIALIZE</button>
-    <div id="firebase-error" style="color: var(--blood); font-size: 11px; margin-top: 12px; min-height: 14px;"></div>
+    <div id="firebase-error" style="color: var(--blood); font-size: 11px; margin-top: 12px; min-height: 14px; text-align: center;"></div>
   </div>
 </div>
 
@@ -251,24 +260,24 @@ textarea { resize: vertical; }
 
       <div class="tab-content active" id="auth-login">
         <label>Username</label>
-        <input type="text" id="login-username" placeholder="your codename">
+        <input type="text" id="login-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
         <label>Password</label>
         <input type="password" id="login-password" placeholder="••••••••">
-        <div class="text-dim mb16">Players: use your account password. Moderators: use moderator password for mod access.</div>
+        <div class="text-dim mb16" style="font-size: 10px; line-height: 1.4;">Players: use your account password.<br>Moderators: use moderator password.</div>
         <div class="error-msg" id="login-error"></div>
-        <button class="btn btn-blade" onclick="doLogin()">ENTER GAME</button>
+        <button class="btn btn-blade btn-full" onclick="doLogin()">ENTER GAME</button>
       </div>
 
       <div class="tab-content" id="auth-signup">
         <label>New Username</label>
-        <input type="text" id="signup-username" placeholder="your codename">
+        <input type="text" id="signup-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
         <label>Password</label>
         <input type="password" id="signup-password" placeholder="••••••••">
-        <label>Moderator Password (optional, for mod account)</label>
+        <label>Moderator Password (optional)</label>
         <input type="password" id="signup-mod-password" placeholder="leave empty for normal player">
         <div class="error-msg" id="signup-error"></div>
-        <button class="btn btn-blade" onclick="doSignup()">CREATE ACCOUNT</button>
-        <div class="text-dim mt16" style="text-align: center;">Moderator creates initial setup.<br>Players sign up here.</div>
+        <button class="btn btn-blade btn-full" onclick="doSignup()">CREATE ACCOUNT</button>
+        <div class="text-dim mt16" style="text-align: center; font-size: 10px;">Moderator creates initial setup.<br>Players sign up here.</div>
       </div>
     </div>
   </div>
@@ -281,7 +290,7 @@ textarea { resize: vertical; }
       <span class="nav-user" id="nav-player-name"></span>
       <span class="badge badge-alive" id="nav-player-badge">ALIVE</span>
       <span class="badge badge-conn-reconnecting conn-badge">SYNCING</span>
-      <button class="btn btn-outline btn-sm" onclick="doLogout()">EXIT</button>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()" style="width: auto;">EXIT</button>
     </div>
   </nav>
   <div class="main">
@@ -303,11 +312,11 @@ textarea { resize: vertical; }
           </div>
           
           <div id="player-ghost-section" class="target-section hidden">
-            <div class="alert alert-purple">👻 You are a GHOST. Hunt before time expires to steal their life.</div>
+            <div class="alert alert-purple" style="text-align: left;">👻 You are a GHOST. Hunt before time expires to steal their life.</div>
             <div class="status-label">GHOST TARGET</div>
             <div class="target-name" id="player-ghost-target">—</div>
             <div class="status-label mt16">TIME REMAINING</div>
-            <div style="font-family: 'Playfair Display', serif; font-size: 28px; color: var(--ghost2); letter-spacing: 2px;" id="ghost-timer-display">24:00:00</div>
+            <div style="font-family: 'Playfair Display', serif; font-size: 32px; color: var(--ghost2); letter-spacing: 2px;" id="ghost-timer-display">24:00:00</div>
           </div>
         </div>
       </div>
@@ -315,14 +324,14 @@ textarea { resize: vertical; }
       <div id="player-voting-section" class="card hidden">
         <div class="card-title">👻 GHOST REVIVAL VOTE</div>
         <div class="alert alert-purple mb16" id="player-voting-alert">Select who to vote for.</div>
-        <div id="vote-candidates-list"></div>
-        <div id="player-already-voted" class="text-dim hidden mt16">✓ Your vote has been cast. Waiting for moderator to proceed.</div>
+        <div id="vote-candidates-list" class="flex-btn-group"></div>
+        <div id="player-already-voted" class="text-dim hidden mt16" style="padding: 10px; border: 1px solid var(--seam); background: var(--ink3); text-align: center;">✓ Your vote has been cast. Waiting for moderator.</div>
       </div>
 
       <div id="player-immunity-claim-section" class="card hidden">
         <div class="card-title">🛡 IMMUNITY CLAIM</div>
-        <div id="player-immunity-claim-status" class="text-dim mb16">Window closed.</div>
-        <button id="player-claim-btn" class="btn btn-blade" style="width: 100%;" onclick="claimImmunity()">CLAIM IMMUNITY</button>
+        <div id="player-immunity-claim-status" class="text-dim mb16" style="line-height: 1.4;">Window closed.</div>
+        <button id="player-claim-btn" class="btn btn-blade btn-full" onclick="claimImmunity()">CLAIM IMMUNITY</button>
       </div>
 
       <div id="player-kill-section" class="card">
@@ -333,7 +342,7 @@ textarea { resize: vertical; }
         </div>
         <div class="tab-content active" id="kill-tab-killer">
           <p class="text-dim mb16">Generate a code. Show it to victim.</p>
-          <button class="btn btn-blood" style="width: 100%;" onclick="generateKillCode()">GENERATE KILL CODE</button>
+          <button class="btn btn-blood btn-full" onclick="generateKillCode()">GENERATE KILL CODE</button>
           <div id="kill-code-display" class="hidden mt16">
             <div class="code-display" id="kill-code-value"></div>
             <div class="text-dim mt8" style="text-align: center;">Expires in 10 minutes</div>
@@ -344,7 +353,7 @@ textarea { resize: vertical; }
           <label>Code</label>
           <input type="text" id="victim-code-input" placeholder="6-DIGIT CODE" style="text-transform: uppercase; letter-spacing: 4px; font-size: 18px; text-align: center;">
           <div class="error-msg" id="victim-code-error"></div>
-          <button class="btn btn-blood" style="width: 100%;" onclick="confirmKillAsVictim()">CONFIRM DEAD</button>
+          <button class="btn btn-blood btn-full" onclick="confirmKillAsVictim()">CONFIRM DEAD</button>
         </div>
       </div>
     </div>
@@ -357,7 +366,7 @@ textarea { resize: vertical; }
     <div class="nav-right">
       <span class="nav-user" id="nav-status-name"></span>
       <span class="badge badge-conn-reconnecting conn-badge">SYNCING</span>
-      <button class="btn btn-outline btn-sm" onclick="doLogout()">EXIT</button>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()" style="width: auto;">EXIT</button>
     </div>
   </nav>
   <div class="main">
@@ -382,7 +391,7 @@ textarea { resize: vertical; }
       <span class="nav-user" id="nav-mod-name"></span>
       <span class="badge badge-mod">MOD</span>
       <span class="badge badge-conn-reconnecting conn-badge">SYNCING</span>
-      <button class="btn btn-outline btn-sm" onclick="doLogout()">EXIT</button>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()" style="width: auto;">EXIT</button>
     </div>
   </nav>
   <div class="main">
@@ -402,7 +411,7 @@ textarea { resize: vertical; }
       <div class="mod-grid" id="mod-stats"></div>
       <div class="card">
         <div class="card-title">KILL CHAIN ASSIGNMENTS</div>
-        <div id="mod-chain-visual" style="max-height: 400px; overflow-y: auto;"></div>
+        <div id="mod-chain-visual" style="max-height: 400px; overflow-y: auto; overflow-x: hidden;"></div>
       </div>
       <div class="card">
         <div class="card-title">RECENT KILLS</div>
@@ -458,13 +467,13 @@ textarea { resize: vertical; }
             <input type="time" id="immunity-end" value="22:00">
           </div>
         </div>
-        <button class="btn btn-blade" style="width: 100%;" onclick="saveImmunitySettings()">SAVE</button>
+        <button class="btn btn-blade btn-full" onclick="saveImmunitySettings()">SAVE</button>
 
         <hr class="divider">
         <div class="card-title mt16">CLAIM WINDOW OVERRIDE</div>
-        <div class="flex gap8 mb16" style="flex-wrap: wrap;">
-          <button class="btn btn-alive btn-sm" onclick="modOpenClaimWindow()">OPEN CLAIM WINDOW</button>
-          <button class="btn btn-blood btn-sm" onclick="modCloseClaimWindow()">CLOSE CLAIM WINDOW</button>
+        <div class="flex-btn-group mb16">
+          <button class="btn btn-alive btn-sm" onclick="modOpenClaimWindow()">OPEN WINDOW</button>
+          <button class="btn btn-blood btn-sm" onclick="modCloseClaimWindow()">CLOSE WINDOW</button>
           <button class="btn btn-outline btn-sm" onclick="modClearWindowOverride()">CLEAR OVERRIDE</button>
           <button class="btn btn-outline btn-sm" onclick="recomputeImmunityFromClaims(true)">RECOMPUTE IMMUNITY</button>
           <button class="btn btn-outline btn-sm" onclick="modClearClaims()">CLEAR CLAIMS</button>
@@ -483,8 +492,8 @@ textarea { resize: vertical; }
             <select id="immunity-player-select"></select>
           </div>
           <div style="display: flex; align-items: flex-end; gap: 8px;">
-            <button class="btn btn-blade" onclick="grantImmunity()">GRANT</button>
-            <button class="btn btn-outline" onclick="revokeImmunity()">REVOKE</button>
+            <button class="btn btn-blade" onclick="grantImmunity()" style="flex:1;">GRANT</button>
+            <button class="btn btn-outline" onclick="revokeImmunity()" style="flex:1;">REVOKE</button>
           </div>
         </div>
 
@@ -506,7 +515,7 @@ textarea { resize: vertical; }
             <input type="number" id="ghost-kill-hours" min="1" max="168" value="24">
           </div>
         </div>
-        <button class="btn btn-blade" style="width: 100%;" onclick="saveGhostSettings()">SAVE</button>
+        <button class="btn btn-blade btn-full" onclick="saveGhostSettings()">SAVE</button>
 
         <hr class="divider">
         
@@ -525,18 +534,18 @@ textarea { resize: vertical; }
         <label>Game Name</label>
         <input type="text" id="settings-game-name" placeholder="Operation Nightfall">
         <label>Game Password (all players)</label>
-        <input type="text" id="settings-game-password" placeholder="shared password">
+        <input type="text" id="settings-game-password" placeholder="shared password" autocapitalize="off" autocorrect="off">
         <label>Moderator Password</label>
-        <input type="text" id="settings-mod-password" placeholder="mod password">
+        <input type="text" id="settings-mod-password" placeholder="mod password" autocapitalize="off" autocorrect="off">
 
         <hr class="divider">
         <div class="card-title">RULE TOGGLES</div>
         <div class="settings-row mb16">
-          <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 0; text-transform: none; color: var(--cream2);">
-            <input type="checkbox" id="settings-immunity-enabled" style="width: auto; margin: 0;"> Enable Immunity Claims
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 0; text-transform: none; color: var(--cream2); cursor: pointer;">
+            <input type="checkbox" id="settings-immunity-enabled" style="width: auto; margin: 0; transform: scale(1.2);"> Enable Immunity Claims
           </label>
-          <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 0; text-transform: none; color: var(--cream2);">
-            <input type="checkbox" id="settings-ghost-enabled" style="width: auto; margin: 0;"> Enable Ghost Voting
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 0; text-transform: none; color: var(--cream2); cursor: pointer;">
+            <input type="checkbox" id="settings-ghost-enabled" style="width: auto; margin: 0; transform: scale(1.2);"> Enable Ghost Voting
           </label>
         </div>
 
@@ -544,9 +553,9 @@ textarea { resize: vertical; }
         <div class="card-title">ADD PLAYERS</div>
         <div id="settings-game-started-players">
           <p class="text-dim mb16">Add before starting game.</p>
-          <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-            <input type="text" id="new-player-name" placeholder="Name" style="margin-bottom: 0; flex: 1;">
-            <input type="text" id="new-player-password" placeholder="Pass" style="margin-bottom: 0; flex: 1;">
+          <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+            <input type="text" id="new-player-name" placeholder="Name" style="margin-bottom: 0; flex: 1; min-width: 100px;" autocapitalize="off" autocorrect="off">
+            <input type="text" id="new-player-password" placeholder="Pass" style="margin-bottom: 0; flex: 1; min-width: 100px;" autocapitalize="off" autocorrect="off">
             <button class="btn btn-outline btn-sm" onclick="addPlayer()">ADD</button>
           </div>
           <ul class="inline-list mb16" id="players-pending-list"></ul>
@@ -555,18 +564,18 @@ textarea { resize: vertical; }
         <hr class="divider">
         <div class="card-title">MODERATORS</div>
         <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-          <input type="text" id="new-mod-name" placeholder="Username" style="margin-bottom: 0; flex: 1;">
+          <input type="text" id="new-mod-name" placeholder="Username" style="margin-bottom: 0; flex: 1;" autocapitalize="off" autocorrect="off">
           <button class="btn btn-outline btn-sm" onclick="addMod()">ADD</button>
         </div>
         <ul class="inline-list mb16" id="mods-list"></ul>
 
         <hr class="divider">
-        <button class="btn btn-blade" style="width: 100%; margin-bottom: 16px;" id="start-game-btn" onclick="startGame()">⚔ START GAME</button>
-        <button class="btn btn-outline" style="width: 100%;" onclick="saveSettings()">SAVE SETTINGS</button>
+        <button class="btn btn-blade btn-full mb16" id="start-game-btn" onclick="startGame()">⚔ START GAME</button>
+        <button class="btn btn-outline btn-full" onclick="saveSettings()">SAVE SETTINGS</button>
 
         <hr class="divider">
-        <div class="card-title">DANGER ZONE</div>
-        <button class="btn btn-blood" style="width: 100%;" onclick="resetGame()">WIPE ALL DATA</button>
+        <div class="card-title text-red">DANGER ZONE</div>
+        <button class="btn btn-blood btn-full" onclick="resetGame()">WIPE ALL DATA</button>
       </div>
     </div>
   </div>
@@ -601,12 +610,20 @@ function initFirebase() {
     document.getElementById('firebase-init').style.display = 'none';
     setupGame();
 
-    // Routine ghost expiration checks every 30 seconds
+    // Routine checks every 5 seconds for ghost expirations and immunity clock
     setInterval(() => {
-       if (gameState && (currentIsMod || !gameState.mods.includes(currentUser))) {
-           reconcileGhostExpirations();
+       if (gameState) {
+           if (currentIsMod || !gameState.mods.includes(currentUser)) {
+               reconcileGhostExpirations();
+           }
+           syncScheduledImmunityWindow();
+           
+           if (currentPage === 'player' && currentUser) {
+               const player = gameState.players.find(p => p.name === currentUser);
+               if (player) renderPlayerView(player);
+           }
        }
-    }, 30000);
+    }, 5000);
 
   } catch (e) {
     errEl.textContent = 'Firebase init error: ' + e.message;
@@ -684,9 +701,8 @@ function normalizeState(raw) {
     ...base.ghost,
     ...(merged.ghost || {}),
     phase: merged.ghost?.phase || 0,
-    candidates: merged.ghost?.candidates || [],
     pendingGhost: merged.ghost?.pendingGhost || null,
-    votedPlayers: merged.ghost?.votedPlayers || []
+    revived: Array.isArray(merged.ghost?.revived) ? merged.ghost.revived : []
   };
   return merged;
 }
@@ -707,7 +723,7 @@ function reconcileGhostExpirations() {
   });
   if (changed) {
     gameState.ghost.revived = gameState.ghost.revived.filter(r => new Date(r.expiresAt).getTime() > now);
-    updateGameState({ players: gameState.players, ghost: gameState.ghost });
+    updateGameState({ players: gameState.players, 'ghost/revived': gameState.ghost.revived });
   }
 }
 
@@ -717,7 +733,7 @@ function getDefaultState() {
     gameStarted: false, players: [], mods: [], killLog: [], pendingCodes: {},
     settings: { immunityEnabled: true, ghostEnabled: true },
     immunity: { slots: 2, start: '20:00', end: '22:00', active: false, immunePlayers: [], claimWindowOpen: false, claims: {}, lastComputedAt: null, manualOverride: null },
-    ghost: { deathThreshold: 3, killHours: 24, phase: 0, candidates: [], pendingGhost: null, votedPlayers: [], revived: [] }
+    ghost: { deathThreshold: 3, killHours: 24, phase: 0, pendingGhost: null, revived: [] }
   };
 }
 
@@ -980,7 +996,7 @@ function renderPlayerView(player) {
     killSection.style.display = 'none';
     claimSection.classList.add('hidden');
     
-    if (gameState.ghost.phase === 3) renderVotingPanel(player);
+    if (gameState.ghost.phase === 2) renderVotingPanel(player);
     return;
   }
 
@@ -1011,21 +1027,45 @@ function renderPlayerView(player) {
 
   document.getElementById('player-target-name').textContent = player.target || '—';
 
-  // Immunity view
+  // Immunity view with 2-minute prep logic
   const windowOpen = Boolean(gameState.immunity.claimWindowOpen);
   const sortedClaims = getSortedClaimEntries();
-  const claimedIndex = sortedClaims.findIndex(([name]) => name === player.name);
+  const hasClaimed = sortedClaims.some(([name]) => name === player.name);
   const isEligible = player.status === 'alive' && !isModUser(gameState, player.name) && gameState.settings.immunityEnabled;
-  claimSection.classList.toggle('hidden', !isEligible);
+  
+  let showSection = false;
+  let isPrep = false;
+
   if (isEligible) {
-    if (!windowOpen) {
-      claimStatus.textContent = `Claim window closed. Opens daily between ${gameState.immunity.start} and ${gameState.immunity.end}.`;
+    const start = parseTimeToMinutes(gameState.immunity.start);
+    const now = getCurrentMinutesOfDay();
+    
+    if (start !== null) {
+      let prepStart = start - 2;
+      if (prepStart < 0) prepStart += 1440; 
+      
+      if (!windowOpen) {
+         if (start >= prepStart) {
+             isPrep = now >= prepStart && now < start;
+         } else { 
+             isPrep = now >= prepStart || now < start;
+         }
+      }
+    }
+    showSection = windowOpen || isPrep || hasClaimed;
+  }
+
+  claimSection.classList.toggle('hidden', !showSection);
+
+  if (showSection) {
+    if (hasClaimed) {
+      claimStatus.textContent = `Application for immunity has been applied.`;
       claimBtn.disabled = true;
-    } else if (claimedIndex >= 0) {
-      claimStatus.textContent = `Claim received. Queue position #${claimedIndex + 1}.`;
+    } else if (isPrep) {
+      claimStatus.textContent = `Window opens in less than 2 minutes. Get ready.`;
       claimBtn.disabled = true;
-    } else {
-      claimStatus.textContent = `Claim window is live. First ${gameState.immunity.slots} claims get immunity.`;
+    } else if (windowOpen) {
+      claimStatus.textContent = `Claim window is live. Claim now!`;
       claimBtn.disabled = false;
     }
   }
@@ -1048,20 +1088,21 @@ function renderVotingPanel(player) {
   const phase = gameState.ghost.phase || 0;
   
   const hasVoted = Boolean(player.votes);
-  let candidatesNames = gameState.ghost.candidates || [];
+  let candidates = [];
   let title = '';
   let instruction = '';
 
-  // Mods cannot vote.
   if (isModUser(gameState, player.name)) {
       section.classList.add('hidden');
       return;
   }
 
   if (phase === 1 && player.status === 'alive') {
+    candidates = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name));
     title = '👻 STAGE 1: VOTE TO REVIVE';
-    instruction = 'Vote for one of the dead candidates selected by the moderator to give them a second chance.';
-  } else if (phase === 3 && player.status === 'dead') {
+    instruction = 'Vote for a dead/ghost player to bring them back as a ghost.';
+  } else if (phase === 2 && player.status === 'dead') {
+    candidates = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
     title = `🎯 STAGE 2: TARGET FOR ${gameState.ghost.pendingGhost}`;
     instruction = `Vote for the alive player that ${gameState.ghost.pendingGhost} must assassinate.`;
   } else {
@@ -1080,11 +1121,8 @@ function renderVotingPanel(player) {
   }
   
   document.getElementById('player-already-voted').classList.add('hidden');
-  list.innerHTML = candidatesNames.map(name => `
-    <div class="vote-card">
-      <div style="flex: 1;">${name}</div>
-      <button class="btn btn-ghost-btn btn-sm" onclick="castVote('${name}')">VOTE</button>
-    </div>
+  list.innerHTML = candidates.map(c => `
+    <button class="btn btn-ghost-btn" onclick="castVote('${c.name}')">${c.name}</button>
   `).join('');
 }
 
@@ -1097,14 +1135,13 @@ async function castVote(targetName) {
 }
 
 function updateGhostTimer(expiresAt) {
-  // Clear any existing ghost timers so they don't overlap
   if (ghostTimerInterval) clearInterval(ghostTimerInterval);
   
   const tick = () => {
     const el = document.getElementById('ghost-timer-display');
     if (!el) return;
     
-    const remaining = new Date(expiresAt) - new Date();
+    const remaining = new Date(expiresAt).getTime() - Date.now();
     
     if (remaining <= 0) { 
       el.textContent = 'EXPIRED'; 
@@ -1119,7 +1156,6 @@ function updateGhostTimer(expiresAt) {
     el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   };
   
-  // Run it immediately once, then lock it into a 1-second interval
   tick();
   ghostTimerInterval = setInterval(tick, 1000);
 }
@@ -1192,8 +1228,6 @@ async function processKill(killerName, victimName) {
   killer.lastKill = victimName;
   
   if (isGhostKill) {
-    // Re-route the active kill chain: 
-    // Whoever was targeting the victim now targets the ghost
     const previousAssassin = gameState.players.find(p => p.target === victimName && p.status === 'alive');
     if (previousAssassin) {
       previousAssassin.target = killer.name;
@@ -1225,7 +1259,6 @@ function renderStatusPage() {
   const logEl = document.getElementById('status-kill-log-list');
   document.getElementById('status-game-name-display').textContent = gameState.gameName;
   
-  // Isolate non-moderator players
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
   
   const alive = realPlayers.filter(p => p.status === 'alive' || p.status === 'ghost').length;
@@ -1242,14 +1275,14 @@ function renderStatusPage() {
     const isImmune = gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
     const cls = p.status === 'dead' ? 'dead' : (isImmune ? 'immune' : (p.status === 'ghost' ? 'ghost' : 'alive'));
     const statusLabel = p.status === 'dead' ? 'DEAD' : (isImmune ? 'IMMUNE' : (p.status === 'ghost' ? 'GHOST' : 'ALIVE'));
-    return `<div class="player-chip ${cls}"><div class="chip-name">${p.name}</div><div class="chip-status">${statusLabel}</div>${p.kills ? `<div class="text-dim" style="font-size: 10px; margin-top: 2px;">${p.kills} kill(s)</div>` : ''}</div>`;
+    return `<div class="player-chip ${cls}"><div class="chip-name">${p.name}</div><div class="chip-status">${statusLabel}</div>${p.kills ? `<div class="text-dim" style="font-size: 10px; margin-top: 4px;">${p.kills} kill(s)</div>` : ''}</div>`;
   }).join('');
   logEl.innerHTML = gameState.killLog.length === 0
     ? '<div class="text-dim" style="padding: 16px;">No kills yet.</div>'
     : [...gameState.killLog].reverse().map(k => `
       <div class="kill-entry">
         <div class="kill-time">${formatTime(k.time)}</div>
-        <div><span style="color: var(--cream);">${k.killer}</span><span class="text-dim"> eliminated </span><span class="text-red">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
+        <div class="kill-action"><span style="color: var(--cream); font-weight: 700;">${k.killer}</span><span class="text-dim"> eliminated </span><span class="text-red font-weight-bold">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
       </div>`).join('');
 }
 
@@ -1268,7 +1301,6 @@ function renderModDashboard() {
   const chainEl = document.getElementById('mod-chain-visual');
   const recentEl = document.getElementById('mod-recent-kills');
   
-  // Isolate non-moderator players
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
   
   const alive = realPlayers.filter(p => p.status === 'alive').length;
@@ -1286,14 +1318,14 @@ function renderModDashboard() {
   chainEl.innerHTML = realPlayers.map(p => {
     const isImmune = gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
     const statusBadge = p.status === 'dead' ? '<span class="badge badge-dead">DEAD</span>' : (isImmune ? '<span class="badge badge-immune">IMMUNE</span>' : (p.status === 'ghost' ? '<span class="badge badge-ghost">GHOST</span>' : '<span class="badge badge-alive">ALIVE</span>'));
-    return `<div class="chain-item">${statusBadge}<span style="flex: 1;">${p.name}</span>${p.status !== 'dead' ? `<span style="color: var(--cream3);">→</span> <span class="text-gold">${p.ghostTarget || p.target || '—'}</span>` : `<span class="text-dim">Target: ${p.target || '—'}</span>`}${p.kills ? `<span class="text-dim" style="margin-left: 12px;">⚔ ${p.kills}</span>` : ''}</div>`;
+    return `<div class="chain-item">${statusBadge}<span style="flex: 1; font-weight: 700;">${p.name}</span>${p.status !== 'dead' ? `<span style="color: var(--cream3);">→</span> <span class="text-gold">${p.ghostTarget || p.target || '—'}</span>` : `<span class="text-dim">Target: ${p.target || '—'}</span>`}${p.kills ? `<span class="text-dim" style="margin-left: auto;">⚔ ${p.kills}</span>` : ''}</div>`;
   }).join('');
   recentEl.innerHTML = gameState.killLog.length === 0
     ? '<div class="text-dim" style="padding: 12px;">No kills yet.</div>'
     : [...gameState.killLog].reverse().slice(0, 10).map(k => `
       <div class="kill-entry">
         <div class="kill-time">${formatTime(k.time)}</div>
-        <div><span style="color: var(--cream);">${k.killer}</span><span class="text-dim"> → </span><span class="text-red">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
+        <div class="kill-action"><span style="color: var(--cream); font-weight: 700;">${k.killer}</span><span class="text-dim"> → </span><span class="text-red">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
       </div>`).join('');
 }
 
@@ -1306,12 +1338,12 @@ function renderModPlayers() {
     const rowClass = p.status === 'dead' ? 'dead-row' : (isImmune ? 'immune-row' : (p.status === 'ghost' ? 'ghost-row' : ''));
     const statusBadge = p.status === 'dead' ? '<span class="badge badge-dead">DEAD</span>' : (isImmune ? '<span class="badge badge-immune">IMMUNE</span>' : (p.status === 'ghost' ? '<span class="badge badge-ghost">GHOST</span>' : '<span class="badge badge-alive">ALIVE</span>'));
     return `<tr class="${rowClass}">
-      <td>${p.name}${gameState.mods.includes(p.name) ? ' <span class="badge badge-mod">MOD</span>' : ''}</td>
+      <td style="font-weight: 700;">${p.name}</td>
       <td><span class="password-cell">${p.password}</span></td>
       <td>${statusBadge}</td>
-      <td class="text-gold">${p.target || '—'}</td>
+      <td class="text-gold" style="font-weight: 700;">${p.target || '—'}</td>
       <td>${p.kills || 0}</td>
-      <td><div class="flex gap8">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${p.name}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${p.name}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${p.name}')">TARGET</button></div></td>
+      <td><div class="flex-btn-group">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${p.name}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${p.name}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${p.name}')">TARGET</button></div></td>
     </tr>`;
   }).join('');
 }
@@ -1323,7 +1355,7 @@ function renderModKillLog() {
     : [...gameState.killLog].reverse().map((k, i) => `
       <div class="kill-entry">
         <div class="kill-time">${formatTime(k.time)}</div>
-        <div><span style="color: var(--cream);">${k.killer}</span><span class="text-dim"> eliminated </span><span class="text-red">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
+        <div class="kill-action"><span style="color: var(--cream); font-weight: 700;">${k.killer}</span><span class="text-dim"> eliminated </span><span class="text-red font-weight-bold">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
         <button class="btn btn-blood btn-sm" style="margin-left: auto;" onclick="modUndoKill(${gameState.killLog.length - 1 - i})">UNDO</button>
       </div>`).join('');
 }
@@ -1336,15 +1368,15 @@ function renderModImmunity() {
   document.getElementById('immunity-end').value = gameState.immunity.end;
   const listEl = document.getElementById('immune-players-list');
   listEl.innerHTML = gameState.immunity.immunePlayers.length === 0
-    ? '<li style="border: none; color: var(--cream3);">No one is immune.</li>'
-    : gameState.immunity.immunePlayers.map(name => `<li>${name} <button class="remove" onclick="modRevokeImmunity('${name}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
+    ? '<li style="border: none; color: var(--cream3); background: transparent;">No one is immune.</li>'
+    : gameState.immunity.immunePlayers.map(name => `<li>${name} <button class="remove" onclick="modRevokeImmunity('${name}')">×</button></li>`).join('');
   const overrideText = gameState.immunity.manualOverride ? ` | override: ${gameState.immunity.manualOverride.toUpperCase()}` : '';
   document.getElementById('immunity-window-status').textContent = `Claim window status: ${gameState.immunity.claimWindowOpen ? 'OPEN' : 'CLOSED'} (${gameState.immunity.start} - ${gameState.immunity.end})${overrideText}`;
   const queueEl = document.getElementById('immunity-claim-queue');
   const sorted = getSortedClaimEntries();
   queueEl.innerHTML = sorted.length === 0
     ? '<div class="text-dim">No claims yet.</div>'
-    : sorted.map(([name, entry], idx) => `<div class="kill-entry"><span class="badge badge-immune">#${idx + 1}</span><span style="flex: 1;">${name}</span><span class="text-dim">${new Date(entry.ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span><span class="text-dim">${entry.source || 'claim'}</span></div>`).join('');
+    : sorted.map(([name, entry], idx) => `<div class="kill-entry" style="align-items: center;"><span class="badge badge-immune">#${idx + 1}</span><span style="flex: 1; font-weight: 700;">${name}</span><span class="text-dim">${new Date(entry.ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span><span class="text-dim">${entry.source || 'claim'}</span></div>`).join('');
 }
 
 function renderModGhost() {
@@ -1357,17 +1389,14 @@ function renderModGhost() {
   let html = '';
   
   if (phase === 0) {
-    const deadPlayers = gameState.players.filter(p => p.status === 'dead' && !isModUser(gameState, p.name));
+    const deadPlayers = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name));
     html += `
       <div class="flex-between mb16">
         <div class="card-title" style="margin-bottom: 0;">GHOST VOTING STAGES</div>
       </div>
-      <p class="text-dim mb16">Phase 0: System Idle. Select which dead players can be voted to return.</p>
-      <div class="candidate-list" id="ghost-phase1-candidates">
-        ${deadPlayers.map(p => `<label><input type="checkbox" value="${p.name}"> ${p.name}</label>`).join('')}
-      </div>
+      <p class="text-dim mb16">Phase 0: System Idle. Start voting to allow Alive players to revive a Dead player.</p>
       ${deadPlayers.length > 0 
-        ? `<button class="btn btn-alive full-width" onclick="startGhostPhase1()">START STAGE 1 (ALIVE VOTING)</button>` 
+        ? `<button class="btn btn-alive btn-full" onclick="startGhostPhase1()">START STAGE 1 (ALIVE VOTING)</button>` 
         : `<div class="alert alert-purple">No dead players available to revive.</div>`}
     `;
   } 
@@ -1387,41 +1416,26 @@ function renderModGhost() {
       </div>
       
       <div class="card-title mt16">VOTER ACTIVITY</div>
-      <div class="mb16" style="font-size: 11px;">
-        <span class="text-green">VOTED (${voted.length}):</span> ${voted.map(p=>p.name).join(', ') || 'None'}<br>
-        <span class="text-dim">PENDING (${pending.length}):</span> ${pending.map(p=>p.name).join(', ') || 'None'}
+      <div class="mb16" style="font-size: 11px; line-height: 1.6; background: var(--ink3); padding: 12px; border: 1px solid var(--seam);">
+        <span class="text-green font-weight-bold">VOTED (${voted.length}):</span> ${voted.map(p=>p.name).join(', ') || 'None'}<br>
+        <span class="text-dim font-weight-bold">PENDING (${pending.length}):</span> ${pending.map(p=>p.name).join(', ') || 'None'}
       </div>
 
       <div class="card-title">VOTE TALLY</div>
       <div class="mb16">
         ${Object.entries(voteCounts).sort((a,b)=>b[1]-a[1]).map(([name, count]) => `
           <div class="vote-card">
-            <div style="flex: 1;"><div>${name}</div><div class="vote-bar"><div class="vote-bar-fill" style="width: ${total > 0 ? Math.round(count/total*100) : 0}%"></div></div></div>
-            <div class="text-purple">${count} vote(s)</div>
+            <div style="flex: 1;"><div style="font-weight: 700;">${name}</div><div class="vote-bar"><div class="vote-bar-fill" style="width: ${total > 0 ? Math.round(count/total*100) : 0}%"></div></div></div>
+            <div class="text-purple font-weight-bold">${count} vote(s)</div>
           </div>`).join('') || '<div class="text-dim">Waiting for votes...</div>'}
       </div>
-      <div class="flex gap8">
-        <button class="btn btn-outline" style="flex: 1;" onclick="clearVotes()">CLEAR VOTES / REDO</button>
-        <button class="btn btn-blade" style="flex: 1;" onclick="proceedPhase1()">PROCEED TO STAGE 2 SETUP</button>
+      <div class="flex-btn-group">
+        <button class="btn btn-outline" onclick="clearVotes()">CLEAR VOTES / REDO</button>
+        <button class="btn btn-blade" onclick="proceedPhase1()">PROCEED TO STAGE 2</button>
       </div>
     `;
   }
   else if (phase === 2) {
-    const alivePlayers = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
-    html += `
-      <div class="flex-between mb16">
-        <div class="card-title" style="margin-bottom: 0;">STAGE 2 SETUP</div>
-        <button class="btn btn-blood btn-sm" onclick="cancelGhostVoting()">CANCEL VOTING</button>
-      </div>
-      <div class="alert alert-purple mb16"><strong>${gameState.ghost.pendingGhost}</strong> won Stage 1 and will return as a ghost! Select alive players to be their potential targets.</div>
-      
-      <div class="candidate-list" id="ghost-phase2-candidates">
-        ${alivePlayers.map(p => `<label><input type="checkbox" value="${p.name}"> ${p.name}</label>`).join('')}
-      </div>
-      <button class="btn btn-alive full-width" onclick="startGhostPhase3()">START STAGE 2 (DEAD VOTING)</button>
-    `;
-  }
-  else if (phase === 3) {
     const deadVoters = gameState.players.filter(p => p.status === 'dead' && !isModUser(gameState, p.name));
     const voted = deadVoters.filter(p => p.votes);
     const pending = deadVoters.filter(p => !p.votes);
@@ -1436,23 +1450,25 @@ function renderModGhost() {
         <button class="btn btn-blood btn-sm" onclick="cancelGhostVoting()">CANCEL VOTING</button>
       </div>
 
+      <div class="alert alert-purple mb16"><strong>${gameState.ghost.pendingGhost}</strong> won Stage 1. Now waiting for dead players to vote for their target.</div>
+
       <div class="card-title mt16">VOTER ACTIVITY</div>
-      <div class="mb16" style="font-size: 11px;">
-        <span class="text-green">VOTED (${voted.length}):</span> ${voted.map(p=>p.name).join(', ') || 'None'}<br>
-        <span class="text-dim">PENDING (${pending.length}):</span> ${pending.map(p=>p.name).join(', ') || 'None'}
+      <div class="mb16" style="font-size: 11px; line-height: 1.6; background: var(--ink3); padding: 12px; border: 1px solid var(--seam);">
+        <span class="text-green font-weight-bold">VOTED (${voted.length}):</span> ${voted.map(p=>p.name).join(', ') || 'None'}<br>
+        <span class="text-dim font-weight-bold">PENDING (${pending.length}):</span> ${pending.map(p=>p.name).join(', ') || 'None'}
       </div>
 
       <div class="card-title">VOTE TALLY</div>
       <div class="mb16">
         ${Object.entries(voteCounts).sort((a,b)=>b[1]-a[1]).map(([name, count]) => `
           <div class="vote-card">
-            <div style="flex: 1;"><div>${name}</div><div class="vote-bar"><div class="vote-bar-fill" style="width: ${total > 0 ? Math.round(count/total*100) : 0}%"></div></div></div>
-            <div class="text-purple">${count} vote(s)</div>
+            <div style="flex: 1;"><div style="font-weight: 700;">${name}</div><div class="vote-bar"><div class="vote-bar-fill" style="width: ${total > 0 ? Math.round(count/total*100) : 0}%"></div></div></div>
+            <div class="text-purple font-weight-bold">${count} vote(s)</div>
           </div>`).join('') || '<div class="text-dim">Waiting for votes...</div>'}
       </div>
-      <div class="flex gap8">
-        <button class="btn btn-outline" style="flex: 1;" onclick="clearVotes()">CLEAR VOTES / REDO</button>
-        <button class="btn btn-blade" style="flex: 1;" onclick="confirmGhost()">CONFIRM GHOST AND TARGET</button>
+      <div class="flex-btn-group">
+        <button class="btn btn-outline" onclick="clearVotes()">CLEAR VOTES / REDO</button>
+        <button class="btn btn-blade" onclick="confirmGhost()">CONFIRM GHOST AND TARGET</button>
       </div>
     `;
   }
@@ -1464,22 +1480,18 @@ function renderModGhost() {
     ? '<div class="text-dim">No active ghosts.</div>'
     : gameState.ghost.revived.map(g => {
         const player = gameState.players.find(p => p.name === g.name);
-        const remaining = new Date(g.expiresAt) - new Date();
+        const remaining = new Date(g.expiresAt).getTime() - Date.now();
         const h = Math.max(0, Math.floor(remaining / 3600000));
         const m = Math.max(0, Math.floor((remaining % 3600000) / 60000));
-        return `<div class="kill-entry"><span class="badge badge-ghost">GHOST</span><span style="flex: 1;">${g.name}</span><span class="text-dim">Target: ${player?.ghostTarget || '—'}</span><span class="text-purple">${h}h ${m}m</span><button class="btn btn-blood btn-sm" onclick="modEliminateGhost('${g.name}')">KILL</button></div>`;
+        return `<div class="kill-entry" style="align-items: center;"><span class="badge badge-ghost">GHOST</span><span style="flex: 1; font-weight: 700;">${g.name}</span><span class="text-dim">Target: <span class="text-gold font-weight-bold">${player?.ghostTarget || '—'}</span></span><span class="text-purple font-weight-bold">${h}h ${m}m</span><button class="btn btn-blood btn-sm" onclick="modEliminateGhost('${g.name}')">KILL</button></div>`;
       }).join('');
 }
 
 // GHOST VOTING LOGIC - MODERATOR
 async function startGhostPhase1() {
   if (!gameState.settings.ghostEnabled) return alert('Ghost voting is disabled in settings.');
-  const cbs = document.querySelectorAll('#ghost-phase1-candidates input:checked');
-  const candidates = Array.from(cbs).map(c => c.value);
-  if (candidates.length === 0) return alert('Select at least one candidate for Stage 1.');
-  
   gameState.players.forEach(p => p.votes = null);
-  await updateGameState({ 'ghost/phase': 1, 'ghost/candidates': candidates, 'ghost/pendingGhost': null, players: gameState.players });
+  await updateGameState({ 'ghost/phase': 1, 'ghost/pendingGhost': null, players: gameState.players });
   renderModGhost();
 }
 
@@ -1494,17 +1506,7 @@ async function proceedPhase1() {
 
   const winnerName = sorted[0][0];
   gameState.players.forEach(p => p.votes = null);
-  await updateGameState({ 'ghost/phase': 2, 'ghost/pendingGhost': winnerName, 'ghost/candidates': [], players: gameState.players });
-  renderModGhost();
-}
-
-async function startGhostPhase3() {
-  const cbs = document.querySelectorAll('#ghost-phase2-candidates input:checked');
-  const candidates = Array.from(cbs).map(c => c.value);
-  if (candidates.length === 0) return alert('Select at least one candidate for Stage 2.');
-  
-  gameState.players.forEach(p => p.votes = null);
-  await updateGameState({ 'ghost/phase': 3, 'ghost/candidates': candidates, players: gameState.players });
+  await updateGameState({ 'ghost/phase': 2, 'ghost/pendingGhost': winnerName, players: gameState.players });
   renderModGhost();
 }
 
@@ -1529,26 +1531,19 @@ async function confirmGhost() {
   player.ghostTarget = targetName;
   const expiresAt = new Date(Date.now() + gameState.ghost.killHours * 3600000).toISOString();
   
-  // Guardrail: Ensure the revived array exists before pushing (Firebase deletes empty arrays)
   if (!gameState.ghost.revived) gameState.ghost.revived = [];
-  
   gameState.ghost.revived.push({ name: player.name, expiresAt });
   
-  // Wipe all votes to clean the slate
   gameState.players.forEach(p => p.votes = null);
   
-  // Update state and fully reset the Ghost parameters back to Phase 0
   await updateGameState({ 
       players: gameState.players, 
       ghost: gameState.ghost, 
       'ghost/phase': 0, 
-      'ghost/pendingGhost': null, 
-      'ghost/candidates': [] 
+      'ghost/pendingGhost': null
   });
   
   renderModGhost();
-  
-  // Provide clear feedback
   alert(`SUCCESS: ${player.name} has been revived as a GHOST and is now hunting ${targetName}!`);
 }
 
@@ -1561,7 +1556,7 @@ async function clearVotes() {
 async function cancelGhostVoting() {
   if(!confirm("Cancel all voting and return to phase 0?")) return;
   gameState.players.forEach(p => p.votes = null);
-  await updateGameState({ 'ghost/phase': 0, 'ghost/pendingGhost': null, 'ghost/candidates': [], players: gameState.players });
+  await updateGameState({ 'ghost/phase': 0, 'ghost/pendingGhost': null, players: gameState.players });
   renderModGhost();
 }
 

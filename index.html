@@ -583,6 +583,7 @@ const FIREBASE_CONFIG = {
 
 let db = null, firebaseReady = false, currentUser = null, currentIsMod = false, currentPage = 'login', gameState = null, connectionState = 'reconnecting';
 let immunityWindowSyncInFlight = false;
+let ghostTimerInterval = null;
 
 function initFirebase() {
   const errEl = document.getElementById('firebase-error');
@@ -1096,15 +1097,31 @@ async function castVote(targetName) {
 }
 
 function updateGhostTimer(expiresAt) {
-  const el = document.getElementById('ghost-timer-display');
-  if (!el) return;
-  const remaining = new Date(expiresAt) - new Date();
-  if (remaining <= 0) { el.textContent = 'EXPIRED'; return; }
-  const h = Math.floor(remaining / 3600000);
-  const m = Math.floor((remaining % 3600000) / 60000);
-  const s = Math.floor((remaining % 60000) / 1000);
-  el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  setTimeout(() => updateGhostTimer(expiresAt), 1000);
+  // Clear any existing ghost timers so they don't overlap
+  if (ghostTimerInterval) clearInterval(ghostTimerInterval);
+  
+  const tick = () => {
+    const el = document.getElementById('ghost-timer-display');
+    if (!el) return;
+    
+    const remaining = new Date(expiresAt) - new Date();
+    
+    if (remaining <= 0) { 
+      el.textContent = 'EXPIRED'; 
+      clearInterval(ghostTimerInterval);
+      return; 
+    }
+    
+    const h = Math.floor(remaining / 3600000);
+    const m = Math.floor((remaining % 3600000) / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    
+    el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+  
+  // Run it immediately once, then lock it into a 1-second interval
+  tick();
+  ghostTimerInterval = setInterval(tick, 1000);
 }
 
 function switchKillTab(tab, trigger) {

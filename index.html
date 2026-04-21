@@ -1119,10 +1119,9 @@ function renderPlayerView(player) {
           
           const m = Math.floor(diff / 60000);
           const s = Math.floor((diff % 60000) / 1000);
-          const ms = diff % 1000;
           
-          claimStatus.innerHTML = `You missed the immunity window by:<br><span style="color: var(--blood); font-weight: 900; font-size: 16px; letter-spacing: 2px;">${m}m ${s}s ${String(ms).padStart(3, '0')}ms</span>`;
-      }, 37); // 37ms creates a smooth, fast rolling millisecond effect
+          claimStatus.innerHTML = `You missed the immunity window by:<br><span style="color: var(--blood); font-weight: 900; font-size: 16px; letter-spacing: 2px;">${m}m ${String(s).padStart(2, '0')}s</span>`;
+      }, 1000); // 1000ms updates it efficiently once every second
     }
   }
 }

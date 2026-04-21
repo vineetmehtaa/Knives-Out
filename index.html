@@ -1099,11 +1099,11 @@ function renderVotingPanel(player) {
 
   if (phase === 1 && player.status === 'alive') {
     candidates = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name));
-    title = '👻 STAGE 1: VOTE TO REVIVE';
+    title = '👻 VOTE TO REVIVE';
     instruction = 'Vote for a dead/ghost player to bring them back as a ghost.';
   } else if (phase === 2 && player.status === 'dead') {
     candidates = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
-    title = `🎯 STAGE 2: TARGET FOR ${gameState.ghost.pendingGhost}`;
+    title = `🎯 VOTE A TARGET FOR GHOST`;
     instruction = `Vote for the alive player that the ghost must assassinate.`;
   } else {
     section.classList.add('hidden');

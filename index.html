@@ -1318,7 +1318,8 @@ function renderModDashboard() {
   chainEl.innerHTML = realPlayers.map(p => {
     const isImmune = gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
     const statusBadge = p.status === 'dead' ? '<span class="badge badge-dead">DEAD</span>' : (isImmune ? '<span class="badge badge-immune">IMMUNE</span>' : (p.status === 'ghost' ? '<span class="badge badge-ghost">GHOST</span>' : '<span class="badge badge-alive">ALIVE</span>'));
-    return `<div class="chain-item">${statusBadge}<span style="flex: 1; font-weight: 700;">${p.name}</span>${p.status !== 'dead' ? `<span style="color: var(--cream3);">→</span> <span class="text-gold">${p.ghostTarget || p.target || '—'}</span>` : `<span class="text-dim">Target: ${p.target || '—'}</span>`}${p.kills ? `<span class="text-dim" style="margin-left: auto;">⚔ ${p.kills}</span>` : ''}</div>`;
+    const displayTarget = p.status === 'ghost' ? (p.ghostTarget || '—') : (p.target || '—');
+    return `<div class="chain-item">${statusBadge}<span style="flex: 1; font-weight: 700;">${p.name}</span>${p.status !== 'dead' ? `<span style="color: var(--cream3);">→</span> <span class="text-gold">${displayTarget}</span>` : `<span class="text-dim">Target: ${displayTarget}</span>`}${p.kills ? `<span class="text-dim" style="margin-left: auto;">⚔ ${p.kills}</span>` : ''}</div>`;
   }).join('');
   recentEl.innerHTML = gameState.killLog.length === 0
     ? '<div class="text-dim" style="padding: 12px;">No kills yet.</div>'
@@ -1341,7 +1342,7 @@ function renderModPlayers() {
       <td style="font-weight: 700;">${p.name}</td>
       <td><span class="password-cell">${p.password}</span></td>
       <td>${statusBadge}</td>
-      <td class="text-gold" style="font-weight: 700;">${p.target || '—'}</td>
+      <td class="text-gold" style="font-weight: 700;">${p.status === 'ghost' ? (p.ghostTarget || '—') : (p.target || '—')}</td>
       <td>${p.kills || 0}</td>
       <td><div class="flex-btn-group">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${p.name}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${p.name}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${p.name}')">TARGET</button></div></td>
     </tr>`;
@@ -1819,11 +1820,22 @@ async function modKillPlayer(name) {
 async function modEditTarget(name) {
   const player = gameState.players.find(p => p.name === name);
   if (!player) return;
-  const newTarget = prompt(`New target for ${name}:`, player.target || '');
+  
+  // Look at the correct current target based on their status
+  const currentTarget = player.status === 'ghost' ? (player.ghostTarget || '') : (player.target || '');
+  const newTarget = prompt(`New target for ${name}:`, currentTarget);
   if (!newTarget) return;
+  
   const targetPlayer = gameState.players.find(p => p.name.toLowerCase() === newTarget.toLowerCase());
   if (!targetPlayer) { alert('Not found.'); return; }
-  player.target = targetPlayer.name;
+  
+  // Apply the newly edited target to the correct variable
+  if (player.status === 'ghost') {
+      player.ghostTarget = targetPlayer.name;
+  } else {
+      player.target = targetPlayer.name;
+  }
+  
   await updateGameState({ players: gameState.players });
   renderModView();
 }

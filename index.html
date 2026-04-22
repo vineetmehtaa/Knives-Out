@@ -38,10 +38,74 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
 #page-login { align-items: center; justify-content: center; background: radial-gradient(ellipse at 40% 30%, #1a0d0d 0%, var(--ink) 65%); padding: 20px; }
 #page-login.active { display: flex; }
 .login-wrap { width: 100%; max-width: 420px; margin: 0 auto; animation: riseUp .55s ease; }
-.login-card { background: var(--ink2); border: 1px solid var(--seam); border-top: 4px solid var(--blade); padding: 40px 30px; position: relative; }
+.login-card {
+  background: linear-gradient(180deg, rgba(36,34,32,0.95), rgba(20,18,16,0.96));
+  border: 1px solid var(--seam);
+  border-top: 4px solid var(--blade);
+  padding: 40px 30px;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 0 40px rgba(212, 160, 23, 0.04);
+  overflow: hidden;
+}
+.login-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 85% -10%, rgba(212,160,23,0.16), transparent 45%);
+}
+.login-card::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(212,160,23,0.35);
+  opacity: 0.5;
+  pointer-events: none;
+}
 .logo { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; font-style: italic; color: var(--cream); text-align: center; letter-spacing: 2px; margin-bottom: 2px; }
 .logo span { color: var(--blade); }
 .logo-sub { text-align: center; font-size: 9px; letter-spacing: 3px; color: var(--cream3); text-transform: uppercase; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--seam); }
+.login-note {
+  margin: -6px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--seam);
+  background: rgba(255,255,255,0.02);
+  font-size: 10px;
+  color: var(--cream3);
+  line-height: 1.5;
+}
+.mod-toggle {
+  margin: 2px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--seam);
+  background: var(--ink3);
+  color: var(--cream2);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.mod-toggle input {
+  width: auto;
+  margin: 0;
+  transform: scale(1.05);
+}
+.mod-auth-wrap {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height .25s ease, opacity .2s ease;
+}
+.mod-auth-wrap.visible {
+  max-height: 120px;
+  opacity: 1;
+}
 
 .tabs-toggle { display: flex; gap: 0; margin-bottom: 24px; }
 .tab-btn { flex: 1; padding: 12px 8px; background: transparent; border: 1px solid var(--seam); border-bottom: none; color: var(--cream3); font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
@@ -52,12 +116,12 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
 .tab-content.active { display: block; }
 
 label { display: block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); margin-bottom: 6px; margin-top: 6px; }
-input[type=text], input[type=password], input[type=time], input[type=number], select, textarea { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 13px; padding: 12px; outline: none; transition: border-color .2s; margin-bottom: 16px; box-sizing: border-box; -webkit-appearance: none; border-radius: 0; }
+input[type=text], input[type=password], input[type=time], input[type=number], select, textarea { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 13px; padding: 12px; outline: none; transition: border-color .2s; margin-bottom: 16px; box-sizing: border-box; -webkit-appearance: none; appearance: none; border-radius: 0; }
 input:focus, select:focus, textarea:focus { border-color: var(--blade2); background: var(--ink4); }
 
 .error-msg { color: var(--blood); font-size: 11px; letter-spacing: 1px; margin: -10px 0 12px 0; min-height: 14px; word-wrap: break-word; }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 20px; font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border: none; transition: all .18s; font-weight: 700; box-sizing: border-box; text-align: center; width: 100%; border-radius: 0; -webkit-appearance: none; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 20px; font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border: none; transition: all .18s; font-weight: 700; box-sizing: border-box; text-align: center; width: 100%; border-radius: 0; -webkit-appearance: none; appearance: none; }
 @media (min-width: 480px) { .btn { width: auto; } }
 .btn-full { width: 100% !important; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
@@ -265,7 +329,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <input type="text" id="login-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
         <label>Password</label>
         <input type="password" id="login-password" placeholder="••••••••">
-        <div class="text-dim mb16" style="font-size: 10px; line-height: 1.4;">Players: use your account password.<br>Moderators: use moderator password.</div>
+        <div class="login-note">Players use account password. Moderators can login with moderator password or personal account password.</div>
         <div class="error-msg" id="login-error"></div>
         <button class="btn btn-blade btn-full" onclick="doLogin()">ENTER GAME</button>
       </div>
@@ -275,8 +339,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <input type="text" id="signup-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
         <label>Password</label>
         <input type="password" id="signup-password" placeholder="••••••••">
-        <label>Moderator Password (optional)</label>
-        <input type="password" id="signup-mod-password" placeholder="leave empty for normal player">
+        <label class="mod-toggle">
+          <input type="checkbox" id="signup-is-mod" onchange="toggleSignupModField(this.checked)">
+          Create moderator account
+        </label>
+        <div id="signup-mod-auth-wrap" class="mod-auth-wrap">
+          <label>Moderator Password</label>
+          <input type="password" id="signup-mod-password" placeholder="required for moderator signup">
+        </div>
         <div class="error-msg" id="signup-error"></div>
         <button class="btn btn-blade btn-full" onclick="doSignup()">CREATE ACCOUNT</button>
         <div class="text-dim mt16" style="text-align: center; font-size: 10px;">Moderator creates initial setup.<br>Players sign up here.</div>
@@ -419,6 +489,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="card-title">RECENT KILLS</div>
         <div id="mod-recent-kills"></div>
       </div>
+      <div class="card">
+        <div class="card-title">AUDIT TRAIL</div>
+        <div id="mod-audit-log"></div>
+      </div>
     </div>
 
     <div class="tab-content" id="mod-tab-players">
@@ -452,7 +526,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
     <div class="tab-content" id="mod-tab-immunity">
       <div class="card">
-        <div class="card-title">IMMUNITY CONFIGURATION</div>
+        <div class="card-title">WINDOW CONTROL</div>
+        <div id="immunity-override-banner" class="alert alert-gold hidden">Manual override active.</div>
         <div class="settings-row mb16">
           <div>
             <label>Max Immune Players</label>
@@ -470,24 +545,27 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
         </div>
         <button class="btn btn-blade btn-full" onclick="saveImmunitySettings()">SAVE</button>
+        <div id="immunity-window-timeline" class="text-dim mt16" style="line-height: 1.6;"></div>
 
         <hr class="divider">
-        <div class="card-title mt16">CLAIM WINDOW OVERRIDE</div>
+        <div class="card-title mt16">CLAIM WINDOW ACTIONS</div>
         <div class="flex-btn-group mb16">
-          <button class="btn btn-alive btn-sm" onclick="modOpenClaimWindow()">OPEN WINDOW</button>
-          <button class="btn btn-blood btn-sm" onclick="modCloseClaimWindow()">CLOSE WINDOW</button>
-          <button class="btn btn-outline btn-sm" onclick="modClearWindowOverride()">CLEAR OVERRIDE</button>
-          <button class="btn btn-outline btn-sm" onclick="recomputeImmunityFromClaims(true)">RECOMPUTE IMMUNITY</button>
-          <button class="btn btn-outline btn-sm" onclick="modClearClaims()">CLEAR CLAIMS</button>
-          <button class="btn btn-outline btn-sm" onclick="modClearImmunity()">CLEAR IMMUNITY</button>
+          <button id="immunity-open-btn" class="btn btn-alive btn-sm" onclick="modOpenClaimWindow()">OPEN WINDOW</button>
+          <button id="immunity-close-btn" class="btn btn-blood btn-sm" onclick="modCloseClaimWindow()">CLOSE WINDOW</button>
+          <button id="immunity-clear-override-btn" class="btn btn-outline btn-sm" onclick="modClearWindowOverride()">CLEAR OVERRIDE</button>
+          <button class="btn btn-outline btn-sm" onclick="repairImmunityState()">REPAIR IMMUNITY STATE</button>
+          <button class="btn btn-outline btn-sm" onclick="modClearClaims()">CLEAR CLAIM QUEUE</button>
+          <button class="btn btn-outline btn-sm" onclick="modClearImmunity()">CLEAR WINNERS ONLY</button>
+          <button class="btn btn-blood btn-sm" onclick="modResetImmunityRound()">ROUND RESET</button>
         </div>
         <div class="text-dim mb16" id="immunity-window-status">Claim window status: CLOSED</div>
 
-        <div class="card-title mt16">CLAIM QUEUE</div>
+        <div class="card-title mt16">LIVE CLAIMS</div>
+        <div id="immunity-computed-preview" class="text-dim mb16" style="line-height: 1.6;"></div>
         <div id="immunity-claim-queue" class="mb16"></div>
 
         <hr class="divider">
-        <div class="card-title mt16">GRANT / REVOKE</div>
+        <div class="card-title mt16">OUTCOME CONTROL</div>
         <div class="settings-row">
           <div>
             <label>Player</label>
@@ -596,18 +674,25 @@ let db = null, firebaseReady = false, currentUser = null, currentIsMod = false, 
 let immunityWindowSyncInFlight = false;
 let ghostTimerInterval = null;
 let missedTimerInterval = null;
+const USERNAME_REGEX = /^[A-Za-z0-9_-]{3,24}$/;
+const MISSED_IMMUNITY_WINDOW_MS = (5 * 60 * 1000) + 990;
 
 function initFirebase() {
   const errEl = document.getElementById('firebase-error');
+  const cfgInput = document.getElementById('firebase-config');
   errEl.textContent = '';
   try {
+    let runtimeConfig = { ...FIREBASE_CONFIG };
+    const rawConfig = (cfgInput?.value || '').trim();
+    if (rawConfig) runtimeConfig = JSON.parse(rawConfig);
+
     const required = ['apiKey', 'authDomain', 'databaseURL', 'projectId', 'appId'];
-    const missing = required.filter(k => !FIREBASE_CONFIG[k]);
+    const missing = required.filter(k => !runtimeConfig[k]);
     if (missing.length) {
       errEl.textContent = `Missing keys: ${missing.join(', ')}`;
       return;
     }
-    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    if (!firebase.apps.length) firebase.initializeApp(runtimeConfig);
     db = firebase.database();
     firebaseReady = true;
     document.getElementById('firebase-init').style.display = 'none';
@@ -616,7 +701,7 @@ function initFirebase() {
     // Routine checks every 5 seconds for ghost expirations and immunity clock
     setInterval(() => {
        if (gameState) {
-           if (currentIsMod || !gameState.mods.includes(currentUser)) {
+           if (!currentUser || currentIsMod || !isModUser(gameState, currentUser)) {
                reconcileGhostExpirations();
            }
            syncScheduledImmunityWindow();
@@ -683,12 +768,43 @@ function toggleSecret(show) {
   }
 }
 
+function getGhostPoolSnapshot() {
+  const snap = gameState?.ghost?.votingPoolSnapshot || {};
+  return {
+    phase1AliveVoters: Array.isArray(snap.phase1AliveVoters) ? snap.phase1AliveVoters : [],
+    phase1DeadCandidates: Array.isArray(snap.phase1DeadCandidates) ? snap.phase1DeadCandidates : [],
+    phase2DeadVoters: Array.isArray(snap.phase2DeadVoters) ? snap.phase2DeadVoters : [],
+    phase2AliveTargets: Array.isArray(snap.phase2AliveTargets) ? snap.phase2AliveTargets : []
+  };
+}
+
+function getCheckedValues(selector) {
+  return Array.from(document.querySelectorAll(selector))
+    .filter(el => el.checked)
+    .map(el => el.value);
+}
+
+function toNameSet(values) {
+  return new Set((values || []).map(v => String(v || '').trim().toLowerCase()));
+}
+
 function normalizeState(raw) {
   const base = getDefaultState();
   const merged = raw ? { ...base, ...raw } : base;
   merged.players = Array.isArray(merged.players) ? merged.players : [];
   merged.mods = Array.isArray(merged.mods) ? merged.mods : [];
   merged.killLog = Array.isArray(merged.killLog) ? merged.killLog : [];
+  if (Array.isArray(merged.auditLog)) {
+    merged.auditLog = merged.auditLog;
+  } else if (merged.auditLog && typeof merged.auditLog === 'object') {
+    merged.auditLog = Object.values(merged.auditLog).sort((a, b) => {
+      const at = Number(a?.ts) || new Date(a?.iso || 0).getTime() || 0;
+      const bt = Number(b?.ts) || new Date(b?.iso || 0).getTime() || 0;
+      return at - bt;
+    });
+  } else {
+    merged.auditLog = [];
+  }
   merged.pendingCodes = merged.pendingCodes || merged.codes || {};
   
   merged.settings = merged.settings || { immunityEnabled: true, ghostEnabled: true };
@@ -698,14 +814,20 @@ function normalizeState(raw) {
     ...(merged.immunity || {}),
     immunePlayers: merged.immunity?.immunePlayers || merged.immunity?.immune_players || [],
     claimWindowOpen: merged.immunity?.claimWindowOpen ?? false,
-    claims: merged.immunity?.claims || {}
+    claims: merged.immunity?.claims || {},
+    lastOpenedAt: merged.immunity?.lastOpenedAt || null,
+    lastClosedAt: merged.immunity?.lastClosedAt || null
   };
   merged.ghost = {
     ...base.ghost,
     ...(merged.ghost || {}),
     phase: merged.ghost?.phase || 0,
     pendingGhost: merged.ghost?.pendingGhost || null,
-    revived: Array.isArray(merged.ghost?.revived) ? merged.ghost.revived : []
+    revived: Array.isArray(merged.ghost?.revived) ? merged.ghost.revived : [],
+    selectionMode: merged.ghost?.selectionMode || 'all',
+    selectedAlive: Array.isArray(merged.ghost?.selectedAlive) ? merged.ghost.selectedAlive : [],
+    selectedDead: Array.isArray(merged.ghost?.selectedDead) ? merged.ghost.selectedDead : [],
+    votingPoolSnapshot: merged.ghost?.votingPoolSnapshot || null
   };
   return merged;
 }
@@ -733,11 +855,52 @@ function reconcileGhostExpirations() {
 function getDefaultState() {
   return {
     gameName: 'Knives Out', gamePassword: 'huh', modPassword: 'sssts@$$',
-    gameStarted: false, players: [], mods: [], killLog: [], pendingCodes: {},
+    gameStarted: false, players: [], mods: [], killLog: [], auditLog: [], pendingCodes: {},
     settings: { immunityEnabled: true, ghostEnabled: true },
-    immunity: { slots: 2, start: '20:00', end: '22:00', active: false, immunePlayers: [], claimWindowOpen: false, claims: {}, lastComputedAt: null, manualOverride: null },
-    ghost: { deathThreshold: 3, killHours: 24, phase: 0, pendingGhost: null, revived: [] }
+    immunity: {
+      slots: 2,
+      start: '20:00',
+      end: '22:00',
+      active: false,
+      immunePlayers: [],
+      claimWindowOpen: false,
+      claims: {},
+      lastComputedAt: null,
+      manualOverride: null,
+      lastOpenedAt: null,
+      lastClosedAt: null
+    },
+    ghost: {
+      deathThreshold: 3,
+      killHours: 24,
+      phase: 0,
+      pendingGhost: null,
+      revived: [],
+      selectionMode: 'all',
+      selectedAlive: [],
+      selectedDead: [],
+      votingPoolSnapshot: null
+    }
   };
+}
+
+async function logAuditEvent(action, details = {}, explicitActor = null) {
+  if (!db) return;
+  const actor = explicitActor || currentUser || 'SYSTEM';
+  const event = {
+    action,
+    actor,
+    actorIsMod: actor === 'SYSTEM' ? true : isModUser(gameState || getDefaultState(), actor),
+    page: currentPage || 'unknown',
+    details,
+    ts: firebase.database.ServerValue.TIMESTAMP,
+    iso: new Date().toISOString()
+  };
+  try {
+    await db.ref('/game/auditLog').push(event);
+  } catch (e) {
+    console.error('Audit log write failed', e);
+  }
 }
 
 async function updateGameState(updates) {
@@ -766,6 +929,18 @@ function switchAuthTab(tab, trigger) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   if (trigger) trigger.classList.add('active');
   document.getElementById('auth-' + tab).classList.add('active');
+  if (tab !== 'signup') {
+    const signupErr = document.getElementById('signup-error');
+    if (signupErr) signupErr.textContent = '';
+  }
+}
+
+function toggleSignupModField(show) {
+  const wrap = document.getElementById('signup-mod-auth-wrap');
+  const input = document.getElementById('signup-mod-password');
+  if (!wrap || !input) return;
+  wrap.classList.toggle('visible', Boolean(show));
+  if (!show) input.value = '';
 }
 
 function isModUser(state, username) {
@@ -778,12 +953,49 @@ function findPlayerByName(state, username) {
   return (state.players || []).find(p => String(p.name).trim().toLowerCase() === normalized) || null;
 }
 
+function isValidUsername(username) {
+  return USERNAME_REGEX.test(username);
+}
+
 function getCurrentMinutesOfDay() {
   // Lock clock strictly to Indian Standard Time (IST)
   const now = new Date();
   const istString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
   const istDate = new Date(istString);
   return istDate.getHours() * 60 + istDate.getMinutes();
+}
+
+function getCurrentIstDate() {
+  const now = new Date();
+  const istString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  return new Date(istString);
+}
+
+function getMsSinceImmunityEnd(endTimeStr) {
+  if (gameState?.immunity?.lastClosedAt) {
+    const closedMs = new Date(gameState.immunity.lastClosedAt).getTime();
+    if (!Number.isNaN(closedMs)) return Date.now() - closedMs;
+  }
+  if (!endTimeStr || !endTimeStr.includes(':')) return null;
+  const [endH, endM] = endTimeStr.split(':').map(Number);
+  if (Number.isNaN(endH) || Number.isNaN(endM)) return null;
+  const nowIst = getCurrentIstDate();
+  const endIst = new Date(nowIst);
+  endIst.setHours(endH, endM, 0, 0);
+  let diff = nowIst.getTime() - endIst.getTime();
+  if (diff < -12 * 60 * 60 * 1000) {
+    endIst.setDate(endIst.getDate() - 1);
+    diff = nowIst.getTime() - endIst.getTime();
+  }
+  return diff;
+}
+
+function formatElapsedMsMMSSMMM(ms) {
+  const safe = Math.max(0, Math.floor(ms));
+  const minutes = Math.floor(safe / 60000);
+  const seconds = Math.floor((safe % 60000) / 1000);
+  const millis = safe % 1000;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(millis).padStart(3, '0')}`;
 }
 
 function parseTimeToMinutes(raw) {
@@ -798,9 +1010,20 @@ function isWithinImmunityWindow() {
   const start = parseTimeToMinutes(gameState.immunity.start);
   const end = parseTimeToMinutes(gameState.immunity.end);
   if (start === null || end === null) return false;
-  const now = getCurrentMinutesOfDay();
-  if (start <= end) return now >= start && now <= end;
-  return now >= start || now <= end;
+  const nowIst = getCurrentIstDate();
+  const nowSeconds = (nowIst.getHours() * 3600) + (nowIst.getMinutes() * 60) + nowIst.getSeconds() + (nowIst.getMilliseconds() / 1000);
+  const startSeconds = start * 60;
+  const endSeconds = end * 60;
+  // End is exclusive: if end is 03:05, window closes exactly at 03:05:00.000.
+  if (startSeconds <= endSeconds) return nowSeconds >= startSeconds && nowSeconds < endSeconds;
+  return nowSeconds >= startSeconds || nowSeconds < endSeconds;
+}
+
+function getEffectiveClaimWindowOpen() {
+  if (!gameState?.immunity) return false;
+  if (gameState.immunity.manualOverride === 'open') return true;
+  if (gameState.immunity.manualOverride === 'closed') return false;
+  return isWithinImmunityWindow();
 }
 
 function getEligibleClaimants() {
@@ -825,14 +1048,14 @@ async function recomputeImmunityFromClaims(persist = false) {
 
 async function syncScheduledImmunityWindow() {
   if (!gameState || immunityWindowSyncInFlight) return;
-  const scheduledOpen = isWithinImmunityWindow();
-  const effectiveOpen = gameState.immunity.manualOverride === 'open'
-    ? true
-    : (gameState.immunity.manualOverride === 'closed' ? false : scheduledOpen);
+  const effectiveOpen = getEffectiveClaimWindowOpen();
   if (effectiveOpen === Boolean(gameState.immunity.claimWindowOpen)) return;
   immunityWindowSyncInFlight = true;
   try {
+    const wasOpen = Boolean(gameState.immunity.claimWindowOpen);
     gameState.immunity.claimWindowOpen = effectiveOpen;
+    if (!wasOpen && effectiveOpen) gameState.immunity.lastOpenedAt = new Date().toISOString();
+    if (wasOpen && !effectiveOpen) gameState.immunity.lastClosedAt = new Date().toISOString();
     if (!effectiveOpen) {
       gameState.immunity.claims = {};
       gameState.immunity.immunePlayers = [];
@@ -882,11 +1105,16 @@ async function doLogin() {
 async function doSignup() {
   const username = document.getElementById('signup-username').value.trim();
   const password = document.getElementById('signup-password').value.trim();
-  const modPass = document.getElementById('signup-mod-password').value.trim();
+  const wantsMod = document.getElementById('signup-is-mod').checked;
+  const modPass = wantsMod ? document.getElementById('signup-mod-password').value.trim() : '';
   const errEl = document.getElementById('signup-error');
   errEl.textContent = '';
 
   if (!username || !password) { errEl.textContent = 'Enter username and password.'; return; }
+  if (!isValidUsername(username)) {
+    errEl.textContent = 'Username must be 3-24 chars: letters, numbers, _ or -.';
+    return;
+  }
 
   const state = await getGameState();
   gameState = normalizeState(state);
@@ -894,7 +1122,8 @@ async function doSignup() {
   if (isModUser(state, username)) { errEl.textContent = 'Username exists as moderator.'; return; }
 
   let isMod = false;
-  if (modPass) {
+  if (wantsMod) {
+    if (!modPass) { errEl.textContent = 'Enter moderator password to create moderator account.'; return; }
     if (modPass !== state.modPassword) { errEl.textContent = 'Invalid moderator password.'; return; }
     isMod = true;
   }
@@ -920,6 +1149,9 @@ function doLogout() {
   document.getElementById('signup-username').value = '';
   document.getElementById('signup-password').value = '';
   document.getElementById('signup-mod-password').value = '';
+  const signupIsMod = document.getElementById('signup-is-mod');
+  if (signupIsMod) signupIsMod.checked = false;
+  toggleSignupModField(false);
   document.getElementById('login-error').textContent = '';
   document.getElementById('signup-error').textContent = '';
   setConnectionState(firebaseReady ? 'live' : 'reconnecting');
@@ -1062,14 +1294,10 @@ function renderPlayerView(player) {
              isPrep = now >= prepStart || now < start;
          }
          
-         // Only show the missed timer if it's within 15 minutes of the window closing
+         // Show missed timer in a tight post-close window (fast counter).
          if (!isPrep && !hasClaimed) {
-             let minsSinceEnd = now - end;
-             if (minsSinceEnd < 0) minsSinceEnd += 1440; // Handle midnight wrap-around
-             
-             if (minsSinceEnd >= 0 && minsSinceEnd < 15) {
-                 isMissed = true;
-             }
+             const msSinceEnd = getMsSinceImmunityEnd(gameState.immunity.end);
+             if (msSinceEnd !== null && msSinceEnd >= 0 && msSinceEnd <= MISSED_IMMUNITY_WINDOW_MS) isMissed = true;
          }
       }
     }
@@ -1096,44 +1324,36 @@ function renderPlayerView(player) {
     } else if (isMissed) {
       claimBtn.disabled = true;
       claimBtn.style.opacity = '0.4';
-      
-      const [endH, endM] = gameState.immunity.end.split(':').map(Number);
-      
+      let elapsed = getMsSinceImmunityEnd(gameState.immunity.end);
+      if (elapsed === null || elapsed < 0) elapsed = 0;
+      const startedAt = performance.now();
+      const startedElapsed = elapsed;
+
       missedTimerInterval = setInterval(() => {
-          const now = new Date();
-          const istString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
-          const istDate = new Date(istString);
-          
-          const endDate = new Date(istString);
-          endDate.setHours(endH, endM, 0, 0);
-          
-          let diff = istDate.getTime() - endDate.getTime();
-          
-          // Adjust for midnight crossing in live clock
-          if (diff < -80000000) { 
-              endDate.setDate(endDate.getDate() - 1);
-              diff = istDate.getTime() - endDate.getTime();
-          } else if (diff < 0) {
-              diff = 0; 
-          }
-          
-          const m = Math.floor(diff / 60000);
-          const s = Math.floor((diff % 60000) / 1000);
-          
-          claimStatus.innerHTML = `You missed the immunity window by:<br><span style="color: var(--blood); font-weight: 900; font-size: 16px; letter-spacing: 2px;">${m}m ${String(s).padStart(2, '0')}s</span>`;
-      }, 1000); // 1000ms updates it efficiently once every second
+        const liveElapsed = startedElapsed + (performance.now() - startedAt);
+        if (liveElapsed > MISSED_IMMUNITY_WINDOW_MS) {
+          clearInterval(missedTimerInterval);
+          return;
+        }
+        claimStatus.innerHTML = `You missed the immunity window by:<br><span style="color: var(--blood); font-weight: 900; font-size: 16px; letter-spacing: 2px;">${formatElapsedMsMMSSMMM(liveElapsed)}</span>`;
+      }, 16);
     }
   }
 }
 
 async function claimImmunity() {
   const player = gameState.players.find(p => p.name === currentUser);
-  if (!player || player.status !== 'alive' || !gameState.immunity.claimWindowOpen || isModUser(gameState, player.name)) return;
+  if (!player || player.status !== 'alive' || !getEffectiveClaimWindowOpen() || isModUser(gameState, player.name)) return;
   if (gameState.immunity.claims[player.name]) return;
   await db.ref(`/game/immunity/claims/${player.name}`).set({
     ts: firebase.database.ServerValue.TIMESTAMP,
     source: 'claim'
   });
+  await logAuditEvent('immunity.claim_submitted', {
+    player: player.name,
+    windowOpen: Boolean(gameState.immunity.claimWindowOpen),
+    slots: gameState.immunity.slots
+  }, player.name);
   setTimeout(() => recomputeImmunityFromClaims(true), 400);
 }
 
@@ -1152,12 +1372,24 @@ function renderVotingPanel(player) {
       return;
   }
 
-  if (phase === 1 && player.status === 'alive') {
-    candidates = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name));
+  const snap = getGhostPoolSnapshot();
+  const phase1AliveVoters = new Set(snap.phase1AliveVoters);
+  const phase1DeadCandidates = new Set(snap.phase1DeadCandidates);
+  const phase2DeadVoters = new Set(snap.phase2DeadVoters);
+  const phase2AliveTargets = new Set(snap.phase2AliveTargets);
+
+  if (phase === 1 && (snap.phase1AliveVoters.length ? phase1AliveVoters.has(player.name) : player.status === 'alive')) {
+    candidates = gameState.players.filter(p =>
+      !isModUser(gameState, p.name) &&
+      (snap.phase1DeadCandidates.length ? phase1DeadCandidates.has(p.name) : (p.status === 'dead' || p.status === 'ghost'))
+    );
     title = '👻 VOTE TO REVIVE';
     instruction = 'Vote for a dead/ghost player to bring them back as a ghost.';
-  } else if (phase === 2 && player.status === 'dead') {
-    candidates = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
+  } else if (phase === 2 && (snap.phase2DeadVoters.length ? phase2DeadVoters.has(player.name) : player.status === 'dead')) {
+    candidates = gameState.players.filter(p =>
+      !isModUser(gameState, p.name) &&
+      (snap.phase2AliveTargets.length ? phase2AliveTargets.has(p.name) : p.status === 'alive')
+    );
     title = `🎯 VOTE A TARGET FOR GHOST`;
     instruction = `Vote for the alive player that the ghost must assassinate.`;
   } else {
@@ -1184,8 +1416,26 @@ function renderVotingPanel(player) {
 async function castVote(targetName) {
   const player = gameState.players.find(p => p.name === currentUser);
   if (!player || player.votes) return;
+  const phase = gameState.ghost.phase || 0;
+  const snap = getGhostPoolSnapshot();
+  const playerAllowed = phase === 1
+    ? (snap.phase1AliveVoters.length ? snap.phase1AliveVoters.includes(player.name) : player.status === 'alive')
+    : (phase === 2 ? (snap.phase2DeadVoters.length ? snap.phase2DeadVoters.includes(player.name) : player.status === 'dead') : false);
+  if (!playerAllowed) return;
+
+  const targetAllowed = phase === 1
+    ? (snap.phase1DeadCandidates.length ? snap.phase1DeadCandidates.includes(targetName) : true)
+    : (phase === 2 ? (snap.phase2AliveTargets.length ? snap.phase2AliveTargets.includes(targetName) : true) : false);
+  if (!targetAllowed) return;
+
   player.votes = targetName;
   await updateGameState({ players: gameState.players });
+  await logAuditEvent('ghost.vote_cast', {
+    voter: player.name,
+    target: targetName,
+    phase,
+    voterStatus: player.status
+  }, player.name);
   renderPlayerView(player);
 }
 
@@ -1384,6 +1634,21 @@ function renderModDashboard() {
         <div class="kill-time">${formatTime(k.time)}</div>
         <div class="kill-action"><span style="color: var(--cream); font-weight: 700;">${k.killer}</span><span class="text-dim"> → </span><span class="text-red">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
       </div>`).join('');
+
+  const auditEl = document.getElementById('mod-audit-log');
+  const events = [...(gameState.auditLog || [])].reverse().slice(0, 150);
+  auditEl.innerHTML = events.length === 0
+    ? '<div class="text-dim" style="padding: 12px;">No audit events yet.</div>'
+    : events.map(ev => `
+      <div class="kill-entry">
+        <div class="kill-time">${ev.ts ? formatTime(ev.ts) : formatTime(ev.iso || new Date().toISOString())}</div>
+        <div class="kill-action">
+          <span style="color: var(--cream); font-weight: 700;">${ev.actor || 'SYSTEM'}</span>
+          <span class="text-dim"> · ${ev.action || 'unknown'}</span>
+          <div class="text-dim mt8">${JSON.stringify(ev.details || {})}</div>
+        </div>
+      </div>
+    `).join('');
 }
 
 function renderModPlayers() {
@@ -1419,7 +1684,9 @@ function renderModKillLog() {
 
 function renderModImmunity() {
   const sel = document.getElementById('immunity-player-select');
-  sel.innerHTML = gameState.players.filter(p => p.status !== 'dead').map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+  sel.innerHTML = gameState.players
+    .filter(p => p.status === 'alive' && !isModUser(gameState, p.name))
+    .map(p => `<option value="${p.name}">${p.name}</option>`).join('');
   document.getElementById('immunity-slots').value = gameState.immunity.slots;
   document.getElementById('immunity-start').value = gameState.immunity.start;
   document.getElementById('immunity-end').value = gameState.immunity.end;
@@ -1427,13 +1694,60 @@ function renderModImmunity() {
   listEl.innerHTML = gameState.immunity.immunePlayers.length === 0
     ? '<li style="border: none; color: var(--cream3); background: transparent;">No one is immune.</li>'
     : gameState.immunity.immunePlayers.map(name => `<li>${name} <button class="remove" onclick="modRevokeImmunity('${name}')">×</button></li>`).join('');
+  const overrideBanner = document.getElementById('immunity-override-banner');
+  const hasOverride = Boolean(gameState.immunity.manualOverride);
+  if (overrideBanner) {
+    overrideBanner.classList.toggle('hidden', !hasOverride);
+    if (hasOverride) {
+      overrideBanner.textContent = `Manual override active: ${gameState.immunity.manualOverride.toUpperCase()}`;
+    }
+  }
   const overrideText = gameState.immunity.manualOverride ? ` | override: ${gameState.immunity.manualOverride.toUpperCase()}` : '';
   document.getElementById('immunity-window-status').textContent = `Claim window status: ${gameState.immunity.claimWindowOpen ? 'OPEN' : 'CLOSED'} (${gameState.immunity.start} - ${gameState.immunity.end})${overrideText}`;
+  const openBtn = document.getElementById('immunity-open-btn');
+  const closeBtn = document.getElementById('immunity-close-btn');
+  const clearOverrideBtn = document.getElementById('immunity-clear-override-btn');
+  if (openBtn) openBtn.disabled = Boolean(gameState.immunity.claimWindowOpen) && gameState.immunity.manualOverride === 'open';
+  if (closeBtn) closeBtn.disabled = !Boolean(gameState.immunity.claimWindowOpen) && gameState.immunity.manualOverride === 'closed';
+  if (clearOverrideBtn) clearOverrideBtn.disabled = !hasOverride;
   const queueEl = document.getElementById('immunity-claim-queue');
   const sorted = getSortedClaimEntries();
+  const slots = Math.max(0, parseInt(gameState.immunity.slots, 10) || 0);
+  const winners = sorted.slice(0, slots).map(([name]) => name);
+  const previewEl = document.getElementById('immunity-computed-preview');
+  if (previewEl) {
+    previewEl.innerHTML = `Slots: <span class="text-gold">${slots}</span> | Claims: <span class="text-gold">${sorted.length}</span> | Winners preview: <span class="text-green">${winners.length ? winners.join(', ') : 'None'}</span>`;
+  }
   queueEl.innerHTML = sorted.length === 0
     ? '<div class="text-dim">No claims yet.</div>'
-    : sorted.map(([name, entry], idx) => `<div class="kill-entry" style="align-items: center;"><span class="badge badge-immune">#${idx + 1}</span><span style="flex: 1; font-weight: 700;">${name}</span><span class="text-dim">${new Date(entry.ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span><span class="text-dim">${entry.source || 'claim'}</span></div>`).join('');
+    : sorted.map(([name, entry], idx) => {
+      const rank = idx + 1;
+      const winnerTag = rank <= slots ? '<span class="badge badge-alive">WIN</span>' : '<span class="badge">WAIT</span>';
+      return `<div class="kill-entry" style="align-items: center;"><span class="badge badge-immune">#${rank}</span>${winnerTag}<span style="flex: 1; font-weight: 700;">${name}</span><span class="text-dim">${formatClockTimeWithCentis(entry.ts)}</span><span class="text-dim">${entry.source || 'claim'}</span></div>`;
+    }).join('');
+  const timelineEl = document.getElementById('immunity-window-timeline');
+  if (timelineEl) {
+    const events = getRecentImmunityAudit();
+    const map = {};
+    events.forEach(ev => { if (!map[ev.action]) map[ev.action] = ev; });
+    const openedAt = map['immunity.window_opened']?.ts || map['immunity.window_opened']?.iso || null;
+    const closedAt = map['immunity.window_closed']?.ts || map['immunity.window_closed']?.iso || null;
+    const repairedAt = map['immunity.repaired']?.ts || map['immunity.repaired']?.iso || map['immunity.settings_saved']?.ts || null;
+    const manualAt = events.find(ev => ['immunity.granted', 'immunity.revoked', 'immunity.claims_cleared', 'immunity.list_cleared', 'immunity.round_reset'].includes(ev.action))?.ts || null;
+    timelineEl.innerHTML = [
+      `Opened at: ${openedAt ? formatTime(openedAt) : '—'}`,
+      `Closed at: ${closedAt ? formatTime(closedAt) : '—'}`,
+      `Last repair/config update: ${repairedAt ? formatTime(repairedAt) : '—'}`,
+      `Last manual change: ${manualAt ? formatTime(manualAt) : '—'}`
+    ].join('<br>');
+  }
+}
+
+function getRecentImmunityAudit() {
+  return [...(gameState.auditLog || [])]
+    .filter(ev => typeof ev.action === 'string' && ev.action.startsWith('immunity.'))
+    .sort((a, b) => (Number(b.ts) || new Date(b.iso || 0).getTime()) - (Number(a.ts) || new Date(a.iso || 0).getTime()))
+    .slice(0, 200);
 }
 
 function renderModGhost() {
@@ -1447,18 +1761,60 @@ function renderModGhost() {
   
   if (phase === 0) {
     const deadPlayers = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name));
+    const alivePlayers = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
+    const selectedAlive = new Set(gameState.ghost.selectedAlive || []);
+    const selectedDead = new Set(gameState.ghost.selectedDead || []);
+    const useSelected = gameState.ghost.selectionMode === 'selected';
     html += `
       <div class="flex-between mb16">
         <div class="card-title" style="margin-bottom: 0;">GHOST VOTING STAGES</div>
       </div>
       <p class="text-dim mb16">Phase 0: System Idle. Start voting to allow Alive players to revive a Dead player.</p>
+      <div class="card-title mt16">VOTING POOL MODE</div>
+      <div class="settings-row mb16">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 0; text-transform: none; color: var(--cream2); cursor: pointer;">
+          <input type="radio" name="ghost-pool-mode" value="all" ${!useSelected ? 'checked' : ''} style="width: auto; margin: 0;"> Use all alive/dead players at phase start
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 0; text-transform: none; color: var(--cream2); cursor: pointer;">
+          <input type="radio" name="ghost-pool-mode" value="selected" ${useSelected ? 'checked' : ''} style="width: auto; margin: 0;"> Use selected checkbox groups
+        </label>
+      </div>
+      <div class="settings-row mb16">
+        <div>
+          <div class="card-title" style="margin-bottom: 8px;">ALIVE GROUP</div>
+          <div style="max-height: 160px; overflow-y: auto; border: 1px solid var(--seam); padding: 8px;">
+            ${alivePlayers.length === 0 ? '<div class="text-dim">No alive players.</div>' : alivePlayers.map(p => `
+              <label style="display:flex;align-items:center;gap:8px;margin:6px 0;text-transform:none;letter-spacing:0;font-size:11px;color:var(--cream2);">
+                <input type="checkbox" class="ghost-select-alive" value="${p.name}" ${selectedAlive.has(p.name) ? 'checked' : ''} style="width:auto;margin:0;">
+                ${p.name}
+              </label>
+            `).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="card-title" style="margin-bottom: 8px;">DEAD/GHOST GROUP</div>
+          <div style="max-height: 160px; overflow-y: auto; border: 1px solid var(--seam); padding: 8px;">
+            ${deadPlayers.length === 0 ? '<div class="text-dim">No dead/ghost players.</div>' : deadPlayers.map(p => `
+              <label style="display:flex;align-items:center;gap:8px;margin:6px 0;text-transform:none;letter-spacing:0;font-size:11px;color:var(--cream2);">
+                <input type="checkbox" class="ghost-select-dead" value="${p.name}" ${selectedDead.has(p.name) ? 'checked' : ''} style="width:auto;margin:0;">
+                ${p.name}
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="flex-btn-group mb16">
+        <button class="btn btn-outline btn-sm" onclick="saveGhostSelectionConfig()">SAVE GHOST POOL CONFIG</button>
+      </div>
       ${deadPlayers.length > 0 
         ? `<button class="btn btn-alive btn-full" onclick="startGhostPhase1()">START STAGE 1 (ALIVE VOTING)</button>` 
         : `<div class="alert alert-purple">No dead players available to revive.</div>`}
     `;
   } 
   else if (phase === 1) {
-    const aliveVoters = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
+    const snap = getGhostPoolSnapshot();
+    const aliveSet = toNameSet(snap.phase1AliveVoters);
+    const aliveVoters = gameState.players.filter(p => !isModUser(gameState, p.name) && aliveSet.has(p.name.toLowerCase()));
     const voted = aliveVoters.filter(p => p.votes);
     const pending = aliveVoters.filter(p => !p.votes);
     
@@ -1493,7 +1849,9 @@ function renderModGhost() {
     `;
   }
   else if (phase === 2) {
-    const deadVoters = gameState.players.filter(p => p.status === 'dead' && !isModUser(gameState, p.name));
+    const snap = getGhostPoolSnapshot();
+    const deadSet = toNameSet(snap.phase2DeadVoters);
+    const deadVoters = gameState.players.filter(p => !isModUser(gameState, p.name) && deadSet.has(p.name.toLowerCase()));
     const voted = deadVoters.filter(p => p.votes);
     const pending = deadVoters.filter(p => !p.votes);
     
@@ -1547,13 +1905,38 @@ function renderModGhost() {
 // GHOST VOTING LOGIC - MODERATOR
 async function startGhostPhase1() {
   if (!gameState.settings.ghostEnabled) return alert('Ghost voting is disabled in settings.');
+  const aliveAll = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name)).map(p => p.name);
+  const deadAll = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name)).map(p => p.name);
+  const mode = gameState.ghost.selectionMode === 'selected' ? 'selected' : 'all';
+  const selectedAliveSet = toNameSet(gameState.ghost.selectedAlive);
+  const selectedDeadSet = toNameSet(gameState.ghost.selectedDead);
+  const phase1AliveVoters = mode === 'selected' ? aliveAll.filter(n => selectedAliveSet.has(n.toLowerCase())) : aliveAll;
+  const phase1DeadCandidates = mode === 'selected' ? deadAll.filter(n => selectedDeadSet.has(n.toLowerCase())) : deadAll;
+  const phase2DeadVoters = [...phase1DeadCandidates];
+  const phase2AliveTargets = [...phase1AliveVoters];
+  if (phase1AliveVoters.length === 0) return alert('No alive voters in selected pool.');
+  if (phase1DeadCandidates.length === 0) return alert('No dead/ghost candidates in selected pool.');
+
   gameState.players.forEach(p => p.votes = null);
-  await updateGameState({ 'ghost/phase': 1, 'ghost/pendingGhost': null, players: gameState.players });
+  gameState.ghost.votingPoolSnapshot = { phase1AliveVoters, phase1DeadCandidates, phase2DeadVoters, phase2AliveTargets };
+  await updateGameState({
+    'ghost/phase': 1,
+    'ghost/pendingGhost': null,
+    'ghost/votingPoolSnapshot': gameState.ghost.votingPoolSnapshot,
+    players: gameState.players
+  });
+  await logAuditEvent('ghost.phase1_started', {
+    selectionMode: mode,
+    phase1AliveVoters,
+    phase1DeadCandidates
+  });
   renderModGhost();
 }
 
 async function proceedPhase1() {
-  const voters = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
+  const snap = getGhostPoolSnapshot();
+  const aliveSet = toNameSet(snap.phase1AliveVoters);
+  const voters = gameState.players.filter(p => !isModUser(gameState, p.name) && aliveSet.has(p.name.toLowerCase()));
   const voteCounts = {};
   voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
   
@@ -1562,13 +1945,21 @@ async function proceedPhase1() {
   if (sorted.length > 1 && sorted[0][1] === sorted[1][1]) return alert('TIE DETECTED! Use "CLEAR VOTES / REDO" to restart this stage, or decide manually.');
 
   const winnerName = sorted[0][0];
+  const votesByPlayer = voters.filter(p => p.votes).map(p => ({ voter: p.name, target: p.votes }));
   gameState.players.forEach(p => p.votes = null);
   await updateGameState({ 'ghost/phase': 2, 'ghost/pendingGhost': winnerName, players: gameState.players });
+  await logAuditEvent('ghost.phase1_completed', {
+    winner: winnerName,
+    voteCounts,
+    votesByPlayer
+  });
   renderModGhost();
 }
 
 async function confirmGhost() {
-  const voters = gameState.players.filter(p => p.status === 'dead' && !isModUser(gameState, p.name));
+  const snap = getGhostPoolSnapshot();
+  const deadSet = toNameSet(snap.phase2DeadVoters);
+  const voters = gameState.players.filter(p => !isModUser(gameState, p.name) && deadSet.has(p.name.toLowerCase()));
   const voteCounts = {};
   voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
   
@@ -1578,6 +1969,7 @@ async function confirmGhost() {
 
   const targetName = sorted[0][0];
   const player = gameState.players.find(p => p.name === gameState.ghost.pendingGhost);
+  const votesByPlayer = voters.filter(p => p.votes).map(p => ({ voter: p.name, target: p.votes }));
   
   if (!player) {
       alert('Error: Could not find the pending ghost player in the database.');
@@ -1597,11 +1989,19 @@ async function confirmGhost() {
   gameState.ghost.phase = 0;
   gameState.ghost.pendingGhost = null;
   gameState.ghost.votedPlayers = []; // Wipe the voted list for the next time
+  gameState.ghost.votingPoolSnapshot = null;
   
   // Send the cleanly updated objects to the database
   await updateGameState({ 
       players: gameState.players, 
       ghost: gameState.ghost
+  });
+  await logAuditEvent('ghost.confirmed', {
+    ghostName: player.name,
+    chosenTarget: targetName,
+    voteCounts,
+    votesByPlayer,
+    expiresAt
   });
   
   renderModGhost();
@@ -1609,15 +2009,44 @@ async function confirmGhost() {
 }
 
 async function clearVotes() {
+  const previousVotes = gameState.players.filter(p => p.votes).map(p => ({ voter: p.name, target: p.votes }));
   gameState.players.forEach(p => p.votes = null);
   await updateGameState({ players: gameState.players });
+  await logAuditEvent('ghost.votes_cleared', { previousVotes });
   renderModGhost();
 }
 
 async function cancelGhostVoting() {
   if(!confirm("Cancel all voting and return to phase 0?")) return;
+  const previousPhase = gameState.ghost.phase || 0;
+  const previousPendingGhost = gameState.ghost.pendingGhost || null;
+  const previousSnapshot = gameState.ghost.votingPoolSnapshot || null;
+  const previousVotes = gameState.players.filter(p => p.votes).map(p => ({ voter: p.name, target: p.votes }));
   gameState.players.forEach(p => p.votes = null);
-  await updateGameState({ 'ghost/phase': 0, 'ghost/pendingGhost': null, players: gameState.players });
+  gameState.ghost.votingPoolSnapshot = null;
+  await updateGameState({ 'ghost/phase': 0, 'ghost/pendingGhost': null, 'ghost/votingPoolSnapshot': null, players: gameState.players });
+  await logAuditEvent('ghost.voting_cancelled', { previousPhase, previousPendingGhost, previousSnapshot, previousVotes });
+  renderModGhost();
+}
+
+async function saveGhostSelectionConfig() {
+  const modeEl = document.querySelector('input[name="ghost-pool-mode"]:checked');
+  const mode = modeEl ? modeEl.value : 'all';
+  const selectedAlive = getCheckedValues('.ghost-select-alive');
+  const selectedDead = getCheckedValues('.ghost-select-dead');
+  gameState.ghost.selectionMode = mode === 'selected' ? 'selected' : 'all';
+  gameState.ghost.selectedAlive = selectedAlive;
+  gameState.ghost.selectedDead = selectedDead;
+  await updateGameState({
+    'ghost/selectionMode': gameState.ghost.selectionMode,
+    'ghost/selectedAlive': gameState.ghost.selectedAlive,
+    'ghost/selectedDead': gameState.ghost.selectedDead
+  });
+  await logAuditEvent('ghost.selection_config_saved', {
+    selectionMode: gameState.ghost.selectionMode,
+    selectedAlive,
+    selectedDead
+  });
   renderModGhost();
 }
 
@@ -1672,6 +2101,7 @@ async function addPlayer() {
   const name = document.getElementById('new-player-name').value.trim();
   const pass = document.getElementById('new-player-password').value.trim();
   if (!name || !pass) { alert('Enter name and password.'); return; }
+  if (!isValidUsername(name)) { alert('Name must be 3-24 chars: letters, numbers, _ or -.'); return; }
   if (gameState.players.find(p => p.name.toLowerCase() === name.toLowerCase())) { alert('Exists.'); return; }
   gameState.players.push({ name, password: pass, status: 'alive', target: null, kills: 0, lastKill: null, ghostTarget: null, votes: null });
   await updateGameState({ players: gameState.players });
@@ -1690,6 +2120,7 @@ async function removePlayer(name) {
 async function addMod() {
   const name = document.getElementById('new-mod-name').value.trim();
   if (!name) return;
+  if (!isValidUsername(name)) { alert('Moderator name must be 3-24 chars: letters, numbers, _ or -.'); return; }
   if (!gameState.mods.includes(name)) { gameState.mods.push(name); await updateGameState({ mods: gameState.mods }); }
   document.getElementById('new-mod-name').value = '';
   renderModsList();
@@ -1720,7 +2151,7 @@ async function saveSettings() {
 }
 
 async function startGame() {
-  const activePlayers = gameState.players.filter(p => !gameState.mods.includes(p.name));
+  const activePlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
   if (activePlayers.length < 2) { alert('Need at least 2 non-moderator players.'); return; }
   if (gameState.gameStarted) { alert('Already started.'); return; }
   const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
@@ -1729,7 +2160,7 @@ async function startGame() {
     const player = gameState.players.find(p => p.name === shuffled[i].name);
     player.target = shuffled[nextIdx].name;
   }
-  gameState.players.forEach(p => { if (gameState.mods.includes(p.name)) p.target = null; });
+  gameState.players.forEach(p => { if (isModUser(gameState, p.name)) p.target = null; });
   gameState.gameStarted = true;
   await updateGameState({ gameStarted: true, players: gameState.players });
   renderModView();
@@ -1746,6 +2177,12 @@ async function resetGame() {
 }
 
 async function saveImmunitySettings() {
+  const previous = {
+    slots: gameState.immunity.slots,
+    start: gameState.immunity.start,
+    end: gameState.immunity.end,
+    manualOverride: gameState.immunity.manualOverride
+  };
   const slots = parseInt(document.getElementById('immunity-slots').value);
   gameState.immunity.slots = isNaN(slots) ? 2 : slots;
   
@@ -1763,24 +2200,42 @@ async function saveImmunitySettings() {
     : (gameState.immunity.manualOverride === 'closed' ? false : scheduledOpen);
   await recomputeImmunityFromClaims(false);
   await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.settings_saved', {
+    previous,
+    next: {
+      slots: gameState.immunity.slots,
+      start: gameState.immunity.start,
+      end: gameState.immunity.end,
+      claimWindowOpen: gameState.immunity.claimWindowOpen,
+      manualOverride: gameState.immunity.manualOverride
+    }
+  });
   renderModImmunity();
   alert('Saved.');
 }
 
 async function grantImmunity() {
+  if (gameState.immunity.claimWindowOpen && !confirm('Claim window is OPEN. Granting now can change live outcomes. Continue?')) return;
   const name = document.getElementById('immunity-player-select').value;
   if (!name) return;
   if (!gameState.immunity.claims[name]) gameState.immunity.claims[name] = { ts: Date.now(), source: 'mod' };
   await recomputeImmunityFromClaims(false);
   await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.granted', {
+    player: name,
+    source: 'mod',
+    immunePlayers: gameState.immunity.immunePlayers
+  });
   renderModImmunity();
 }
 
 async function revokeImmunity() {
+  if (gameState.immunity.claimWindowOpen && !confirm('Claim window is OPEN. Revoking now can change live outcomes. Continue?')) return;
   const name = document.getElementById('immunity-player-select').value;
   gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== name);
   delete gameState.immunity.claims[name];
   await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.revoked', { player: name, source: 'selector' });
   renderModImmunity();
 }
 
@@ -1788,33 +2243,54 @@ async function modRevokeImmunity(name) {
   gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== name);
   delete gameState.immunity.claims[name];
   await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.revoked', { player: name, source: 'inline_list' });
   renderModImmunity();
 }
 
 async function modOpenClaimWindow() {
+  if (gameState.immunity.claimWindowOpen && gameState.immunity.manualOverride === 'open') return;
   gameState.immunity.manualOverride = 'open';
   gameState.immunity.claimWindowOpen = true;
+  gameState.immunity.lastOpenedAt = new Date().toISOString();
   await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.window_opened', {
+    mode: 'manual_override',
+    manualOverride: gameState.immunity.manualOverride
+  });
 }
 
 async function modCloseClaimWindow() {
+  if (!confirm('Close immunity window now? This immediately blocks new claims.')) return;
   gameState.immunity.manualOverride = 'closed';
   gameState.immunity.claimWindowOpen = false;
+  gameState.immunity.lastClosedAt = new Date().toISOString();
   await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.window_closed', {
+    mode: 'manual_override',
+    manualOverride: gameState.immunity.manualOverride
+  });
 }
 
 async function modClearClaims() {
+  if (!confirm('Clear entire claim queue? This removes all current claim ordering.')) return;
+  const previousClaims = Object.keys(gameState.immunity.claims || {});
   gameState.immunity.claims = {};
   await recomputeImmunityFromClaims(false);
   await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.claims_cleared', { previousClaims });
 }
 
 async function modClearImmunity() {
+  if (!confirm('Clear current winners only? Claims remain and can be recomputed.')) return;
+  const previousImmune = [...(gameState.immunity.immunePlayers || [])];
   gameState.immunity.immunePlayers = [];
   await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.list_cleared', { previousImmune });
 }
 
 async function modClearWindowOverride() {
+  if (!confirm('Clear manual override and return to scheduled control?')) return;
+  const previousOverride = gameState.immunity.manualOverride;
   gameState.immunity.manualOverride = null;
   const scheduledOpen = isWithinImmunityWindow();
   gameState.immunity.claimWindowOpen = scheduledOpen;
@@ -1823,12 +2299,54 @@ async function modClearWindowOverride() {
     gameState.immunity.immunePlayers = [];
   }
   await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.override_cleared', {
+    previousOverride,
+    scheduledOpen,
+    claimsReset: !scheduledOpen
+  });
+}
+
+async function repairImmunityState() {
+  await recomputeImmunityFromClaims(true);
+  await logAuditEvent('immunity.repaired', {
+    slots: gameState.immunity.slots,
+    winners: gameState.immunity.immunePlayers,
+    claimCount: Object.keys(gameState.immunity.claims || {}).length
+  });
+  renderModImmunity();
+}
+
+async function modResetImmunityRound() {
+  if (!confirm('Round reset will close window, clear override, clear claims, and clear winners. Continue?')) return;
+  gameState.immunity.manualOverride = null;
+  gameState.immunity.claimWindowOpen = false;
+  gameState.immunity.claims = {};
+  gameState.immunity.immunePlayers = [];
+  gameState.immunity.lastComputedAt = new Date().toISOString();
+  gameState.immunity.lastClosedAt = new Date().toISOString();
+  await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.round_reset', {
+    by: currentUser || 'SYSTEM',
+    mode: 'full_reset'
+  });
+  renderModImmunity();
 }
 
 async function saveGhostSettings() {
+  const previous = {
+    deathThreshold: gameState.ghost.deathThreshold,
+    killHours: gameState.ghost.killHours
+  };
   gameState.ghost.deathThreshold = parseInt(document.getElementById('ghost-death-threshold').value) || 3;
   gameState.ghost.killHours = parseFloat(document.getElementById('ghost-kill-hours').value) || 24;
   await updateGameState({ ghost: gameState.ghost });
+  await logAuditEvent('ghost.settings_saved', {
+    previous,
+    next: {
+      deathThreshold: gameState.ghost.deathThreshold,
+      killHours: gameState.ghost.killHours
+    }
+  });
   alert('Saved.');
 }
 
@@ -1841,14 +2359,17 @@ async function modEliminateGhost(name) {
   }
   gameState.ghost.revived = gameState.ghost.revived.filter(r => r.name !== name);
   await updateGameState({ players: gameState.players, ghost: gameState.ghost });
+  await logAuditEvent('ghost.eliminated_by_mod', { ghostName: name });
   renderModView();
 }
 
 async function modRevivePlayer(name) {
   const player = gameState.players.find(p => p.name === name);
   if (!player) return;
+  const previousStatus = player.status;
   player.status = 'alive';
   await updateGameState({ players: gameState.players });
+  await logAuditEvent('player.revived_by_mod', { player: name, previousStatus, nextStatus: 'alive' });
   renderModView();
 }
 
@@ -1877,6 +2398,10 @@ async function modKillPlayer(name) {
     }
   });
   await updateGameState({ players: gameState.players, killLog: gameState.killLog });
+  await logAuditEvent('player.killed_by_mod', {
+    victim: name,
+    killer: killer ? killer.name : null
+  });
   renderModView();
 }
 
@@ -1900,6 +2425,12 @@ async function modEditTarget(name) {
   }
   
   await updateGameState({ players: gameState.players });
+  await logAuditEvent('player.target_edited_by_mod', {
+    player: name,
+    previousTarget: currentTarget || null,
+    nextTarget: targetPlayer.name,
+    scope: player.status === 'ghost' ? 'ghostTarget' : 'target'
+  });
   renderModView();
 }
 
@@ -1931,15 +2462,35 @@ async function modUndoKill(index) {
   
   gameState.killLog.splice(index, 1);
   await updateGameState({ players: gameState.players, killLog: gameState.killLog });
+  await logAuditEvent('kill.undo_by_mod', {
+    killer: kill.killer,
+    victim: kill.victim,
+    originalTime: kill.time
+  });
   renderModView();
 }
 
 function formatTime(iso) {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const centis = String(Math.floor(d.getMilliseconds() / 10)).padStart(2, '0');
+  return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + '.' + centis;
+}
+
+function formatClockTimeWithCentis(value) {
+  const d = new Date(value);
+  const hours24 = d.getHours();
+  const hours12 = hours24 % 12 || 12;
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const seconds = String(d.getSeconds()).padStart(2, '0');
+  const millis = String(d.getMilliseconds()).padStart(3, '0');
+  const meridiem = hours24 >= 12 ? 'PM' : 'AM';
+  return `${String(hours12).padStart(2, '0')}:${minutes}:${seconds}:${millis} ${meridiem}`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const cfgInput = document.getElementById('firebase-config');
+  if (cfgInput) cfgInput.value = JSON.stringify(FIREBASE_CONFIG, null, 2);
+  toggleSignupModField(false);
   initFirebase();
   document.getElementById('login-password').addEventListener('keyup', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('login-username').addEventListener('keyup', e => { if (e.key === 'Enter') doLogin(); });

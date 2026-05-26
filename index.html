@@ -1632,21 +1632,19 @@ async function processKill(killerName, victimName) {
   }
 
   gameState.killLog.push({
-    killer: killerName,
-    victim: victimName,
-    time: new Date().toISOString(),
-    ghost: isGhostKill,
-    undo: {
-      killerPrevTarget,
-      killerPrevGhostTarget,
-      victimPrevStatus,
-      victimPrevTarget,
-      victimPrevGhostTarget,
-      chainBypassKiller: previousAssassinName,
-      // FIX #10: Store chainBypassKiller's ORIGINAL target (victimName) for accurate undo
-      chainBypassKillerPrevTarget: victimName
-    }
-  });
+  killer: killerName,
+  victim: victimName,
+  time: new Date().toISOString(),
+  undo: {
+    killerPrevTarget: killer.target,
+    killerPrevGhostTarget: killer.ghostTarget,
+    victimPrevStatus: victim.status,
+    victimPrevKilledBy: victim.killedBy,
+    victimPrevKilledAt: victim.killedAt,
+    victimPrevTarget: victim.target,
+    victimPrevGhostTarget: victim.ghostTarget
+  }
+});
   await reconcileGhostTargetsDead();
 }
 

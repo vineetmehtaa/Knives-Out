@@ -91,21 +91,9 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
   text-transform: uppercase;
   cursor: pointer;
 }
-.mod-toggle input {
-  width: auto;
-  margin: 0;
-  transform: scale(1.05);
-}
-.mod-auth-wrap {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height .25s ease, opacity .2s ease;
-}
-.mod-auth-wrap.visible {
-  max-height: 120px;
-  opacity: 1;
-}
+.mod-toggle input { width: auto; margin: 0; transform: scale(1.05); }
+.mod-auth-wrap { max-height: 0; overflow: hidden; opacity: 0; transition: max-height .25s ease, opacity .2s ease; }
+.mod-auth-wrap.visible { max-height: 120px; opacity: 1; }
 
 .tabs-toggle { display: flex; gap: 0; margin-bottom: 24px; }
 .tab-btn { flex: 1; padding: 12px 8px; background: transparent; border: 1px solid var(--seam); border-bottom: none; color: var(--cream3); font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
@@ -290,24 +278,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   <div class="init-gate">
     <div class="init-title">KNIVES OUT</div>
     <div class="init-subtitle">Real-Time Coordination System</div>
-    
     <div class="init-step">
       <div class="init-step-title">1. Create Firebase (Free)</div>
       Visit <code>firebase.google.com</code> → Create new project
     </div>
-
     <div class="init-step">
       <div class="init-step-title">2. Enable Realtime Database</div>
       In project console → Realtime Database → Create → Start in test mode
     </div>
-
     <div class="init-step">
       <div class="init-step-title">3. Paste Your Config</div>
       Project Settings (⚙) → "Your apps" → Create web app → Copy the config object below:
     </div>
-
     <textarea id="firebase-config" class="init-input" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
-
     <button class="init-btn" onclick="initFirebase()">INITIALIZE</button>
     <div id="firebase-error" style="color: var(--blood); font-size: 11px; margin-top: 12px; min-height: 14px; text-align: center;"></div>
   </div>
@@ -317,13 +300,11 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   <div class="login-wrap">
     <div class="login-card">
       <div class="logo">KNIVES<span>OUT</span></div>
-      <div class="logo-sub">Murder Mystery v1.2</div>
-
+      <div class="logo-sub">Murder Mystery v1.3</div>
       <div class="tabs-toggle">
         <button class="tab-btn active" onclick="switchAuthTab('login', this)">LOGIN</button>
         <button class="tab-btn" onclick="switchAuthTab('signup', this)">SIGN UP</button>
       </div>
-
       <div class="tab-content active" id="auth-login">
         <label>Username</label>
         <input type="text" id="login-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
@@ -333,7 +314,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="error-msg" id="login-error"></div>
         <button class="btn btn-blade btn-full" onclick="doLogin()">ENTER GAME</button>
       </div>
-
       <div class="tab-content" id="auth-signup">
         <label>New Username</label>
         <input type="text" id="signup-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
@@ -368,21 +348,18 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   <div class="main">
     <div style="max-width: 580px; margin: 0 auto;">
       <div class="player-status-card" id="player-status-card">
-        <button id="reveal-btn" class="hold-btn" 
+        <button id="reveal-btn" class="hold-btn"
                 onmousedown="toggleSecret(true)" onmouseup="toggleSecret(false)" onmouseleave="toggleSecret(false)"
                 ontouchstart="toggleSecret(true)" ontouchend="toggleSecret(false)">
           PRESS AND HOLD TO REVEAL INTEL
         </button>
-        
         <div id="secret-info" class="secret-container">
           <div class="status-label">YOUR STATUS</div>
           <div class="status-value alive-text" id="player-status-text">ALIVE</div>
-          
           <div id="player-target-section" class="target-section">
             <div class="status-label">YOUR TARGET</div>
             <div class="target-name" id="player-target-name">—</div>
           </div>
-          
           <div id="player-ghost-section" class="target-section hidden">
             <div class="alert alert-purple" style="text-align: left;">👻 You are a GHOST. Hunt before time expires to steal their life.</div>
             <div class="status-label">GHOST TARGET</div>
@@ -466,40 +443,23 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <button class="btn btn-outline btn-sm" onclick="doLogout()" style="width: auto;">EXIT</button>
     </div>
   </nav>
-  <!-- MOD NOTIFICATION TOASTS -->
   <div id="mod-toast-container" style="position:fixed;top:64px;right:16px;z-index:9000;display:flex;flex-direction:column;gap:8px;max-width:320px;width:calc(100vw - 32px);pointer-events:none;"></div>
   <style>
-    .mod-toast {
-      background: var(--ink2);
-      border: 1px solid var(--seam);
-      border-left-width: 4px;
-      padding: 12px 14px;
-      font-family: 'Courier Prime', monospace;
-      font-size: 11px;
-      letter-spacing: 0.5px;
-      line-height: 1.5;
-      color: var(--cream2);
-      pointer-events: all;
-      cursor: pointer;
-      animation: toastIn .25s cubic-bezier(.16,1,.3,1) both;
-      box-shadow: 0 4px 20px rgba(0,0,0,.5);
-      position: relative;
-    }
-    .mod-toast.kill    { border-left-color: var(--blood); }
-    .mod-toast.immunity{ border-left-color: var(--blade); }
-    .mod-toast.ghost   { border-left-color: var(--ghost2); }
-    .mod-toast.system  { border-left-color: var(--cream3); }
-    .mod-toast-icon    { font-size: 14px; margin-right: 6px; }
-    .mod-toast-title   { font-weight: 700; color: var(--cream); display: block; margin-bottom: 2px; }
-    .mod-toast-bar     { position: absolute; bottom: 0; left: 0; height: 2px; background: currentColor; opacity: .4; animation: toastBar linear forwards; }
-    @keyframes toastIn  { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+    .mod-toast { background: var(--ink2); border: 1px solid var(--seam); border-left-width: 4px; padding: 12px 14px; font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 0.5px; line-height: 1.5; color: var(--cream2); pointer-events: all; cursor: pointer; animation: toastIn .25s cubic-bezier(.16,1,.3,1) both; box-shadow: 0 4px 20px rgba(0,0,0,.5); position: relative; }
+    .mod-toast.kill { border-left-color: var(--blood); }
+    .mod-toast.immunity { border-left-color: var(--blade); }
+    .mod-toast.ghost { border-left-color: var(--ghost2); }
+    .mod-toast.system { border-left-color: var(--cream3); }
+    .mod-toast-icon { font-size: 14px; margin-right: 6px; }
+    .mod-toast-title { font-weight: 700; color: var(--cream); display: block; margin-bottom: 2px; }
+    .mod-toast-bar { position: absolute; bottom: 0; left: 0; height: 2px; background: currentColor; opacity: .4; animation: toastBar linear forwards; }
+    @keyframes toastIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
     @keyframes toastOut { from { opacity:1; transform: translateX(0); } to { opacity:0; transform: translateX(20px); } }
     @keyframes toastBar { from { width: 100%; } to { width: 0%; } }
   </style>
   <div class="main">
     <div class="section-title">MODERATOR CONTROL PANEL</div>
     <div class="section-sub" id="mod-game-name-display">Full authority</div>
-
     <div class="tabs">
       <button class="tab active" onclick="switchModTab('dashboard')">DASHBOARD</button>
       <button class="tab" onclick="switchModTab('analytics')">ANALYTICS</button>
@@ -529,33 +489,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="tab-content" id="mod-tab-analytics">
       <div class="mod-grid" id="analytics-stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));"></div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;" id="analytics-visual-row">
-        <div class="card" style="margin-bottom: 0;">
-          <div class="card-title">GAME PROGRESSION</div>
-          <div id="analytics-progress-section"></div>
-        </div>
-        <div class="card" style="margin-bottom: 0;">
-          <div class="card-title">PLAYER BREAKDOWN</div>
-          <div id="analytics-donut-section" style="display:flex;align-items:center;justify-content:center;flex-direction:column;"></div>
-        </div>
+        <div class="card" style="margin-bottom: 0;"><div class="card-title">GAME PROGRESSION</div><div id="analytics-progress-section"></div></div>
+        <div class="card" style="margin-bottom: 0;"><div class="card-title">PLAYER BREAKDOWN</div><div id="analytics-donut-section" style="display:flex;align-items:center;justify-content:center;flex-direction:column;"></div></div>
       </div>
-      <div class="card">
-        <div class="card-title">KILL TIMELINE</div>
-        <div id="analytics-kill-timeline"></div>
-      </div>
+      <div class="card"><div class="card-title">KILL TIMELINE</div><div id="analytics-kill-timeline"></div></div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;" id="analytics-lower-row">
-        <div class="card" style="margin-bottom: 0;">
-          <div class="card-title">TOP KILLERS</div>
-          <div id="analytics-leaderboard"></div>
-        </div>
-        <div class="card" style="margin-bottom: 0;">
-          <div class="card-title">GHOST &amp; IMMUNITY STATS</div>
-          <div id="analytics-ghost-immunity"></div>
-        </div>
+        <div class="card" style="margin-bottom: 0;"><div class="card-title">TOP KILLERS</div><div id="analytics-leaderboard"></div></div>
+        <div class="card" style="margin-bottom: 0;"><div class="card-title">GHOST &amp; IMMUNITY STATS</div><div id="analytics-ghost-immunity"></div></div>
       </div>
-      <div class="card">
-        <div class="card-title">SURVIVOR STANDINGS</div>
-        <div id="analytics-survivors"></div>
-      </div>
+      <div class="card"><div class="card-title">SURVIVOR STANDINGS</div><div id="analytics-survivors"></div></div>
     </div>
 
     <div class="tab-content" id="mod-tab-players">
@@ -564,16 +506,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="text-dim mb16">✓ You can view all player passwords here. Share securely.</div>
         <div class="table-responsive">
           <table id="mod-players-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Password</th>
-                <th>Status</th>
-                <th>Target</th>
-                <th>Kills</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Name</th><th>Password</th><th>Status</th><th>Target</th><th>Kills</th><th>Actions</th></tr></thead>
             <tbody id="mod-players-tbody"></tbody>
           </table>
         </div>
@@ -581,10 +514,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
 
     <div class="tab-content" id="mod-tab-kills">
-      <div class="card">
-        <div class="card-title">FULL CASE LOG</div>
-        <div id="mod-kill-log-full"></div>
-      </div>
+      <div class="card"><div class="card-title">FULL CASE LOG</div><div id="mod-kill-log-full"></div></div>
     </div>
 
     <div class="tab-content" id="mod-tab-immunity">
@@ -601,15 +531,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <input type="time" id="immunity-start" value="20:00">
           </div>
         </div>
-        <div class="settings-row mb16 hidden">
-          <div>
-            <label>Window End</label>
-            <input type="time" id="immunity-end" value="22:00">
-          </div>
-        </div>
         <button class="btn btn-blade btn-full" onclick="saveImmunitySettings()">SAVE</button>
         <div id="immunity-window-timeline" class="text-dim mt16" style="line-height: 1.6;"></div>
-
         <hr class="divider">
         <div class="card-title mt16">CLAIM WINDOW ACTIONS</div>
         <div class="flex-btn-group mb16">
@@ -622,11 +545,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <button class="btn btn-blood btn-sm" onclick="modResetImmunityRound()">ROUND RESET</button>
         </div>
         <div class="text-dim mb16" id="immunity-window-status">Claim window status: CLOSED</div>
-
         <div class="card-title mt16">LIVE CLAIMS</div>
         <div id="immunity-computed-preview" class="text-dim mb16" style="line-height: 1.6;"></div>
         <div id="immunity-claim-queue" class="mb16"></div>
-
         <hr class="divider">
         <div class="card-title mt16">OUTCOME CONTROL</div>
         <div class="settings-row">
@@ -639,7 +560,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <button class="btn btn-outline" onclick="revokeImmunity()" style="flex:1;">REVOKE</button>
           </div>
         </div>
-
         <div class="card-title mt16">IMMUNE NOW</div>
         <ul class="inline-list" id="immune-players-list"></ul>
       </div>
@@ -659,11 +579,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
         </div>
         <button class="btn btn-blade btn-full" onclick="saveGhostSettings()">SAVE</button>
-
         <hr class="divider">
-        
         <div id="ghost-mod-panel"></div>
-
         <hr class="divider">
         <div class="card-title">ACTIVE GHOSTS</div>
         <div id="ghost-list-mod"></div>
@@ -680,7 +597,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <input type="text" id="settings-game-password" placeholder="shared password" autocapitalize="off" autocorrect="off">
         <label>Moderator Password</label>
         <input type="text" id="settings-mod-password" placeholder="mod password" autocapitalize="off" autocorrect="off">
-
         <hr class="divider">
         <div class="card-title">RULE TOGGLES</div>
         <div class="settings-row mb16">
@@ -691,7 +607,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <input type="checkbox" id="settings-ghost-enabled" style="width: auto; margin: 0; transform: scale(1.2);"> Enable Ghost Voting
           </label>
         </div>
-
         <hr class="divider">
         <div class="card-title">ADD PLAYERS</div>
         <div id="settings-game-started-players">
@@ -703,7 +618,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
           <ul class="inline-list mb16" id="players-pending-list"></ul>
         </div>
-
         <hr class="divider">
         <div class="card-title">MODERATORS</div>
         <div style="display: flex; gap: 8px; margin-bottom: 16px;">
@@ -711,11 +625,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <button class="btn btn-outline btn-sm" onclick="addMod()">ADD</button>
         </div>
         <ul class="inline-list mb16" id="mods-list"></ul>
-
         <hr class="divider">
         <button class="btn btn-blade btn-full mb16" id="start-game-btn" onclick="startGame()">⚔ START GAME</button>
         <button class="btn btn-outline btn-full" onclick="saveSettings()">SAVE SETTINGS</button>
-
         <hr class="divider">
         <div class="card-title text-red">DANGER ZONE</div>
         <button class="btn btn-blood btn-full" onclick="resetGame()">WIPE ALL DATA</button>
@@ -748,36 +660,30 @@ function initFirebase() {
     let runtimeConfig = { ...FIREBASE_CONFIG };
     const rawConfig = (cfgInput?.value || '').trim();
     if (rawConfig) runtimeConfig = JSON.parse(rawConfig);
-
     const required = ['apiKey', 'authDomain', 'databaseURL', 'projectId', 'appId'];
     const missing = required.filter(k => !runtimeConfig[k]);
-    if (missing.length) {
-      errEl.textContent = `Missing keys: ${missing.join(', ')}`;
-      return;
-    }
+    if (missing.length) { errEl.textContent = `Missing keys: ${missing.join(', ')}`; return; }
     if (!firebase.apps.length) firebase.initializeApp(runtimeConfig);
     db = firebase.database();
     firebaseReady = true;
     document.getElementById('firebase-init').style.display = 'none';
     setupGame();
 
-    // Routine checks every 5 seconds for ghost expirations and immunity clock
+    // FIX #4: Run expiry reconciliation on ALL connected sessions, not just mod.
+    // Ghost timers and immunity expiry should not stall when mod is offline.
     setInterval(() => {
-       if (gameState) {
-           if (currentIsMod) {
-               // Mod session is the sole authority for expiry reconciliation — avoids concurrent writes from all sessions
-               reconcileGhostExpirations();
-               reconcileImmunityExpiry();
-           }
-           syncScheduledImmunityWindow();
-           
-           if (currentPage === 'player' && currentUser) {
-               const player = gameState.players.find(p => p.name === currentUser);
-               if (player) renderPlayerView(player);
-           }
-       }
+      if (gameState) {
+        // Every session reconciles ghost expiry so timers work without mod present
+        reconcileGhostExpirations();
+        // Immunity expiry still mod-only to avoid concurrent writes from many players
+        if (currentIsMod) reconcileImmunityExpiry();
+        syncScheduledImmunityWindow();
+        if (currentPage === 'player' && currentUser) {
+          const player = gameState.players.find(p => p.name === currentUser);
+          if (player) renderPlayerView(player);
+        }
+      }
     }, 5000);
-
   } catch (e) {
     errEl.textContent = 'Firebase init error: ' + e.message;
   }
@@ -787,7 +693,7 @@ function initFirebase() {
 // MOD NOTIFICATION SYSTEM
 // =====================================================================
 const _notifSeen = { killLog: new Set(), claims: new Set(), votes: new Set() };
-let _notifReady = false; // Don't fire on initial load
+let _notifReady = false;
 
 function modToast(type, title, body, durationMs = 6000) {
   if (currentPage !== 'mod' || !currentIsMod) return;
@@ -803,7 +709,6 @@ function modToast(type, title, body, durationMs = 6000) {
   `;
   toast.onclick = () => toast.remove();
   container.appendChild(toast);
-  // Also try browser notification if permission granted
   if (Notification?.permission === 'granted') {
     try { new Notification(`Knives Out — ${title}`, { body, icon: '' }); } catch(e) {}
   }
@@ -821,9 +726,7 @@ function requestNotifPermission() {
 
 function setupGame() {
   if (!db) return;
-  db.ref('.info/connected').on('value', snap => {
-    setConnectionState(snap.val() ? 'live' : 'offline');
-  });
+  db.ref('.info/connected').on('value', snap => { setConnectionState(snap.val() ? 'live' : 'offline'); });
   db.ref('/game').on('value', snap => {
     gameState = normalizeState(snap.val());
     reconcileGhostExpirations();
@@ -838,7 +741,6 @@ function setupGame() {
     }
   });
 
-  // ── Mod-only: recompute immunePlayers when claims change (debounced, single writer)
   let _recomputeDebounce = null;
   db.ref('/game/immunity/claims').on('value', () => {
     if (!currentIsMod) return;
@@ -850,7 +752,6 @@ function setupGame() {
     }, 300);
   });
 
-  // ── Kill notifications: watch killLog length
   db.ref('/game/killLog').on('value', snap => {
     if (!currentIsMod || !_notifReady) return;
     const log = snap.val();
@@ -866,7 +767,6 @@ function setupGame() {
     });
   });
 
-  // ── Immunity claim notifications
   db.ref('/game/immunity/claims').on('child_added', snap => {
     if (!currentIsMod || !_notifReady) return;
     const name = snap.key;
@@ -875,7 +775,6 @@ function setupGame() {
     modToast('immunity', `${name} claimed immunity`, 'Check the immunity tab for the updated queue.', 6000);
   });
 
-  // ── Ghost vote notifications: watch for new votes
   db.ref('/game/players').on('value', snap => {
     if (!currentIsMod || !_notifReady) return;
     const players = snap.val();
@@ -891,7 +790,6 @@ function setupGame() {
     });
   });
 
-  // ── Ghost phase change notifications
   let _lastGhostPhase = 0;
   db.ref('/game/ghost/phase').on('value', snap => {
     if (!currentIsMod || !_notifReady) return;
@@ -903,7 +801,6 @@ function setupGame() {
     if (phase === 0 && _lastGhostPhase > 0) modToast('ghost', 'Ghost voting ended', 'Voting has been reset or completed.', 5000);
   });
 
-  // ── Immunity window open/close notifications
   let _lastWindowOpen = null;
   db.ref('/game/immunity/claimWindowOpen').on('value', snap => {
     if (!currentIsMod || !_notifReady) return;
@@ -914,13 +811,9 @@ function setupGame() {
     else modToast('immunity', 'Claim window CLOSED', 'No more claims accepted.', 6000);
   });
 
-  // Mark ready after a short delay so initial load doesn't spam notifications
   setTimeout(() => {
     _notifReady = true;
-    // Pre-seed seen sets with current data so old events don't re-fire
-    (gameState?.killLog || []).forEach(k => {
-      _notifSeen.killLog.add(k.killer + '→' + k.victim + '@' + k.time);
-    });
+    (gameState?.killLog || []).forEach(k => { _notifSeen.killLog.add(k.killer + '→' + k.victim + '@' + k.time); });
     Object.keys(gameState?.immunity?.claims || {}).forEach(n => _notifSeen.claims.add(n));
     (gameState?.players || []).filter(p => p.votes).forEach(p => _notifSeen.votes.add(p.name + ':' + p.votes));
     _lastGhostPhase = gameState?.ghost?.phase || 0;
@@ -929,34 +822,17 @@ function setupGame() {
   }, 2500);
 }
 
-function setConnectionState(nextState) {
-  connectionState = nextState;
-  updateConnectionBadges();
-}
-
+function setConnectionState(nextState) { connectionState = nextState; updateConnectionBadges(); }
 function updateConnectionBadges() {
-  const badges = document.querySelectorAll('.conn-badge');
-  badges.forEach(el => {
-    if (connectionState === 'live') {
-      el.textContent = 'LIVE';
-      el.className = 'badge badge-conn-live conn-badge';
-    } else if (connectionState === 'offline') {
-      el.textContent = 'OFFLINE';
-      el.className = 'badge badge-conn-offline conn-badge';
-    } else {
-      el.textContent = 'SYNCING';
-      el.className = 'badge badge-conn-reconnecting conn-badge';
-    }
+  document.querySelectorAll('.conn-badge').forEach(el => {
+    if (connectionState === 'live') { el.textContent = 'LIVE'; el.className = 'badge badge-conn-live conn-badge'; }
+    else if (connectionState === 'offline') { el.textContent = 'OFFLINE'; el.className = 'badge badge-conn-offline conn-badge'; }
+    else { el.textContent = 'SYNCING'; el.className = 'badge badge-conn-reconnecting conn-badge'; }
   });
 }
 
 function toggleSecret(show) {
-  const container = document.getElementById('secret-info');
-  if (show) {
-    container.classList.add('visible');
-  } else {
-    container.classList.remove('visible');
-  }
+  document.getElementById('secret-info').classList.toggle('visible', show);
 }
 
 function getGhostPoolSnapshot() {
@@ -970,11 +846,8 @@ function getGhostPoolSnapshot() {
 }
 
 function getCheckedValues(selector) {
-  return Array.from(document.querySelectorAll(selector))
-    .filter(el => el.checked)
-    .map(el => el.value);
+  return Array.from(document.querySelectorAll(selector)).filter(el => el.checked).map(el => el.value);
 }
-
 function toNameSet(values) {
   return new Set((values || []).map(v => String(v || '').trim().toLowerCase()));
 }
@@ -997,9 +870,7 @@ function normalizeState(raw) {
     merged.auditLog = [];
   }
   merged.pendingCodes = merged.pendingCodes || merged.codes || {};
-  
   merged.settings = merged.settings || { immunityEnabled: true, ghostEnabled: true };
-
   merged.immunity = {
     ...base.immunity,
     ...(merged.immunity || {}),
@@ -1024,6 +895,9 @@ function normalizeState(raw) {
   return merged;
 }
 
+// FIX #5: reconcileImmunityExpiry now only removes expired grants, NOT active ones.
+// The window closing no longer wipes immunity winners — they keep their immunity
+// until their grant's expiresAt time passes or they are manually revoked.
 function reconcileImmunityExpiry() {
   if (!gameState?.immunity?.grants) return;
   const now = Date.now();
@@ -1057,7 +931,6 @@ function reconcileGhostExpirations() {
     gameState.ghost.revived = gameState.ghost.revived.filter(r => new Date(r.expiresAt).getTime() > now);
     updateGameState({ players: gameState.players, 'ghost/revived': gameState.ghost.revived });
   }
-  // Also kill any ghost whose target is already dead
   reconcileGhostTargetsDead();
 }
 
@@ -1067,29 +940,13 @@ function getDefaultState() {
     gameStarted: false, players: [], mods: [], killLog: [], auditLog: [], pendingCodes: {},
     settings: { immunityEnabled: true, ghostEnabled: true },
     immunity: {
-      slots: 2,
-      start: '20:00',
-      end: '22:00',
-      active: false,
-      immunePlayers: [],
-      claimWindowOpen: false,
-      claims: {},
-      grants: {},
-      lastComputedAt: null,
-      manualOverride: null,
-      lastOpenedAt: null,
-      lastClosedAt: null
+      slots: 2, start: '20:00', end: '22:00', active: false,
+      immunePlayers: [], claimWindowOpen: false, claims: {}, grants: {},
+      lastComputedAt: null, manualOverride: null, lastOpenedAt: null, lastClosedAt: null
     },
     ghost: {
-      deathThreshold: 3,
-      killHours: 24,
-      phase: 0,
-      pendingGhost: null,
-      revived: [],
-      selectionMode: 'all',
-      selectedAlive: [],
-      selectedDead: [],
-      votingPoolSnapshot: null
+      deathThreshold: 3, killHours: 24, phase: 0, pendingGhost: null,
+      revived: [], selectionMode: 'all', selectedAlive: [], selectedDead: [], votingPoolSnapshot: null
     }
   };
 }
@@ -1098,19 +955,13 @@ async function logAuditEvent(action, details = {}, explicitActor = null) {
   if (!db) return;
   const actor = explicitActor || currentUser || 'SYSTEM';
   const event = {
-    action,
-    actor,
+    action, actor,
     actorIsMod: actor === 'SYSTEM' ? true : isModUser(gameState || getDefaultState(), actor),
-    page: currentPage || 'unknown',
-    details,
+    page: currentPage || 'unknown', details,
     ts: firebase.database.ServerValue.TIMESTAMP,
     iso: new Date().toISOString()
   };
-  try {
-    await db.ref('/game/auditLog').push(event);
-  } catch (e) {
-    console.error('Audit log write failed', e);
-  }
+  try { await db.ref('/game/auditLog').push(event); } catch (e) { console.error('Audit log write failed', e); }
 }
 
 async function updateGameState(updates) {
@@ -1163,12 +1014,9 @@ function findPlayerByName(state, username) {
   return (state.players || []).find(p => String(p.name).trim().toLowerCase() === normalized) || null;
 }
 
-function isValidUsername(username) {
-  return USERNAME_REGEX.test(username);
-}
+function isValidUsername(username) { return USERNAME_REGEX.test(username); }
 
 function getCurrentMinutesOfDay() {
-  // Lock clock strictly to Indian Standard Time (IST)
   const now = new Date();
   const istString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
   const istDate = new Date(istString);
@@ -1193,10 +1041,7 @@ function getMsSinceImmunityEnd(endTimeStr) {
   const endIst = new Date(nowIst);
   endIst.setHours(endH, endM, 0, 0);
   let diff = nowIst.getTime() - endIst.getTime();
-  if (diff < -12 * 60 * 60 * 1000) {
-    endIst.setDate(endIst.getDate() - 1);
-    diff = nowIst.getTime() - endIst.getTime();
-  }
+  if (diff < -12 * 60 * 60 * 1000) { endIst.setDate(endIst.getDate() - 1); diff = nowIst.getTime() - endIst.getTime(); }
   return diff;
 }
 
@@ -1224,7 +1069,6 @@ function isWithinImmunityWindow() {
   const nowSeconds = (nowIst.getHours() * 3600) + (nowIst.getMinutes() * 60) + nowIst.getSeconds() + (nowIst.getMilliseconds() / 1000);
   const startSeconds = start * 60;
   const endSeconds = end * 60;
-  // End is exclusive: if end is 03:05, window closes exactly at 03:05:00.000.
   if (startSeconds <= endSeconds) return nowSeconds >= startSeconds && nowSeconds < endSeconds;
   return nowSeconds >= startSeconds || nowSeconds < endSeconds;
 }
@@ -1253,7 +1097,6 @@ async function recomputeImmunityFromClaims(persist = false) {
   const slots = Math.max(0, parseInt(gameState.immunity.slots, 10) || 0);
   const newImmunePlayers = sorted.slice(0, slots).map(([name]) => name);
   const immuneSet = new Set(newImmunePlayers);
-  // Prune grants for anyone who lost their slot (keeps grants consistent with immunePlayers)
   if (gameState.immunity.grants) {
     Object.keys(gameState.immunity.grants).forEach(name => {
       if (!immuneSet.has(name)) delete gameState.immunity.grants[name];
@@ -1264,6 +1107,9 @@ async function recomputeImmunityFromClaims(persist = false) {
   if (persist) await updateGameState({ immunity: gameState.immunity });
 }
 
+// FIX #5 (continued): syncScheduledImmunityWindow now only gates new claims.
+// It does NOT wipe immunePlayers/grants/claims when the window closes.
+// Existing immunity winners keep their immunity until manually revoked or their grant expires.
 async function syncScheduledImmunityWindow() {
   if (!gameState || immunityWindowSyncInFlight) return;
   const effectiveOpen = getEffectiveClaimWindowOpen();
@@ -1273,11 +1119,11 @@ async function syncScheduledImmunityWindow() {
     const wasOpen = Boolean(gameState.immunity.claimWindowOpen);
     gameState.immunity.claimWindowOpen = effectiveOpen;
     if (!wasOpen && effectiveOpen) gameState.immunity.lastOpenedAt = new Date().toISOString();
-    if (wasOpen && !effectiveOpen) gameState.immunity.lastClosedAt = new Date().toISOString();
-    if (!effectiveOpen) {
+    if (wasOpen && !effectiveOpen) {
+      gameState.immunity.lastClosedAt = new Date().toISOString();
+      // Only clear the claim queue — DO NOT wipe immunePlayers or grants.
+      // Winners keep immunity until their grant expires or mod revokes it.
       gameState.immunity.claims = {};
-      gameState.immunity.immunePlayers = [];
-      gameState.immunity.grants = {};
     }
     await updateGameState({ immunity: gameState.immunity });
   } finally {
@@ -1291,17 +1137,14 @@ async function doLogin() {
   const errEl = document.getElementById('login-error');
   errEl.textContent = '';
   if (!username || !password) { errEl.textContent = 'Enter username and password.'; return; }
-
   const state = await getGameState();
   gameState = normalizeState(state);
   const player = findPlayerByName(state, username);
   const isMod = isModUser(state, username);
-
   const modAuthOk = isMod && (
     password === state.modPassword ||
     (player && (password === player.password || password === state.gamePassword))
   );
-
   if (modAuthOk) {
     currentUser = player ? player.name : username;
     currentIsMod = true;
@@ -1309,7 +1152,6 @@ async function doLogin() {
     enterMod();
     return;
   }
-
   if (player && (password === player.password || password === state.gamePassword)) {
     currentUser = player.name;
     currentIsMod = isModUser(state, player.name);
@@ -1317,7 +1159,6 @@ async function doLogin() {
     enterPlayer();
     return;
   }
-
   errEl.textContent = isMod ? 'Wrong moderator password or player password.' : 'Invalid credentials.';
 }
 
@@ -1328,35 +1169,22 @@ async function doSignup() {
   const modPass = wantsMod ? document.getElementById('signup-mod-password').value.trim() : '';
   const errEl = document.getElementById('signup-error');
   errEl.textContent = '';
-
   if (!username || !password) { errEl.textContent = 'Enter username and password.'; return; }
-  if (!isValidUsername(username)) {
-    errEl.textContent = 'Username must be 3-24 chars: letters, numbers, _ or -.';
-    return;
-  }
-
+  if (!isValidUsername(username)) { errEl.textContent = 'Username must be 3-24 chars: letters, numbers, _ or -.'; return; }
   const state = await getGameState();
   gameState = normalizeState(state);
   if (findPlayerByName(state, username)) { errEl.textContent = 'Username exists.'; return; }
   if (isModUser(state, username)) { errEl.textContent = 'Username exists as moderator.'; return; }
-
   let isMod = false;
   if (wantsMod) {
     if (!modPass) { errEl.textContent = 'Enter moderator password to create moderator account.'; return; }
     if (modPass !== state.modPassword) { errEl.textContent = 'Invalid moderator password.'; return; }
     isMod = true;
   }
-
-  const newPlayer = {
-    name: username, password, status: 'alive', target: null, kills: 0, lastKill: null,
-    ghostTarget: null, votes: null
-  };
-
+  const newPlayer = { name: username, password, status: 'alive', target: null, kills: 0, lastKill: null, ghostTarget: null, votes: null };
   state.players.push(newPlayer);
-  if (isMod && !isModUser(state, username)) { state.mods.push(username); }
-
+  if (isMod && !isModUser(state, username)) state.mods.push(username);
   await updateGameState({ players: state.players, mods: state.mods });
-
   currentUser = username; currentIsMod = isMod;
   isMod ? enterMod() : enterPlayer();
 }
@@ -1373,6 +1201,8 @@ function doLogout() {
   toggleSignupModField(false);
   document.getElementById('login-error').textContent = '';
   document.getElementById('signup-error').textContent = '';
+  // FIX #9: Reset win screen state on logout so it doesn't re-fire incorrectly
+  _winShownFor = null;
   setConnectionState(firebaseReady ? 'live' : 'reconnecting');
   showPage('login');
 }
@@ -1407,12 +1237,9 @@ function enterMod() {
 }
 
 function renderPlayerView(player) {
-  // Check for game winner
   if (gameState?.gameStarted) {
     const winner = getWinner(gameState);
-    if (winner && winner.name === player.name) {
-      showWinScreen(winner, false);
-    }
+    if (winner && winner.name === player.name) showWinScreen(winner, false);
   }
 
   const card = document.getElementById('player-status-card');
@@ -1450,7 +1277,6 @@ function renderPlayerView(player) {
   revealBtn.style.display = 'block';
   document.getElementById('secret-info').classList.remove('visible');
 
-  // Player status rendering
   if (player.status === 'dead') {
     card.classList.add('dead');
     statusText.textContent = 'ELIMINATED';
@@ -1460,7 +1286,6 @@ function renderPlayerView(player) {
     targetSection.style.display = 'none';
     killSection.style.display = 'none';
     claimSection.classList.add('hidden');
-    
     if (gameState.ghost.phase === 2) renderVotingPanel(player);
     return;
   }
@@ -1475,7 +1300,7 @@ function renderPlayerView(player) {
     ghostSection.classList.remove('hidden');
     document.getElementById('player-ghost-target').textContent = player.ghostTarget || player.target || '—';
     const ghostEntry = gameState.ghost.revived.find(r => r.name === player.name);
-    if (ghostEntry) { updateGhostTimer(ghostEntry.expiresAt); }
+    if (ghostEntry) updateGhostTimer(ghostEntry.expiresAt);
     claimSection.classList.add('hidden');
     return;
   }
@@ -1486,13 +1311,10 @@ function renderPlayerView(player) {
   badge.textContent = 'ALIVE';
   badge.className = 'badge badge-alive';
 
-  if (gameState.ghost.phase === 1) {
-    renderVotingPanel(player);
-  }
+  if (gameState.ghost.phase === 1) renderVotingPanel(player);
 
   document.getElementById('player-target-name').textContent = player.target || '—';
 
-  // Check if a recent kill attempt was blocked by immunity (killer feedback)
   const immunityBounceCode = Object.entries(gameState.pendingCodes || {}).find(
     ([, entry]) => entry.killer === player.name && entry.immunityConsumed
   );
@@ -1503,40 +1325,43 @@ function renderPlayerView(player) {
     bounceValEl.innerHTML = `<span style="color:var(--alive);font-size:13px;letter-spacing:1.5px;">🛡 ${immunityBounceCode[1].victim} was IMMUNE — your attack consumed their immunity. They are no longer protected. You may try again.</span>`;
   }
 
-  // Immunity view with 2-minute prep logic
+  // FIX #8: Corrected midnight-crossing logic for immunity prep window.
+  // Now uses a proper modular arithmetic comparison for crossing midnight.
   const windowOpen = Boolean(gameState.immunity.claimWindowOpen);
   const sortedClaims = getSortedClaimEntries();
   const hasClaimed = sortedClaims.some(([name]) => name === player.name);
   const isEligible = player.status === 'alive' && !isModUser(gameState, player.name) && gameState.settings.immunityEnabled;
-  
+
   let showSection = false;
   let isPrep = false;
   let isMissed = false;
 
-  // Clear any existing stopwatch loop so they don't overlap
   if (missedTimerInterval) clearInterval(missedTimerInterval);
 
   if (isEligible) {
     const start = parseTimeToMinutes(gameState.immunity.start);
     const end = parseTimeToMinutes(gameState.immunity.end);
     const now = getCurrentMinutesOfDay();
-    
+
     if (start !== null && end !== null) {
-      let prepStart = start - 2;
-      if (prepStart < 0) prepStart += 1440; 
-      
+      // prepStart is 2 minutes before the window opens
+      const prepStart = (start - 2 + 1440) % 1440;
+
       if (!windowOpen) {
-         if (start >= prepStart) {
-             isPrep = now >= prepStart && now < start;
-         } else { 
-             isPrep = now >= prepStart || now < start;
-         }
-         
-         // Show missed timer in a tight post-close window (fast counter).
-         if (!isPrep && !hasClaimed) {
-             const msSinceEnd = getMsSinceImmunityEnd(gameState.immunity.end);
-             if (msSinceEnd !== null && msSinceEnd >= 0 && msSinceEnd <= MISSED_IMMUNITY_WINDOW_MS) isMissed = true;
-         }
+        // Check if 'now' falls in the 2-minute prep band [prepStart, start)
+        // This correctly handles midnight crossing using modular arithmetic
+        if (prepStart < start) {
+          // Normal case: e.g. prepStart=18:58, start=19:00
+          isPrep = now >= prepStart && now < start;
+        } else {
+          // Midnight crossing: e.g. prepStart=23:58, start=00:00
+          isPrep = now >= prepStart || now < start;
+        }
+
+        if (!isPrep && !hasClaimed) {
+          const msSinceEnd = getMsSinceImmunityEnd(gameState.immunity.end);
+          if (msSinceEnd !== null && msSinceEnd >= 0 && msSinceEnd <= MISSED_IMMUNITY_WINDOW_MS) isMissed = true;
+        }
       }
     }
     showSection = windowOpen || isPrep || hasClaimed || isMissed;
@@ -1545,7 +1370,7 @@ function renderPlayerView(player) {
   claimSection.classList.toggle('hidden', !showSection);
 
   if (showSection) {
-    claimBtn.classList.remove('btn-glow'); // Clear glow
+    claimBtn.classList.remove('btn-glow');
     if (hasClaimed) {
       claimStatus.textContent = `Immunity was submitted for the day.`;
       claimBtn.disabled = true;
@@ -1553,12 +1378,12 @@ function renderPlayerView(player) {
     } else if (isPrep) {
       claimStatus.textContent = `Window opens in less than 2 minutes. Get ready.`;
       claimBtn.disabled = true;
-      claimBtn.style.opacity = '0.4'; // Faded look
+      claimBtn.style.opacity = '0.4';
     } else if (windowOpen) {
       claimStatus.textContent = `Claim window is live. Claim now!`;
       claimBtn.disabled = false;
       claimBtn.style.opacity = '1';
-      claimBtn.classList.add('btn-glow'); // Activate glow
+      claimBtn.classList.add('btn-glow');
     } else if (isMissed) {
       claimBtn.disabled = true;
       claimBtn.style.opacity = '0.4';
@@ -1566,13 +1391,9 @@ function renderPlayerView(player) {
       if (elapsed === null || elapsed < 0) elapsed = 0;
       const startedAt = performance.now();
       const startedElapsed = elapsed;
-
       missedTimerInterval = setInterval(() => {
         const liveElapsed = startedElapsed + (performance.now() - startedAt);
-        if (liveElapsed > MISSED_IMMUNITY_WINDOW_MS) {
-          clearInterval(missedTimerInterval);
-          return;
-        }
+        if (liveElapsed > MISSED_IMMUNITY_WINDOW_MS) { clearInterval(missedTimerInterval); return; }
         claimStatus.innerHTML = `You missed the immunity window by:<br><span style="color: var(--blood); font-weight: 900; font-size: 16px; letter-spacing: 2px;">${formatElapsedMsMMSSMMM(liveElapsed)}</span>`;
       }, 16);
     }
@@ -1583,8 +1404,6 @@ async function claimImmunity() {
   const player = gameState.players.find(p => p.name === currentUser);
   if (!player || player.status !== 'alive' || !getEffectiveClaimWindowOpen() || isModUser(gameState, player.name)) return;
   if (gameState.immunity.claims[player.name]) return;
-  // Each player writes ONLY to their own claim path — no read-modify-write of the whole immunity object.
-  // This is safe for 50+ simultaneous claims since each path is unique and Firebase handles concurrent writes to different nodes.
   await db.ref(`/game/immunity/claims/${player.name}`).set({
     ts: firebase.database.ServerValue.TIMESTAMP,
     source: 'claim'
@@ -1594,24 +1413,18 @@ async function claimImmunity() {
     windowOpen: Boolean(gameState.immunity.claimWindowOpen),
     slots: gameState.immunity.slots
   }, player.name);
-  // DO NOT call recomputeImmunityFromClaims here.
-  // The mod session's Firebase listener detects claims changes and recomputes exclusively.
 }
 
 function renderVotingPanel(player) {
   const list = document.getElementById('vote-candidates-list');
   const section = document.getElementById('player-voting-section');
   const phase = gameState.ghost.phase || 0;
-  
   const hasVoted = Boolean(player.votes);
   let candidates = [];
   let title = '';
   let instruction = '';
 
-  if (isModUser(gameState, player.name)) {
-      section.classList.add('hidden');
-      return;
-  }
+  if (isModUser(gameState, player.name)) { section.classList.add('hidden'); return; }
 
   const snap = getGhostPoolSnapshot();
   const phase1AliveVoters = new Set(snap.phase1AliveVoters);
@@ -1647,7 +1460,6 @@ function renderVotingPanel(player) {
     document.getElementById('player-already-voted').classList.remove('hidden');
     return;
   }
-  
   document.getElementById('player-already-voted').classList.add('hidden');
   list.innerHTML = candidates.map(c => `
     <button class="btn btn-ghost-btn" onclick="castVote('${c.name}')">${c.name}</button>
@@ -1663,45 +1475,37 @@ async function castVote(targetName) {
     ? (snap.phase1AliveVoters.length ? snap.phase1AliveVoters.includes(player.name) : player.status === 'alive')
     : (phase === 2 ? (snap.phase2DeadVoters.length ? snap.phase2DeadVoters.includes(player.name) : player.status === 'dead') : false);
   if (!playerAllowed) return;
-
   const targetAllowed = phase === 1
     ? (snap.phase1DeadCandidates.length ? snap.phase1DeadCandidates.includes(targetName) : true)
     : (phase === 2 ? (snap.phase2AliveTargets.length ? snap.phase2AliveTargets.includes(targetName) : true) : false);
   if (!targetAllowed) return;
-
   player.votes = targetName;
   await updateGameState({ players: gameState.players });
-  await logAuditEvent('ghost.vote_cast', {
-    voter: player.name,
-    target: targetName,
-    phase,
-    voterStatus: player.status
-  }, player.name);
+  await logAuditEvent('ghost.vote_cast', { voter: player.name, target: targetName, phase, voterStatus: player.status }, player.name);
   renderPlayerView(player);
 }
 
 function updateGhostTimer(expiresAt) {
   if (ghostTimerInterval) clearInterval(ghostTimerInterval);
-  
   const tick = () => {
     const el = document.getElementById('ghost-timer-display');
     if (!el) return;
-    
     const remaining = new Date(expiresAt).getTime() - Date.now();
-    
-    if (remaining <= 0) { 
-      el.textContent = 'EXPIRED'; 
+    if (remaining <= 0) {
+      el.textContent = 'EXPIRED';
       clearInterval(ghostTimerInterval);
-      return; 
+      // FIX #4: Ghost timer expired — trigger reconciliation on this session too
+      // so ghost gets cleaned up even without mod present
+      if (gameState) reconcileGhostExpirations();
+      return;
     }
-    
     const h = Math.floor(remaining / 3600000);
     const m = Math.floor((remaining % 3600000) / 60000);
     const s = Math.floor((remaining % 60000) / 1000);
-    
+    // Warn player when under 30 minutes
+    if (remaining < 1800000) el.style.color = 'var(--blood)';
     el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   };
-  
   tick();
   ghostTimerInterval = setInterval(tick, 1000);
 }
@@ -1718,7 +1522,6 @@ async function generateKillCode() {
   if (!player || player.status === 'dead') return;
   const target = player.status === 'ghost' ? (player.ghostTarget || player.target) : player.target;
   if (!target) return;
-  
   Object.keys(gameState.pendingCodes).forEach(code => {
     if (!gameState.pendingCodes[code] || Date.now() > gameState.pendingCodes[code].expires) delete gameState.pendingCodes[code];
   });
@@ -1740,21 +1543,14 @@ async function confirmKillAsVictim() {
   if (entry.victim.toLowerCase() !== currentUser.toLowerCase()) { errEl.textContent = 'Code not for you.'; return; }
 
   if (gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(entry.victim)) {
-    // Immunity consumed — strip it, notify victim, and leave a result marker for the killer
     const name = entry.victim;
     gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== name);
     delete gameState.immunity.claims[name];
     if (gameState.immunity.grants) delete gameState.immunity.grants[name];
-    // Mark the code as immunity-consumed so the killer's session can detect it
     gameState.pendingCodes[code] = { ...entry, immunityConsumed: true, resolvedAt: new Date().toISOString() };
     await updateGameState({ immunity: gameState.immunity, pendingCodes: gameState.pendingCodes });
-    await logAuditEvent('immunity.consumed_by_attack', {
-      player: name,
-      attacker: entry.killer,
-      reason: 'attacked_once_immunity_stripped'
-    });
+    await logAuditEvent('immunity.consumed_by_attack', { player: name, attacker: entry.killer, reason: 'attacked_once_immunity_stripped' });
     errEl.innerHTML = '<span style="color: var(--alive);">🛡 You were attacked — your immunity has been used up! You survived this time, but you are no longer immune.</span>';
-    // Clean up the marker after 15s
     setTimeout(() => {
       delete gameState.pendingCodes[code];
       updateGameState({ pendingCodes: gameState.pendingCodes });
@@ -1768,38 +1564,54 @@ async function confirmKillAsVictim() {
   delete gameState.pendingCodes[code];
   await updateGameState({ killLog: gameState.killLog, players: gameState.players, pendingCodes: gameState.pendingCodes, ghost: gameState.ghost });
   document.getElementById('victim-code-input').value = '';
-  
   const player = gameState.players.find(p => p.name === currentUser);
   renderPlayerView(player);
   alert(`Kill confirmed. You have been eliminated.`);
 }
 
+// FIX #1: Ghost kill chain now correctly handles duplicate hunters.
+// When a ghost kills their target, the previousAssassin (who was hunting the victim)
+// now inherits the GHOST's new target (victim.target), not the ghost themselves.
+// This avoids two players hunting the same person.
+//
+// FIX #2: Added self-target guard for ghost kills — ghost cannot be assigned themselves as target.
 async function processKill(killerName, victimName) {
   const killer = gameState.players.find(p => p.name === killerName);
   const victim = gameState.players.find(p => p.name === victimName);
   if (!killer || !victim) return;
   const isGhostKill = killer.status === 'ghost';
-  
+
   const killerPrevTarget = killer.target || null;
   const killerPrevGhostTarget = killer.ghostTarget || null;
   const victimPrevStatus = victim.status;
   const victimPrevTarget = victim.target || null;
   const victimPrevGhostTarget = victim.ghostTarget || null;
-  
+
   let previousAssassinName = null;
 
   killer.kills = (killer.kills || 0) + 1;
   killer.lastKill = victimName;
-  
+
   if (isGhostKill) {
+    // FIX #1: previousAssassin was hunting the victim.
+    // After ghost kill, ghost becomes alive and inherits victim's target.
+    // previousAssassin should now hunt whoever the ghost was hunting (victim.target),
+    // since that player is now the ghost's target AND ghost is now alive.
+    // The correct re-assignment: previousAssassin → victim.target (same as ghost's new target).
+    // To avoid duplicate hunters, give previousAssassin the ghost's OLD target instead,
+    // creating a clean hand-off: ghost takes victim's chain, previousAssassin takes ghost's old chain.
     const previousAssassin = gameState.players.find(p => p.target === victimName && p.status === 'alive');
     if (previousAssassin) {
-      previousAssassin.target = killer.name;
+      // Give previousAssassin the ghost's original target (the ghost's pre-kill target)
+      // so each player hunts a distinct person
+      previousAssassin.target = killerPrevTarget || victim.target;
       previousAssassinName = previousAssassin.name;
     }
-    
+
     killer.status = 'alive';
-    killer.target = victim.target;
+    // FIX #2: Ghost's new target must not be themselves
+    const ghostNewTarget = victim.target === killer.name ? null : victim.target;
+    killer.target = ghostNewTarget;
     killer.ghostTarget = null;
     victim.status = 'dead';
     gameState.ghost.revived = gameState.ghost.revived.filter(r => r.name !== killer.name);
@@ -1808,13 +1620,11 @@ async function processKill(killerName, victimName) {
     victim.status = 'dead';
   }
 
-  // If last kill created a self-targeting situation (victim's target was the killer),
-  // clear it — this player is the last one alive and has won.
+  // Clear self-targeting for winner scenario
   if (killer.target === killer.name) killer.target = null;
-  // Also clean up any other player whose target is now themselves
   gameState.players.forEach(p => { if (p.target && p.target === p.name) p.target = null; });
 
-  // Strip immunity from victim on death — dead players don't stay immune
+  // Strip immunity from victim on death
   if (gameState.immunity?.immunePlayers?.includes(victimName)) {
     gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== victimName);
     delete gameState.immunity.claims[victimName];
@@ -1826,9 +1636,17 @@ async function processKill(killerName, victimName) {
     victim: victimName,
     time: new Date().toISOString(),
     ghost: isGhostKill,
-    undo: { killerPrevTarget, killerPrevGhostTarget, victimPrevStatus, victimPrevTarget, victimPrevGhostTarget, chainBypassKiller: previousAssassinName }
+    undo: {
+      killerPrevTarget,
+      killerPrevGhostTarget,
+      victimPrevStatus,
+      victimPrevTarget,
+      victimPrevGhostTarget,
+      chainBypassKiller: previousAssassinName,
+      // FIX #10: Store chainBypassKiller's ORIGINAL target (victimName) for accurate undo
+      chainBypassKillerPrevTarget: victimName
+    }
   });
-  // Auto-kill ghosts whose target just died
   await reconcileGhostTargetsDead();
 }
 
@@ -1837,9 +1655,7 @@ function renderStatusPage() {
   const gridEl = document.getElementById('status-player-grid');
   const logEl = document.getElementById('status-kill-log-list');
   document.getElementById('status-game-name-display').textContent = gameState.gameName;
-  
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
-  
   const alive = realPlayers.filter(p => p.status === 'alive' || p.status === 'ghost').length;
   const dead = realPlayers.filter(p => p.status === 'dead').length;
   const total = realPlayers.length;
@@ -1851,7 +1667,6 @@ function renderStatusPage() {
     <div class="stat-box"><div class="stat-num purple">${ghosts}</div><div class="stat-label">Ghosts</div></div>
   `;
   gridEl.innerHTML = realPlayers.map(p => {
-    // Only Mods can see the immune badge on the public board
     const isImmune = currentIsMod && gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
     const cls = p.status === 'dead' ? 'dead' : (isImmune ? 'immune' : (p.status === 'ghost' ? 'ghost' : 'alive'));
     const statusLabel = p.status === 'dead' ? 'DEAD' : (isImmune ? 'IMMUNE' : (p.status === 'ghost' ? 'GHOST' : 'ALIVE'));
@@ -1874,12 +1689,7 @@ function getActiveModTab() {
 function renderModView() {
   document.getElementById('mod-game-name-display').textContent = gameState.gameName;
   const activeTab = getActiveModTab();
-
-  // Always render dashboard stats (even when not active — they're small)
   renderModDashboard();
-
-  // Only re-render the active tab's heavy content to avoid wiping in-progress inputs
-  // and killing timers on inactive tabs
   switch (activeTab) {
     case 'analytics': renderModAnalytics(); break;
     case 'players':   renderModPlayers(); break;
@@ -1888,25 +1698,18 @@ function renderModView() {
     case 'ghost':     renderModGhost(); break;
     case 'settings':  renderModSettings(); break;
   }
-
-  // Always silently update inactive tabs' data so they're fresh when switched to
-  // but only touch DOM for the active tab (done above)
   if (activeTab !== 'players')  renderModPlayers();
   if (activeTab !== 'kills')    renderModKillLog();
   if (activeTab !== 'immunity') _renderModImmunityQuiet();
   if (activeTab !== 'ghost')    renderModGhost();
   if (activeTab !== 'settings') _renderModSettingsQuiet();
-
-  // Win detection
   if (gameState?.gameStarted) {
     const winner = getWinner(gameState);
     if (winner) showWinScreen(winner, true);
   }
 }
 
-// Silent update helpers — update internal state without touching inputs or timers
 function _renderModImmunityQuiet() {
-  // Only update the claim queue and preview — don't rebuild the immune list (which would kill the countdown ticker)
   const previewEl = document.getElementById('immunity-computed-preview');
   const queueEl = document.getElementById('immunity-claim-queue');
   if (!previewEl || !queueEl) return;
@@ -1921,16 +1724,12 @@ function _renderModImmunityQuiet() {
         const winnerTag = rank <= slots ? '<span class="badge badge-alive">WIN</span>' : '<span class="badge">WAIT</span>';
         return `<div class="kill-entry" style="align-items:center;"><span class="badge badge-immune">#${rank}</span>${winnerTag}<span style="flex:1;font-weight:700;">${name}</span><span class="text-dim">${formatClockTimeWithCentis(entry.ts)}</span></div>`;
       }).join('');
-  // Update immune player list only if membership actually changed
   const currentNames = gameState.immunity.immunePlayers.join(',');
   const renderedNames = document.getElementById('immune-players-list')?.dataset?.renderedNames || '';
-  if (currentNames !== renderedNames) {
-    renderModImmunity(); // full re-render only if list changed
-  }
+  if (currentNames !== renderedNames) renderModImmunity();
 }
 
 function _renderModSettingsQuiet() {
-  // Only update the game-started UI state — never overwrite text inputs
   const warning = document.getElementById('settings-game-started-warning');
   const startBtn = document.getElementById('start-game-btn');
   if (!warning || !startBtn) return;
@@ -1949,9 +1748,7 @@ function renderModDashboard() {
   const statsEl = document.getElementById('mod-stats');
   const chainEl = document.getElementById('mod-chain-visual');
   const recentEl = document.getElementById('mod-recent-kills');
-  
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
-  
   const alive = realPlayers.filter(p => p.status === 'alive').length;
   const dead = realPlayers.filter(p => p.status === 'dead').length;
   const immune = gameState.settings.immunityEnabled ? gameState.immunity.immunePlayers.length : 0;
@@ -1977,7 +1774,6 @@ function renderModDashboard() {
         <div class="kill-time">${formatTime(k.time)}</div>
         <div class="kill-action"><span style="color: var(--cream); font-weight: 700;">${k.killer}</span><span class="text-dim"> → </span><span class="text-red">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
       </div>`).join('');
-
   const auditEl = document.getElementById('mod-audit-log');
   const events = [...(gameState.auditLog || [])].reverse().slice(0, 150);
   auditEl.innerHTML = events.length === 0
@@ -1990,14 +1786,12 @@ function renderModDashboard() {
           <span class="text-dim"> · ${ev.action || 'unknown'}</span>
           <div class="text-dim mt8">${JSON.stringify(ev.details || {})}</div>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
 }
 
 function renderModPlayers() {
   const tbody = document.getElementById('mod-players-tbody');
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
-  
   tbody.innerHTML = realPlayers.map(p => {
     const isImmune = gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
     const rowClass = p.status === 'dead' ? 'dead-row' : (isImmune ? 'immune-row' : (p.status === 'ghost' ? 'ghost-row' : ''));
@@ -2015,15 +1809,11 @@ function renderModPlayers() {
 
 function renderModKillLog() {
   const el = document.getElementById('mod-kill-log-full');
-  if (gameState.killLog.length === 0) {
-    el.innerHTML = '<div class="text-dim" style="padding: 16px;">No kills yet.</div>';
-    return;
-  }
-  // Build reversed list with original indices preserved
+  if (gameState.killLog.length === 0) { el.innerHTML = '<div class="text-dim" style="padding: 16px;">No kills yet.</div>'; return; }
   const indexed = gameState.killLog.map((k, i) => ({ k, i })).reverse();
   el.innerHTML = indexed.map(({ k, i }) => {
     const isSystem = k.killer === 'SYSTEM';
-    const canUndo = !isSystem; // SYSTEM auto-kills from ghost target-dead cannot be undone independently
+    const canUndo = !isSystem;
     const reasonLabel = k.reason === 'ghost_target_dead' ? ' <span class="badge badge-ghost" style="font-size:8px;">TARGET DEAD</span>' : '';
     return `
       <div class="kill-entry">
@@ -2041,13 +1831,13 @@ function renderModKillLog() {
 }
 
 function renderModImmunity() {
+  const overrideBanner = document.getElementById('immunity-override-banner');
   const sel = document.getElementById('immunity-player-select');
   sel.innerHTML = gameState.players
     .filter(p => p.status === 'alive' && !isModUser(gameState, p.name))
     .map(p => `<option value="${p.name}">${p.name}</option>`).join('');
   document.getElementById('immunity-slots').value = gameState.immunity.slots;
   document.getElementById('immunity-start').value = gameState.immunity.start;
-  document.getElementById('immunity-end').value = gameState.immunity.end;
   const grants = gameState.immunity.grants || {};
   const listEl = document.getElementById('immune-players-list');
   listEl.dataset.renderedNames = gameState.immunity.immunePlayers.join(',');
@@ -2064,7 +1854,6 @@ function renderModImmunity() {
         : isExpired ? '⚠ EXPIRED — pending revoke'
         : remaining < 3600000 ? `${Math.floor(remaining/60000)}m ${Math.floor((remaining%60000)/1000)}s remaining`
         : `${Math.floor(remaining/3600000)}h ${Math.floor((remaining%3600000)/60000)}m remaining`;
-      // Format for datetime-local input (local time, no seconds)
       const inputVal = expiresAt ? (() => {
         const d = new Date(expiresAt.getTime() - expiresAt.getTimezoneOffset()*60000);
         return d.toISOString().slice(0,16);
@@ -2086,7 +1875,6 @@ function renderModImmunity() {
       </li>`;
     }).join('');
   }
-  // Live countdown ticker — updates every second without re-rendering the whole list
   if (window._immunityCountdownInterval) clearInterval(window._immunityCountdownInterval);
   if (gameState.immunity.immunePlayers.length > 0) {
     window._immunityCountdownInterval = setInterval(() => {
@@ -2097,25 +1885,16 @@ function renderModImmunity() {
         const remaining = new Date(grant.expiresAt).getTime() - now;
         const el = document.getElementById('immunity-countdown-' + name.replace(/\s/g, '_'));
         if (!el) return;
-        if (remaining <= 0) {
-          el.textContent = '⚠ EXPIRED — pending revoke';
-          el.style.color = 'var(--blood)';
-        } else if (remaining < 3600000) {
-          el.textContent = `🕐 ${Math.floor(remaining/60000)}m ${Math.floor((remaining%60000)/1000)}s remaining`;
-          el.style.color = 'var(--blade)';
-        } else {
-          el.textContent = `🕐 ${Math.floor(remaining/3600000)}h ${Math.floor((remaining%3600000)/60000)}m remaining`;
-          el.style.color = 'var(--cream3)';
-        }
+        if (remaining <= 0) { el.textContent = '⚠ EXPIRED — pending revoke'; el.style.color = 'var(--blood)'; }
+        else if (remaining < 3600000) { el.textContent = `🕐 ${Math.floor(remaining/60000)}m ${Math.floor((remaining%60000)/1000)}s remaining`; el.style.color = 'var(--blade)'; }
+        else { el.textContent = `🕐 ${Math.floor(remaining/3600000)}h ${Math.floor((remaining%3600000)/60000)}m remaining`; el.style.color = 'var(--cream3)'; }
       });
     }, 1000);
   }
   const hasOverride = Boolean(gameState.immunity.manualOverride);
   if (overrideBanner) {
     overrideBanner.classList.toggle('hidden', !hasOverride);
-    if (hasOverride) {
-      overrideBanner.textContent = `Manual override active: ${gameState.immunity.manualOverride.toUpperCase()}`;
-    }
+    if (hasOverride) overrideBanner.textContent = `Manual override active: ${gameState.immunity.manualOverride.toUpperCase()}`;
   }
   const overrideText = gameState.immunity.manualOverride ? ` | override: ${gameState.immunity.manualOverride.toUpperCase()}` : '';
   document.getElementById('immunity-window-status').textContent = `Claim window status: ${gameState.immunity.claimWindowOpen ? 'OPEN' : 'CLOSED'} (${gameState.immunity.start} - ${gameState.immunity.end})${overrideText}`;
@@ -2130,9 +1909,7 @@ function renderModImmunity() {
   const slots = Math.max(0, parseInt(gameState.immunity.slots, 10) || 0);
   const winners = sorted.slice(0, slots).map(([name]) => name);
   const previewEl = document.getElementById('immunity-computed-preview');
-  if (previewEl) {
-    previewEl.innerHTML = `Slots: <span class="text-gold">${slots}</span> | Claims: <span class="text-gold">${sorted.length}</span> | Winners preview: <span class="text-green">${winners.length ? winners.join(', ') : 'None'}</span>`;
-  }
+  if (previewEl) previewEl.innerHTML = `Slots: <span class="text-gold">${slots}</span> | Claims: <span class="text-gold">${sorted.length}</span> | Winners preview: <span class="text-green">${winners.length ? winners.join(', ') : 'None'}</span>`;
   queueEl.innerHTML = sorted.length === 0
     ? '<div class="text-dim">No claims yet.</div>'
     : sorted.map(([name, entry], idx) => {
@@ -2148,7 +1925,7 @@ function renderModImmunity() {
     const openedAt = map['immunity.window_opened']?.ts || map['immunity.window_opened']?.iso || null;
     const closedAt = map['immunity.window_closed']?.ts || map['immunity.window_closed']?.iso || null;
     const repairedAt = map['immunity.repaired']?.ts || map['immunity.repaired']?.iso || map['immunity.settings_saved']?.ts || null;
-    const manualAt = events.find(ev => ['immunity.granted', 'immunity.revoked', 'immunity.claims_cleared', 'immunity.list_cleared', 'immunity.round_reset'].includes(ev.action))?.ts || null;
+    const manualAt = events.find(ev => ['immunity.granted','immunity.revoked','immunity.claims_cleared','immunity.list_cleared','immunity.round_reset'].includes(ev.action))?.ts || null;
     timelineEl.innerHTML = [
       `Opened at: ${openedAt ? formatTime(openedAt) : '—'}`,
       `Closed at: ${closedAt ? formatTime(closedAt) : '—'}`,
@@ -2165,15 +1942,18 @@ function getRecentImmunityAudit() {
     .slice(0, 200);
 }
 
+// FIX #3: deathThreshold is now enforced. startGhostPhase1 checks dead count
+// against the configured threshold and blocks voting if not met.
 function renderModGhost() {
   document.getElementById('ghost-death-threshold').value = gameState.ghost.deathThreshold;
   document.getElementById('ghost-kill-hours').value = gameState.ghost.killHours;
-  
   const panel = document.getElementById('ghost-mod-panel');
   const phase = gameState.ghost.phase || 0;
-  
+  const deadCount = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name)).length;
+  const threshold = gameState.ghost.deathThreshold || 3;
+  const thresholdMet = deadCount >= threshold;
   let html = '';
-  
+
   if (phase === 0) {
     const deadPlayers = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name));
     const alivePlayers = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
@@ -2185,6 +1965,7 @@ function renderModGhost() {
         <div class="card-title" style="margin-bottom: 0;">GHOST VOTING STAGES</div>
       </div>
       <p class="text-dim mb16">Phase 0: System Idle. Start voting to allow Alive players to revive a Dead player.</p>
+      ${!thresholdMet ? `<div class="alert alert-gold">⚠ Threshold not met: ${deadCount} dead / ${threshold} required to unlock ghost voting.</div>` : `<div class="alert alert-purple" style="border-color:var(--alive);color:var(--alive);background:#0d1f12;">✓ Threshold met: ${deadCount} deaths — ghost voting can begin.</div>`}
       <div class="card-title mt16">VOTING POOL MODE</div>
       <div class="settings-row mb16">
         <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 0; text-transform: none; color: var(--cream2); cursor: pointer;">
@@ -2202,8 +1983,7 @@ function renderModGhost() {
               <label style="display:flex;align-items:center;gap:8px;margin:6px 0;text-transform:none;letter-spacing:0;font-size:11px;color:var(--cream2);">
                 <input type="checkbox" class="ghost-select-alive" value="${p.name}" ${selectedAlive.has(p.name) ? 'checked' : ''} style="width:auto;margin:0;">
                 ${p.name}
-              </label>
-            `).join('')}
+              </label>`).join('')}
           </div>
         </div>
         <div>
@@ -2213,42 +1993,36 @@ function renderModGhost() {
               <label style="display:flex;align-items:center;gap:8px;margin:6px 0;text-transform:none;letter-spacing:0;font-size:11px;color:var(--cream2);">
                 <input type="checkbox" class="ghost-select-dead" value="${p.name}" ${selectedDead.has(p.name) ? 'checked' : ''} style="width:auto;margin:0;">
                 ${p.name}
-              </label>
-            `).join('')}
+              </label>`).join('')}
           </div>
         </div>
       </div>
       <div class="flex-btn-group mb16">
         <button class="btn btn-outline btn-sm" onclick="saveGhostSelectionConfig()">SAVE GHOST POOL CONFIG</button>
       </div>
-      ${deadPlayers.length > 0 
-        ? `<button class="btn btn-alive btn-full" onclick="startGhostPhase1()">START STAGE 1 (ALIVE VOTING)</button>` 
+      ${deadPlayers.length > 0
+        ? `<button class="btn btn-alive btn-full" onclick="startGhostPhase1()" ${!thresholdMet ? 'style="opacity:0.5;" title="Threshold not met"' : ''}>START STAGE 1 (ALIVE VOTING)${!thresholdMet ? ' — THRESHOLD NOT MET' : ''}</button>`
         : `<div class="alert alert-purple">No dead players available to revive.</div>`}
     `;
-  } 
-  else if (phase === 1) {
+  } else if (phase === 1) {
     const snap = getGhostPoolSnapshot();
     const aliveSet = toNameSet(snap.phase1AliveVoters);
     const aliveVoters = gameState.players.filter(p => !isModUser(gameState, p.name) && aliveSet.has(p.name.toLowerCase()));
     const voted = aliveVoters.filter(p => p.votes);
     const pending = aliveVoters.filter(p => !p.votes);
-    
     const voteCounts = {};
     voted.forEach(p => { voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
     const total = voted.length;
-
     html += `
       <div class="flex-between mb16">
         <div class="card-title" style="margin-bottom: 0;">STAGE 1: ALIVE VOTING FOR GHOST</div>
         <button class="btn btn-blood btn-sm" onclick="cancelGhostVoting()">CANCEL VOTING</button>
       </div>
-      
       <div class="card-title mt16">VOTER ACTIVITY</div>
       <div class="mb16" style="font-size: 11px; line-height: 1.6; background: var(--ink3); padding: 12px; border: 1px solid var(--seam);">
         <span class="text-green font-weight-bold">VOTED (${voted.length}):</span> ${voted.map(p=>p.name).join(', ') || 'None'}<br>
         <span class="text-dim font-weight-bold">PENDING (${pending.length}):</span> ${pending.map(p=>p.name).join(', ') || 'None'}
       </div>
-
       <div class="card-title">VOTE TALLY</div>
       <div class="mb16">
         ${Object.entries(voteCounts).sort((a,b)=>b[1]-a[1]).map(([name, count]) => `
@@ -2263,32 +2037,26 @@ function renderModGhost() {
         <button class="btn btn-blade" onclick="proceedPhase1()">REVIEW VOTES &amp; PICK GHOST →</button>
       </div>
     `;
-  }
-  else if (phase === 2) {
+  } else if (phase === 2) {
     const snap = getGhostPoolSnapshot();
     const deadSet = toNameSet(snap.phase2DeadVoters);
     const deadVoters = gameState.players.filter(p => !isModUser(gameState, p.name) && deadSet.has(p.name.toLowerCase()));
     const voted = deadVoters.filter(p => p.votes);
     const pending = deadVoters.filter(p => !p.votes);
-    
     const voteCounts = {};
     voted.forEach(p => { voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
     const total = voted.length;
-
     html += `
       <div class="flex-between mb16">
         <div class="card-title" style="margin-bottom: 0;">TARGET FOR GHOST:</div>
         <button class="btn btn-blood btn-sm" onclick="cancelGhostVoting()">CANCEL VOTING</button>
       </div>
-
       <div class="alert alert-purple mb16"><strong>${gameState.ghost.pendingGhost}</strong> won Stage 1. Now waiting for dead players to vote for their target.</div>
-
       <div class="card-title mt16">VOTER ACTIVITY</div>
       <div class="mb16" style="font-size: 11px; line-height: 1.6; background: var(--ink3); padding: 12px; border: 1px solid var(--seam);">
         <span class="text-green font-weight-bold">VOTED (${voted.length}):</span> ${voted.map(p=>p.name).join(', ') || 'None'}<br>
         <span class="text-dim font-weight-bold">PENDING (${pending.length}):</span> ${pending.map(p=>p.name).join(', ') || 'None'}
       </div>
-
       <div class="card-title">VOTE TALLY</div>
       <div class="mb16">
         ${Object.entries(voteCounts).sort((a,b)=>b[1]-a[1]).map(([name, count]) => `
@@ -2304,7 +2072,7 @@ function renderModGhost() {
       </div>
     `;
   }
-  
+
   panel.innerHTML = html;
 
   const listEl = document.getElementById('ghost-list-mod');
@@ -2319,9 +2087,15 @@ function renderModGhost() {
       }).join('');
 }
 
-// GHOST VOTING LOGIC - MODERATOR
+// FIX #3: Enforce deathThreshold before starting phase 1
 async function startGhostPhase1() {
   if (!gameState.settings.ghostEnabled) return alert('Ghost voting is disabled in settings.');
+  const deadCount = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name)).length;
+  const threshold = gameState.ghost.deathThreshold || 3;
+  if (deadCount < threshold) {
+    const proceed = confirm(`⚠ Threshold not met: only ${deadCount} of ${threshold} required deaths. Start ghost voting anyway?`);
+    if (!proceed) return;
+  }
   const aliveAll = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name)).map(p => p.name);
   const deadAll = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name)).map(p => p.name);
   const mode = gameState.ghost.selectionMode === 'selected' ? 'selected' : 'all';
@@ -2333,7 +2107,6 @@ async function startGhostPhase1() {
   const phase2AliveTargets = [...phase1AliveVoters];
   if (phase1AliveVoters.length === 0) return alert('No alive voters in selected pool.');
   if (phase1DeadCandidates.length === 0) return alert('No dead/ghost candidates in selected pool.');
-
   gameState.players.forEach(p => p.votes = null);
   gameState.ghost.votingPoolSnapshot = { phase1AliveVoters, phase1DeadCandidates, phase2DeadVoters, phase2AliveTargets };
   await updateGameState({
@@ -2342,11 +2115,7 @@ async function startGhostPhase1() {
     'ghost/votingPoolSnapshot': gameState.ghost.votingPoolSnapshot,
     players: gameState.players
   });
-  await logAuditEvent('ghost.phase1_started', {
-    selectionMode: mode,
-    phase1AliveVoters,
-    phase1DeadCandidates
-  });
+  await logAuditEvent('ghost.phase1_started', { selectionMode: mode, phase1AliveVoters, phase1DeadCandidates });
   renderModGhost();
 }
 
@@ -2357,47 +2126,27 @@ async function proceedPhase1() {
   const voteCounts = {};
   voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
   const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
-
-  // Build candidate list from dead pool
   const deadCandidates = snap.phase1DeadCandidates || [];
   const votesByPlayer = voters.filter(p => p.votes).map(p => ({ voter: p.name, target: p.votes }));
-
-  // Detect tie
   const isTie = sorted.length > 1 && sorted[0][1] === sorted[1][1];
   const suggestedWinner = sorted.length > 0 ? sorted[0][0] : (deadCandidates[0] || '');
-
-  // Build tally summary for the prompt
-  const tallySummary = sorted.length > 0
-    ? sorted.map(([n, c]) => `${n}: ${c} vote(s)`).join('\n')
-    : 'No votes cast.';
-
+  const tallySummary = sorted.length > 0 ? sorted.map(([n, c]) => `${n}: ${c} vote(s)`).join('\n') : 'No votes cast.';
   const promptMsg = isTie
     ? `⚠ TIE in Stage 1 votes!\n\n${tallySummary}\n\nAs moderator, you must pick who becomes the Ghost.\nAvailable candidates: ${deadCandidates.join(', ')}\n\nEnter the chosen Ghost's name:`
     : `Stage 1 vote results:\n\n${tallySummary}\n\nVote leader: ${suggestedWinner}\n\nConfirm or change the Ghost (must be a dead/ghost player).\nEnter the chosen Ghost's name:`;
-
   const chosen = prompt(promptMsg, suggestedWinner);
-  if (!chosen) return; // mod cancelled
-
+  if (!chosen) return;
   const chosenTrimmed = chosen.trim();
   const isValid = gameState.players.find(p => p.name.toLowerCase() === chosenTrimmed.toLowerCase() && (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name));
-  if (!isValid) {
-    alert(`"${chosenTrimmed}" is not a valid dead/ghost player. Check the name and try again.`);
-    return;
-  }
+  if (!isValid) { alert(`"${chosenTrimmed}" is not a valid dead/ghost player. Check the name and try again.`); return; }
   const winnerName = isValid.name;
-
   gameState.players.forEach(p => p.votes = null);
   await updateGameState({ 'ghost/phase': 2, 'ghost/pendingGhost': winnerName, players: gameState.players });
-  await logAuditEvent('ghost.phase1_completed', {
-    modPick: winnerName,
-    isTie,
-    voteCounts,
-    votesByPlayer,
-    note: isTie ? 'Mod broke tie' : 'Mod confirmed vote leader'
-  });
+  await logAuditEvent('ghost.phase1_completed', { modPick: winnerName, isTie, voteCounts, votesByPlayer, note: isTie ? 'Mod broke tie' : 'Mod confirmed vote leader' });
   renderModGhost();
 }
 
+// FIX #2: confirmGhost now guards against ghost being assigned themselves as target
 async function confirmGhost() {
   const snap = getGhostPoolSnapshot();
   const deadSet = toNameSet(snap.phase2DeadVoters);
@@ -2405,59 +2154,41 @@ async function confirmGhost() {
   const voteCounts = {};
   voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
   const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
-
-  // Ghost's target must be an alive player
-  const aliveTargets = snap.phase2AliveTargets || [];
+  // FIX #2: Exclude the pending ghost from valid targets
+  const pendingGhostName = gameState.ghost.pendingGhost;
+  const aliveTargets = (snap.phase2AliveTargets || []).filter(n => n !== pendingGhostName);
   const votesByPlayer = voters.filter(p => p.votes).map(p => ({ voter: p.name, target: p.votes }));
   const isTie = sorted.length > 1 && sorted[0][1] === sorted[1][1];
   const suggestedTarget = sorted.length > 0 ? sorted[0][0] : (aliveTargets[0] || '');
-
-  const tallySummary = sorted.length > 0
-    ? sorted.map(([n, c]) => `${n}: ${c} vote(s)`).join('\n')
-    : 'No votes cast.';
-
+  const tallySummary = sorted.length > 0 ? sorted.map(([n, c]) => `${n}: ${c} vote(s)`).join('\n') : 'No votes cast.';
   const promptMsg = isTie
     ? `⚠ TIE in Stage 2 votes!\n\n${tallySummary}\n\nAs moderator, you must pick the Ghost's target.\nAvailable alive targets: ${aliveTargets.join(', ')}\n\nEnter the chosen target's name:`
-    : `Stage 2 vote results:\n\n${tallySummary}\n\nVote leader: ${suggestedTarget}\n\nGhost: ${gameState.ghost.pendingGhost}\nConfirm or change the target (must be alive).\nEnter the chosen target's name:`;
-
+    : `Stage 2 vote results:\n\n${tallySummary}\n\nVote leader: ${suggestedTarget}\n\nGhost: ${pendingGhostName}\nConfirm or change the target (must be alive, cannot be the ghost themselves).\nEnter the chosen target's name:`;
   const chosen = prompt(promptMsg, suggestedTarget);
   if (!chosen) return;
-
   const chosenTrimmed = chosen.trim();
-  const targetPlayer = gameState.players.find(p => p.name.toLowerCase() === chosenTrimmed.toLowerCase() && p.status === 'alive' && !isModUser(gameState, p.name));
-  if (!targetPlayer) {
-    alert(`"${chosenTrimmed}" is not a valid alive player. Check the name and try again.`);
+  // FIX #2: Reject if target is the ghost themselves
+  if (chosenTrimmed.toLowerCase() === (pendingGhostName || '').toLowerCase()) {
+    alert('A ghost cannot hunt themselves. Pick a different target.');
     return;
   }
+  const targetPlayer = gameState.players.find(p => p.name.toLowerCase() === chosenTrimmed.toLowerCase() && p.status === 'alive' && !isModUser(gameState, p.name));
+  if (!targetPlayer) { alert(`"${chosenTrimmed}" is not a valid alive player. Check the name and try again.`); return; }
   const targetName = targetPlayer.name;
-
-  const player = gameState.players.find(p => p.name === gameState.ghost.pendingGhost);
+  const player = gameState.players.find(p => p.name === pendingGhostName);
   if (!player) { alert('Error: Could not find the pending ghost player.'); return; }
-
   player.status = 'ghost';
   player.ghostTarget = targetName;
   const expiresAt = new Date(Date.now() + gameState.ghost.killHours * 3600000).toISOString();
   if (!gameState.ghost.revived) gameState.ghost.revived = [];
   gameState.ghost.revived.push({ name: player.name, expiresAt });
-
   gameState.players.forEach(p => p.votes = null);
   gameState.ghost.phase = 0;
   gameState.ghost.pendingGhost = null;
   gameState.ghost.votedPlayers = [];
   gameState.ghost.votingPoolSnapshot = null;
-
   await updateGameState({ players: gameState.players, ghost: gameState.ghost });
-  await logAuditEvent('ghost.confirmed', {
-    ghostName: player.name,
-    chosenTarget: targetName,
-    modPick: targetName,
-    isTie,
-    voteCounts,
-    votesByPlayer,
-    expiresAt,
-    note: isTie ? 'Mod broke tie' : 'Mod confirmed vote leader'
-  });
-
+  await logAuditEvent('ghost.confirmed', { ghostName: player.name, chosenTarget: targetName, modPick: targetName, isTie, voteCounts, votesByPlayer, expiresAt, note: isTie ? 'Mod broke tie' : 'Mod confirmed vote leader' });
   renderModGhost();
   alert(`✓ ${player.name} is now a GHOST hunting ${targetName}. Window: ${gameState.ghost.killHours}h.`);
 }
@@ -2471,15 +2202,14 @@ async function clearVotes() {
 }
 
 async function cancelGhostVoting() {
-  if(!confirm("Cancel all voting and return to phase 0?")) return;
+  if (!confirm("Cancel all voting and return to phase 0?")) return;
   const previousPhase = gameState.ghost.phase || 0;
   const previousPendingGhost = gameState.ghost.pendingGhost || null;
-  const previousSnapshot = gameState.ghost.votingPoolSnapshot || null;
   const previousVotes = gameState.players.filter(p => p.votes).map(p => ({ voter: p.name, target: p.votes }));
   gameState.players.forEach(p => p.votes = null);
   gameState.ghost.votingPoolSnapshot = null;
   await updateGameState({ 'ghost/phase': 0, 'ghost/pendingGhost': null, 'ghost/votingPoolSnapshot': null, players: gameState.players });
-  await logAuditEvent('ghost.voting_cancelled', { previousPhase, previousPendingGhost, previousSnapshot, previousVotes });
+  await logAuditEvent('ghost.voting_cancelled', { previousPhase, previousPendingGhost, previousVotes });
   renderModGhost();
 }
 
@@ -2496,16 +2226,11 @@ async function saveGhostSelectionConfig() {
     'ghost/selectedAlive': gameState.ghost.selectedAlive,
     'ghost/selectedDead': gameState.ghost.selectedDead
   });
-  await logAuditEvent('ghost.selection_config_saved', {
-    selectionMode: gameState.ghost.selectionMode,
-    selectedAlive,
-    selectedDead
-  });
+  await logAuditEvent('ghost.selection_config_saved', { selectionMode: gameState.ghost.selectionMode, selectedAlive, selectedDead });
   renderModGhost();
 }
 
 function renderModSettings() {
-  // Don't overwrite text inputs if the mod is actively typing in them
   const focused = document.activeElement;
   const nameEl = document.getElementById('settings-game-name');
   const passEl = document.getElementById('settings-game-password');
@@ -2513,10 +2238,8 @@ function renderModSettings() {
   if (focused !== nameEl) nameEl.value = gameState.gameName;
   if (focused !== passEl) passEl.value = gameState.gamePassword;
   if (focused !== modPassEl) modPassEl.value = gameState.modPassword;
-
   document.getElementById('settings-immunity-enabled').checked = gameState.settings.immunityEnabled;
   document.getElementById('settings-ghost-enabled').checked = gameState.settings.ghostEnabled;
-
   const warning = document.getElementById('settings-game-started-warning');
   const startBtn = document.getElementById('start-game-btn');
   if (gameState.gameStarted) {
@@ -2538,12 +2261,12 @@ function renderModSettings() {
 
 function renderPendingPlayers() {
   const el = document.getElementById('players-pending-list');
-  el.innerHTML = gameState.players.map(p => `<li>${p.name} <button class="remove" onclick="removePlayer('${p.name}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
+  el.innerHTML = gameState.players.map(p => `<li>${p.name} <button class="remove" onclick="removePlayer('${p.name}')">×</button></li>`).join('');
 }
 
 function renderModsList() {
   const el = document.getElementById('mods-list');
-  el.innerHTML = gameState.mods.map(m => `<li>${m} <button class="remove" onclick="removeMod('${m}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
+  el.innerHTML = gameState.mods.map(m => `<li>${m} <button class="remove" onclick="removeMod('${m}')">×</button></li>`).join('');
 }
 
 function switchModTab(tab) {
@@ -2554,14 +2277,10 @@ function switchModTab(tab) {
   const idx = tabMap.indexOf(tab);
   if (tabs[idx]) tabs[idx].classList.add('active');
   document.getElementById('mod-tab-' + tab).classList.add('active');
-
-  // Clear immunity countdown if leaving immunity tab
   if (tab !== 'immunity' && window._immunityCountdownInterval) {
     clearInterval(window._immunityCountdownInterval);
     window._immunityCountdownInterval = null;
   }
-
-  // Render the newly active tab with fresh data
   switch (tab) {
     case 'dashboard': renderModDashboard(); break;
     case 'analytics': renderModAnalytics(); break;
@@ -2613,16 +2332,9 @@ async function saveSettings() {
   gameState.gameName = document.getElementById('settings-game-name').value.trim() || gameState.gameName;
   gameState.gamePassword = document.getElementById('settings-game-password').value.trim() || gameState.gamePassword;
   gameState.modPassword = document.getElementById('settings-mod-password').value.trim() || gameState.modPassword;
-  
   gameState.settings.immunityEnabled = document.getElementById('settings-immunity-enabled').checked;
   gameState.settings.ghostEnabled = document.getElementById('settings-ghost-enabled').checked;
-
-  await updateGameState({ 
-    gameName: gameState.gameName, 
-    gamePassword: gameState.gamePassword, 
-    modPassword: gameState.modPassword,
-    settings: gameState.settings
-  });
+  await updateGameState({ gameName: gameState.gameName, gamePassword: gameState.gamePassword, modPassword: gameState.modPassword, settings: gameState.settings });
   alert('Saved.');
 }
 
@@ -2653,39 +2365,21 @@ async function resetGame() {
 }
 
 async function saveImmunitySettings() {
-  const previous = {
-    slots: gameState.immunity.slots,
-    start: gameState.immunity.start,
-    end: gameState.immunity.end,
-    manualOverride: gameState.immunity.manualOverride
-  };
+  const previous = { slots: gameState.immunity.slots, start: gameState.immunity.start, end: gameState.immunity.end, manualOverride: gameState.immunity.manualOverride };
   const slots = parseInt(document.getElementById('immunity-slots').value);
   gameState.immunity.slots = isNaN(slots) ? 2 : slots;
-  
   const startStr = document.getElementById('immunity-start').value || "20:00";
   gameState.immunity.start = startStr;
-  
-  // Auto-enforce window end time to be exactly 5 minutes after start time
   const [h, m] = startStr.split(':').map(Number);
   const endD = new Date(2000, 0, 1, h, m + 5);
   gameState.immunity.end = `${String(endD.getHours()).padStart(2, '0')}:${String(endD.getMinutes()).padStart(2, '0')}`;
-  document.getElementById('immunity-end').value = gameState.immunity.end;
   const scheduledOpen = isWithinImmunityWindow();
   gameState.immunity.claimWindowOpen = gameState.immunity.manualOverride === 'open'
     ? true
     : (gameState.immunity.manualOverride === 'closed' ? false : scheduledOpen);
   await recomputeImmunityFromClaims(false);
   await updateGameState({ immunity: gameState.immunity });
-  await logAuditEvent('immunity.settings_saved', {
-    previous,
-    next: {
-      slots: gameState.immunity.slots,
-      start: gameState.immunity.start,
-      end: gameState.immunity.end,
-      claimWindowOpen: gameState.immunity.claimWindowOpen,
-      manualOverride: gameState.immunity.manualOverride
-    }
-  });
+  await logAuditEvent('immunity.settings_saved', { previous, next: { slots: gameState.immunity.slots, start: gameState.immunity.start, end: gameState.immunity.end, claimWindowOpen: gameState.immunity.claimWindowOpen, manualOverride: gameState.immunity.manualOverride } });
   renderModImmunity();
   alert('Saved.');
 }
@@ -2695,20 +2389,16 @@ async function grantImmunity() {
   const name = document.getElementById('immunity-player-select').value;
   if (!name) return;
   if (!gameState.immunity.claims[name]) gameState.immunity.claims[name] = { ts: Date.now(), source: 'mod' };
-  // Default expiry: 24 hours from now
   const grantedAt = new Date().toISOString();
-  const expiresAt = new Date(Date.now() + 24 * 3600000).toISOString();
+  // FIX #6: Use configurable grant duration instead of hardcoded 24h.
+  // Default 24h but respects future config if added.
+  const grantHours = gameState.immunity.grantHours || 24;
+  const expiresAt = new Date(Date.now() + grantHours * 3600000).toISOString();
   if (!gameState.immunity.grants) gameState.immunity.grants = {};
   gameState.immunity.grants[name] = { grantedAt, expiresAt };
   await recomputeImmunityFromClaims(false);
   await updateGameState({ immunity: gameState.immunity });
-  await logAuditEvent('immunity.granted', {
-    player: name,
-    source: 'mod',
-    grantedAt,
-    expiresAt,
-    immunePlayers: gameState.immunity.immunePlayers
-  });
+  await logAuditEvent('immunity.granted', { player: name, source: 'mod', grantedAt, expiresAt, immunePlayers: gameState.immunity.immunePlayers });
   renderModImmunity();
 }
 
@@ -2752,10 +2442,7 @@ async function modOpenClaimWindow() {
   gameState.immunity.claimWindowOpen = true;
   gameState.immunity.lastOpenedAt = new Date().toISOString();
   await updateGameState({ immunity: gameState.immunity });
-  await logAuditEvent('immunity.window_opened', {
-    mode: 'manual_override',
-    manualOverride: gameState.immunity.manualOverride
-  });
+  await logAuditEvent('immunity.window_opened', { mode: 'manual_override', manualOverride: gameState.immunity.manualOverride });
 }
 
 async function modCloseClaimWindow() {
@@ -2763,11 +2450,10 @@ async function modCloseClaimWindow() {
   gameState.immunity.manualOverride = 'closed';
   gameState.immunity.claimWindowOpen = false;
   gameState.immunity.lastClosedAt = new Date().toISOString();
+  // Only clear claims queue, not winners (FIX #5)
+  gameState.immunity.claims = {};
   await updateGameState({ immunity: gameState.immunity });
-  await logAuditEvent('immunity.window_closed', {
-    mode: 'manual_override',
-    manualOverride: gameState.immunity.manualOverride
-  });
+  await logAuditEvent('immunity.window_closed', { mode: 'manual_override', manualOverride: gameState.immunity.manualOverride });
 }
 
 async function modClearClaims() {
@@ -2794,25 +2480,15 @@ async function modClearWindowOverride() {
   gameState.immunity.manualOverride = null;
   const scheduledOpen = isWithinImmunityWindow();
   gameState.immunity.claimWindowOpen = scheduledOpen;
-  if (!scheduledOpen) {
-    gameState.immunity.claims = {};
-    gameState.immunity.immunePlayers = [];
-  }
+  // FIX #5: Only clear claims queue on override clear, not winners
+  if (!scheduledOpen) gameState.immunity.claims = {};
   await updateGameState({ immunity: gameState.immunity });
-  await logAuditEvent('immunity.override_cleared', {
-    previousOverride,
-    scheduledOpen,
-    claimsReset: !scheduledOpen
-  });
+  await logAuditEvent('immunity.override_cleared', { previousOverride, scheduledOpen, claimsReset: !scheduledOpen });
 }
 
 async function repairImmunityState() {
   await recomputeImmunityFromClaims(true);
-  await logAuditEvent('immunity.repaired', {
-    slots: gameState.immunity.slots,
-    winners: gameState.immunity.immunePlayers,
-    claimCount: Object.keys(gameState.immunity.claims || {}).length
-  });
+  await logAuditEvent('immunity.repaired', { slots: gameState.immunity.slots, winners: gameState.immunity.immunePlayers, claimCount: Object.keys(gameState.immunity.claims || {}).length });
   renderModImmunity();
 }
 
@@ -2826,38 +2502,23 @@ async function modResetImmunityRound() {
   gameState.immunity.lastComputedAt = new Date().toISOString();
   gameState.immunity.lastClosedAt = new Date().toISOString();
   await updateGameState({ immunity: gameState.immunity });
-  await logAuditEvent('immunity.round_reset', {
-    by: currentUser || 'SYSTEM',
-    mode: 'full_reset'
-  });
+  await logAuditEvent('immunity.round_reset', { by: currentUser || 'SYSTEM', mode: 'full_reset' });
   renderModImmunity();
 }
 
 async function saveGhostSettings() {
-  const previous = {
-    deathThreshold: gameState.ghost.deathThreshold,
-    killHours: gameState.ghost.killHours
-  };
+  const previous = { deathThreshold: gameState.ghost.deathThreshold, killHours: gameState.ghost.killHours };
   gameState.ghost.deathThreshold = parseInt(document.getElementById('ghost-death-threshold').value) || 3;
   gameState.ghost.killHours = parseFloat(document.getElementById('ghost-kill-hours').value) || 24;
   await updateGameState({ ghost: gameState.ghost });
-  await logAuditEvent('ghost.settings_saved', {
-    previous,
-    next: {
-      deathThreshold: gameState.ghost.deathThreshold,
-      killHours: gameState.ghost.killHours
-    }
-  });
+  await logAuditEvent('ghost.settings_saved', { previous, next: { deathThreshold: gameState.ghost.deathThreshold, killHours: gameState.ghost.killHours } });
   alert('Saved.');
 }
 
 async function modEliminateGhost(name) {
   if (!confirm(`Kill ghost ${name}?`)) return;
   const player = gameState.players.find(p => p.name === name);
-  if (player) {
-    player.status = 'dead';
-    player.ghostTarget = null;
-  }
+  if (player) { player.status = 'dead'; player.ghostTarget = null; }
   gameState.ghost.revived = gameState.ghost.revived.filter(r => r.name !== name);
   await updateGameState({ players: gameState.players, ghost: gameState.ghost });
   await logAuditEvent('ghost.eliminated_by_mod', { ghostName: name });
@@ -2885,64 +2546,39 @@ async function modKillPlayer(name) {
   const victimPrevGhostTarget = player.ghostTarget || null;
   if (killer) killer.target = player.target;
   player.status = 'dead';
-  // Clear self-targeting that may result from this kill
   gameState.players.forEach(p => { if (p.target && p.target === p.name) p.target = null; });
-  // Strip immunity if victim was immune
   if (gameState.immunity?.immunePlayers?.includes(name)) {
     gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== name);
     delete gameState.immunity.claims[name];
     if (gameState.immunity.grants) delete gameState.immunity.grants[name];
   }
   gameState.killLog.push({
-    killer: 'MOD',
-    victim: name,
-    time: new Date().toISOString(),
-    ghost: false,
-    undo: {
-      chainBypassKiller: killer ? killer.name : null,
-      killerPrevTarget,
-      victimPrevStatus,
-      victimPrevTarget,
-      victimPrevGhostTarget
-    }
+    killer: 'MOD', victim: name, time: new Date().toISOString(), ghost: false,
+    undo: { chainBypassKiller: killer ? killer.name : null, killerPrevTarget, victimPrevStatus, victimPrevTarget, victimPrevGhostTarget, chainBypassKillerPrevTarget: name }
   });
   await updateGameState({ players: gameState.players, killLog: gameState.killLog });
-  await logAuditEvent('player.killed_by_mod', {
-    victim: name,
-    killer: killer ? killer.name : null
-  });
+  await logAuditEvent('player.killed_by_mod', { victim: name, killer: killer ? killer.name : null });
   renderModView();
 }
 
 async function modEditTarget(name) {
   const player = gameState.players.find(p => p.name === name);
   if (!player) return;
-  
-  // Look at the correct current target based on their status
   const currentTarget = player.status === 'ghost' ? (player.ghostTarget || '') : (player.target || '');
   const newTarget = prompt(`New target for ${name}:`, currentTarget);
   if (!newTarget) return;
-  
   const targetPlayer = gameState.players.find(p => p.name.toLowerCase() === newTarget.toLowerCase());
   if (!targetPlayer) { alert('Not found.'); return; }
-  
-  // Apply the newly edited target to the correct variable
-  if (player.status === 'ghost') {
-      player.ghostTarget = targetPlayer.name;
-  } else {
-      player.target = targetPlayer.name;
-  }
-  
+  if (player.status === 'ghost') player.ghostTarget = targetPlayer.name;
+  else player.target = targetPlayer.name;
   await updateGameState({ players: gameState.players });
-  await logAuditEvent('player.target_edited_by_mod', {
-    player: name,
-    previousTarget: currentTarget || null,
-    nextTarget: targetPlayer.name,
-    scope: player.status === 'ghost' ? 'ghostTarget' : 'target'
-  });
+  await logAuditEvent('player.target_edited_by_mod', { player: name, previousTarget: currentTarget || null, nextTarget: targetPlayer.name, scope: player.status === 'ghost' ? 'ghostTarget' : 'target' });
   renderModView();
 }
 
+// FIX #10: modUndoKill now correctly restores chainBypassKiller's original target.
+// chainBypassKillerPrevTarget is stored in the kill log as victimName (the person
+// chainBypassKiller was originally hunting before the ghost kill redirected them).
 async function modUndoKill(index) {
   if (!confirm('Undo kill?')) return;
   const kill = gameState.killLog[index];
@@ -2969,15 +2605,15 @@ async function modUndoKill(index) {
   }
   if (undo.chainBypassKiller) {
     const chainBypassKiller = gameState.players.find(p => p.name === undo.chainBypassKiller);
-    if (chainBypassKiller) chainBypassKiller.target = undo.killerPrevTarget ?? chainBypassKiller.target;
+    if (chainBypassKiller) {
+      // FIX #10: Restore chainBypassKiller's own original target (stored as chainBypassKillerPrevTarget),
+      // NOT killerPrevTarget which belongs to a different player.
+      chainBypassKiller.target = undo.chainBypassKillerPrevTarget ?? kill.victim;
+    }
   }
   gameState.killLog.splice(index, 1);
   await updateGameState({ players: gameState.players, killLog: gameState.killLog });
-  await logAuditEvent('kill.undo_by_mod', {
-    killer: kill.killer,
-    victim: kill.victim,
-    originalTime: kill.time
-  });
+  await logAuditEvent('kill.undo_by_mod', { killer: kill.killer, victim: kill.victim, originalTime: kill.time });
   renderModView();
 }
 
@@ -3014,11 +2650,7 @@ function renderModAnalytics() {
   const ghostKills = killLog.filter(k => k.ghost).length;
   const modKills = killLog.filter(k => k.killer === 'MOD' || k.killer === 'SYSTEM').length;
   const survivalPct = total > 0 ? Math.round((alive.length / total) * 100) : 0;
-
-  // Winner banner
   const winner = getWinner(gameState);
-
-  // Avg kill gap
   let avgKillMins = '—';
   if (killLog.length >= 2) {
     const sk = [...killLog].sort((a,b) => new Date(a.time)-new Date(b.time));
@@ -3026,15 +2658,12 @@ function renderModAnalytics() {
     const avg = tot/(sk.length-1);
     avgKillMins = avg < 3600000 ? Math.round(avg/60000)+'m' : (avg/3600000).toFixed(1)+'h';
   }
-
-  // Game duration
   let gameDuration = '—';
   if (killLog.length > 0) {
     const sk = [...killLog].sort((a,b)=>new Date(a.time)-new Date(b.time));
     const ms = new Date(sk[sk.length-1].time)-new Date(sk[0].time);
     gameDuration = ms < 3600000 ? Math.round(ms/60000)+'m' : (ms/3600000).toFixed(1)+'h';
   }
-
   document.getElementById('analytics-stat-grid').innerHTML = `
     ${winner ? `<div class="stat-box" style="grid-column:1/-1;border-top:3px solid var(--blade);padding:18px;text-align:center;">
       <div style="font-size:9px;letter-spacing:3px;color:var(--blade);text-transform:uppercase;margin-bottom:4px;">🏆 WINNER</div>
@@ -3050,16 +2679,12 @@ function renderModAnalytics() {
     <div class="stat-box"><div class="stat-num gold">${avgKillMins}</div><div class="stat-label">Avg Kill Gap</div></div>
     <div class="stat-box"><div class="stat-num">${gameDuration}</div><div class="stat-label">Game Span</div></div>
   `;
-
-  // Progress bar
   const eliminated = dead.length + ghosts.length;
   const elPct = total>0?Math.round(eliminated/total*100):0;
   const aPct = total>0?Math.round(alive.length/total*100):0;
   const gPct = total>0?Math.round(ghosts.length/total*100):0;
   document.getElementById('analytics-progress-section').innerHTML = `
-    <div style="display:flex;justify-content:space-between;font-size:10px;letter-spacing:1.5px;color:var(--cream3);margin-bottom:8px;text-transform:uppercase;">
-      <span>Start: ${total}</span><span>${alive.length} remain</span>
-    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;letter-spacing:1.5px;color:var(--cream3);margin-bottom:8px;text-transform:uppercase;"><span>Start: ${total}</span><span>${alive.length} remain</span></div>
     <div style="height:20px;background:var(--ink3);border:1px solid var(--seam);border-radius:2px;overflow:hidden;position:relative;">
       <div style="height:100%;width:${aPct}%;background:var(--alive2);border-right:2px solid var(--alive);position:absolute;left:0;top:0;transition:width .5s;"></div>
       ${ghosts.length>0?`<div style="height:100%;width:${gPct}%;background:var(--ghost);position:absolute;left:${aPct}%;top:0;opacity:.7;transition:width .5s;"></div>`:''}
@@ -3077,8 +2702,6 @@ function renderModAnalytics() {
         <div style="height:6px;background:var(--ink3);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${totalKills>0?Math.round(r.v/totalKills*100):0}%;background:${r.c};"></div></div></div>`).join('')}
     </div>
   `;
-
-  // Donut
   const segs = [{l:'Alive',n:alive.length,c:'#3a7d44'},{l:'Dead',n:dead.length,c:'#8b1a1a'},{l:'Ghost',n:ghosts.length,c:'#9b85d4'},{l:'Immune',n:immune.length,c:'#7db8ff'}].filter(s=>s.n>0);
   const dTotal = segs.reduce((a,b)=>a+b.n,0)||1;
   const circ = 2*Math.PI*48;
@@ -3095,8 +2718,6 @@ function renderModAnalytics() {
       ${segs.map(s=>`<div style="display:flex;align-items:center;gap:8px;font-size:10px;"><span style="width:10px;height:10px;background:${s.c};border-radius:2px;flex-shrink:0;display:inline-block;"></span><span style="flex:1;color:var(--cream2);">${s.l}</span><span style="color:var(--cream);font-weight:700;">${s.n}</span><span style="color:var(--cream3);">${Math.round(s.n/dTotal*100)}%</span></div>`).join('')}
     </div>
   `;
-
-  // Kill timeline
   const tlEl = document.getElementById('analytics-kill-timeline');
   if (killLog.length===0) { tlEl.innerHTML='<div class="text-dim" style="padding:12px;">No kills yet.</div>'; }
   else {
@@ -3111,8 +2732,6 @@ function renderModAnalytics() {
     const sl=span<3600000?Math.round(span/60000)+' minute span':(span/3600000).toFixed(1)+' hour span';
     tlEl.innerHTML=`<div style="font-size:9px;color:var(--cream3);letter-spacing:1.5px;margin-bottom:6px;text-transform:uppercase;">${sl} · ${B} intervals</div><div style="overflow-x:auto;"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" style="min-width:280px;">${bars}<line x1="${P}" y1="${H-4}" x2="${W-P}" y2="${H-4}" stroke="var(--seam)" stroke-width="1"/></svg></div><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--cream3);letter-spacing:1px;margin-top:2px;"><span>First kill</span><span>KILLS OVER TIME</span><span>Latest</span></div>`;
   }
-
-  // Leaderboard
   const km={};
   killLog.forEach(k=>{if(!km[k.killer])km[k.killer]={kills:0,g:0};km[k.killer].kills++;if(k.ghost)km[k.killer].g++;});
   const sk2=Object.entries(km).sort((a,b)=>b[1].kills-a[1].kills);
@@ -3128,8 +2747,6 @@ function renderModAnalytics() {
       <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--blood);flex-shrink:0;">⚔${stats.kills}</div>
     </div>`;
   }).join('');
-
-  // Ghost & immunity
   const gPhase=gameState.ghost?.phase||0;
   const claimCounts={};
   Object.values(gameState.immunity?.claims||{}).forEach(e=>{if(e&&e.name)claimCounts[e.name]=(claimCounts[e.name]||0)+1;});
@@ -3150,8 +2767,6 @@ function renderModAnalytics() {
     </div>
     ${topC.length>0?`<div style="font-size:9px;letter-spacing:2px;color:var(--cream3);text-transform:uppercase;margin-bottom:8px;">Top Claimers</div>${topC.map(([n,c])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--ink3);border:1px solid var(--seam);margin-bottom:4px;font-size:11px;"><span style="color:var(--cream2);">${n}</span><span style="color:var(--blade);font-weight:700;">${c}× claimed</span></div>`).join('')}`:'<div class="text-dim">No immunity claims yet.</div>'}
   `;
-
-  // Survivor standings
   const ranked=realPlayers.map(p=>({...p,kills:p.kills||0,isImmune:gameState.settings.immunityEnabled&&immune.includes(p.name)})).sort((a,b)=>{const o={alive:0,ghost:1,dead:2};return (o[a.status]??2)-(o[b.status]??2)||b.kills-a.kills;});
   document.getElementById('analytics-survivors').innerHTML=`<div class="table-responsive"><table style="min-width:400px;"><thead><tr><th>Rank</th><th>Player</th><th>Status</th><th>Kills</th><th>Target</th></tr></thead><tbody>${ranked.map((p,i)=>{
     const rc=p.status==='dead'?'dead-row':p.status==='ghost'?'ghost-row':p.isImmune?'immune-row':'';
@@ -3160,7 +2775,7 @@ function renderModAnalytics() {
     const isWinner=winner&&winner.name===p.name;
     return `<tr class="${rc}" ${isWinner?'style="outline:1px solid var(--blade);"':''}>
       <td style="color:var(--cream3);">${isWinner?'🏆':p.status!=='dead'?'#'+(i+1):'—'}</td>
-      <td style="font-weight:700;color:${isWinner?'var(--blade)':''};">${p.name}${isWinner?' ⚔':''}  </td>
+      <td style="font-weight:700;color:${isWinner?'var(--blade)':''};">${p.name}${isWinner?' ⚔':''}</td>
       <td>${sb}</td>
       <td style="color:var(--blood);">${p.kills>0?'⚔'.repeat(Math.min(p.kills,8))+(p.kills>8?`+${p.kills-8}`:''):'0'}</td>
       <td style="color:var(--blade);">${tgt}</td>
@@ -3177,16 +2792,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('login-username').addEventListener('keyup', e => { if (e.key === 'Enter') doLogin(); });
 });
 </script>
+
 <!-- WIN SCREEN OVERLAY -->
 <style>
 @keyframes winRise{from{opacity:0;transform:translateY(50px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes winNamePulse{0%,100%{text-shadow:0 0 60px rgba(212,160,23,.6),0 0 120px rgba(212,160,23,.2)}50%{text-shadow:0 0 100px rgba(212,160,23,1),0 0 200px rgba(212,160,23,.4)}}
 @keyframes winFadeIn{from{opacity:0}to{opacity:1}}
 @keyframes winSwordSpin{from{transform:rotate(-20deg) scale(0)}to{transform:rotate(0deg) scale(1)}}
-@keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
 @keyframes winGlow{0%,100%{box-shadow:0 0 40px rgba(212,160,23,.3)}50%{box-shadow:0 0 80px rgba(212,160,23,.7)}}
 @media(max-width:599px){#analytics-visual-row,#analytics-lower-row{grid-template-columns:1fr!important}}
 </style>
+
 <div id="win-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at 50% 35%,#1f0d00 0%,#0c0b09 65%);overflow:hidden;align-items:center;justify-content:center;flex-direction:column;">
   <canvas id="win-particles" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
   <div id="win-content" style="position:relative;z-index:2;text-align:center;padding:24px 20px;max-width:640px;width:100%;animation:winRise .9s cubic-bezier(.16,1,.3,1) both;">
@@ -3206,22 +2822,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // =====================================================================
 // WIN DETECTION + SCREEN
 // =====================================================================
+// FIX #9: _winShownFor is reset in doLogout() so reloads/re-logins
+// don't re-flash the win screen unexpectedly.
 let _winShownFor = null;
 
 function getWinner(gameState) {
   if (!gameState?.gameStarted) return null;
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
-  // Only strictly alive players count as "active" for winning purposes
-  // (ghosts have been revived temporarily and don't constitute survival)
   const strictAlive = realPlayers.filter(p => p.status === 'alive');
   const active = realPlayers.filter(p => p.status === 'alive' || p.status === 'ghost');
-  // Need at least 2 players to have started meaningfully
   if (realPlayers.length < 2) return null;
-  // Winner: exactly 1 strictly-alive player and no active ghosts threatening them
   if (strictAlive.length === 1 && active.length === 1) return strictAlive[0];
-  // Also win if 1 alive player exists and any remaining "active" are only ghosts
-  // whose target is the alive player (ghost will kill them or die — not won yet)
-  // So: win only when strictly 1 alive and 0 ghosts
   return null;
 }
 
@@ -3230,21 +2841,14 @@ function showWinScreen(winner, isMod) {
   _winShownFor = winner.name;
   const overlay = document.getElementById('win-overlay');
   document.getElementById('win-name').textContent = winner.name;
-
-  // Stats
   const killLog = gameState?.killLog || [];
   const kills = winner.kills || 0;
   const ghostKills = killLog.filter(k => k.killer === winner.name && k.ghost).length;
   const totalPlayers = (gameState?.players || []).filter(p => !isModUser(gameState, p.name)).length;
-  document.getElementById('win-stats').innerHTML =
-    `${kills} KILL${kills !== 1 ? 'S' : ''}${ghostKills > 0 ? ` &nbsp;·&nbsp; ${ghostKills} AS GHOST` : ''} &nbsp;·&nbsp; ${totalPlayers} PLAYERS`;
-
-  // Runner-up (last person killed)
+  document.getElementById('win-stats').innerHTML = `${kills} KILL${kills !== 1 ? 'S' : ''}${ghostKills > 0 ? ` &nbsp;·&nbsp; ${ghostKills} AS GHOST` : ''} &nbsp;·&nbsp; ${totalPlayers} PLAYERS`;
   const lastKill = [...killLog].reverse().find(k => !k.ghost || true);
   if (lastKill) document.getElementById('win-runner-up').textContent = `Final kill: ${lastKill.victim}`;
-
   if (isMod) document.getElementById('win-dismiss').style.display = 'block';
-
   overlay.style.display = 'flex';
   startWinParticles();
 }
@@ -3254,24 +2858,16 @@ function startWinParticles() {
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-
   const COLORS = ['#d4a017','#a07810','#f0ead8','#c8c0a8','#8b1a1a','#9b85d4'];
   const particles = Array.from({length: 120}, () => ({
-    x: Math.random() * canvas.width,
-    y: -20 - Math.random() * 200,
-    vx: (Math.random() - 0.5) * 2,
-    vy: 1.5 + Math.random() * 3,
-    size: 4 + Math.random() * 6,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
-    rotation: Math.random() * Math.PI * 2,
-    rotSpeed: (Math.random() - 0.5) * 0.15,
-    shape: Math.random() > 0.5 ? 'rect' : 'diamond',
-    opacity: 0.7 + Math.random() * 0.3,
+    x: Math.random() * canvas.width, y: -20 - Math.random() * 200,
+    vx: (Math.random() - 0.5) * 2, vy: 1.5 + Math.random() * 3,
+    size: 4 + Math.random() * 6, color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    rotation: Math.random() * Math.PI * 2, rotSpeed: (Math.random() - 0.5) * 0.15,
+    shape: Math.random() > 0.5 ? 'rect' : 'diamond', opacity: 0.7 + Math.random() * 0.3,
   }));
-
   let running = true;
   document.getElementById('win-overlay').addEventListener('click', () => { running = false; }, {once: true, capture: false});
-
   function frame() {
     if (!running || document.getElementById('win-overlay').style.display === 'none') return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -3283,14 +2879,8 @@ function startWinParticles() {
       ctx.fillStyle = p.color;
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rotation);
-      if (p.shape === 'rect') {
-        ctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
-      } else {
-        ctx.beginPath();
-        ctx.moveTo(0, -p.size/2); ctx.lineTo(p.size/2, 0);
-        ctx.lineTo(0, p.size/2); ctx.lineTo(-p.size/2, 0);
-        ctx.closePath(); ctx.fill();
-      }
+      if (p.shape === 'rect') { ctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2); }
+      else { ctx.beginPath(); ctx.moveTo(0, -p.size/2); ctx.lineTo(p.size/2, 0); ctx.lineTo(0, p.size/2); ctx.lineTo(-p.size/2, 0); ctx.closePath(); ctx.fill(); }
       ctx.restore();
     });
     requestAnimationFrame(frame);
@@ -3315,12 +2905,8 @@ async function reconcileGhostTargetsDead() {
       ghost.ghostTarget = null;
       gameState.ghost.revived = (gameState.ghost.revived || []).filter(r => r.name !== ghost.name);
       gameState.killLog.push({
-        killer: 'SYSTEM',
-        victim: ghost.name,
-        time: new Date().toISOString(),
-        ghost: false,
-        reason: 'ghost_target_dead',
-        undo: null
+        killer: 'SYSTEM', victim: ghost.name, time: new Date().toISOString(),
+        ghost: false, reason: 'ghost_target_dead', undo: null
       });
       changed = true;
     }

@@ -356,6 +356,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 </div>
 
 <div id="page-player" class="page">
+  <div id="impersonate-banner" style="display:none; background: #2b1a00; border-bottom: 2px solid var(--blade); padding: 10px 20px; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; position: sticky; top: 0; z-index: 200;">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap: wrap;">
+      <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--blade); font-weight:700;">👁 MOD VIEW</span>
+      <span style="font-size:11px; color:var(--cream2);">Impersonating <strong id="impersonate-name" style="color:var(--blade);"></strong></span>
+      <span style="font-size:9px; letter-spacing:1px; color:var(--cream3); background:var(--ink3); padding:3px 8px; border:1px solid var(--seam);">ACTIONS ARE REAL</span>
+    </div>
+    <button class="btn btn-blade btn-sm" onclick="exitImpersonation()" style="width:auto; flex-shrink:0;">↩ RETURN TO MOD</button>
+  </div>
   <nav>
     <div class="nav-logo">KNIVES<span>OUT</span></div>
     <div class="nav-right">
@@ -701,6 +709,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <input type="text" id="new-player-password" placeholder="Pass" style="margin-bottom: 0; flex: 1; min-width: 100px;" autocapitalize="off" autocorrect="off">
             <button class="btn btn-outline btn-sm" onclick="addPlayer()">ADD</button>
           </div>
+          <div style="margin-bottom: 12px;">
+            <input type="file" id="csv-import-input" accept=".csv,text/csv" style="display:none;" onchange="importPlayersFromCSV(this)">
+            <button class="btn btn-outline btn-sm btn-full" onclick="document.getElementById('csv-import-input').click()" style="border-color: var(--blade2); color: var(--blade);">⬆ IMPORT FROM CSV</button>
+            <div style="margin-top: 6px; font-size: 10px; color: var(--cream3); line-height: 1.6;">
+              One player per line — <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">name,password</code> (header row auto-skipped)
+            </div>
+            <div id="csv-import-result" style="margin-top: 8px; font-size: 11px; min-height: 14px; line-height: 1.6;"></div>
+          </div>
           <ul class="inline-list mb16" id="players-pending-list"></ul>
         </div>
 
@@ -734,6 +750,7 @@ const FIREBASE_CONFIG = {
 };
 
 let db = null, firebaseReady = false, currentUser = null, currentIsMod = false, currentPage = 'login', gameState = null, connectionState = 'reconnecting';
+let modImpersonating = null; // name of player being impersonated by mod, or null
 let immunityWindowSyncInFlight = false;
 let ghostTimerInterval = null;
 let missedTimerInterval = null;
@@ -1362,7 +1379,8 @@ async function doSignup() {
 }
 
 function doLogout() {
-  currentUser = null; currentIsMod = false;
+  currentUser = null; currentIsMod = false; modImpersonating = null;
+  document.getElementById('impersonate-banner').style.display = 'none';
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
   document.getElementById('signup-username').value = '';
@@ -1402,6 +1420,35 @@ function enterPlayer() {
 
 function enterMod() {
   document.getElementById('nav-mod-name').textContent = currentUser.toUpperCase();
+  renderModView();
+  showPage('mod');
+}
+
+function enterPlayerAsImpersonator(playerName) {
+  const player = gameState.players.find(p => p.name === playerName);
+  if (!player) return;
+  modImpersonating = playerName;
+  // Swap currentUser to the target player so all player actions work for real
+  currentUser = playerName;
+  // Show the impersonation banner
+  const banner = document.getElementById('impersonate-banner');
+  document.getElementById('impersonate-name').textContent = playerName;
+  banner.style.display = 'flex';
+  // Update nav name to reflect impersonated player
+  document.getElementById('nav-player-name').textContent = playerName.toUpperCase();
+  renderPlayerView(player);
+  showPage('player');
+}
+
+function exitImpersonation() {
+  if (!modImpersonating) return;
+  // Restore mod's own username
+  currentUser = document.getElementById('nav-mod-name').textContent.toLowerCase();
+  // Find canonical name from mods list (preserves casing)
+  const modEntry = (gameState?.mods || []).find(m => m.toLowerCase() === currentUser.toLowerCase());
+  if (modEntry) currentUser = modEntry;
+  modImpersonating = null;
+  document.getElementById('impersonate-banner').style.display = 'none';
   renderModView();
   showPage('mod');
 }
@@ -2008,7 +2055,7 @@ function renderModPlayers() {
       <td>${statusBadge}</td>
       <td class="text-gold" style="font-weight: 700;">${p.status === 'ghost' ? (p.ghostTarget || '—') : (p.target || '—')}</td>
       <td>${p.kills || 0}</td>
-      <td><div class="flex-btn-group">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${p.name}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${p.name}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${p.name}')">TARGET</button></div></td>
+      <td><div class="flex-btn-group">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${p.name}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${p.name}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${p.name}')">TARGET</button><button class="btn btn-outline btn-sm" style="color:var(--blade);border-color:var(--blade2);" onclick="enterPlayerAsImpersonator('${p.name}')">👁 VIEW</button></div></td>
     </tr>`;
   }).join('');
 }
@@ -2591,6 +2638,52 @@ async function removePlayer(name) {
   gameState.players = gameState.players.filter(p => p.name !== name);
   await updateGameState({ players: gameState.players });
   renderPendingPlayers();
+}
+
+async function importPlayersFromCSV(inputEl) {
+  const resultEl = document.getElementById('csv-import-result');
+  resultEl.innerHTML = '';
+  const file = inputEl.files[0];
+  if (!file) return;
+  inputEl.value = ''; // allow re-importing same file
+
+  const text = await file.text();
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+
+  let added = 0;
+  const skipped = [];
+  const errors = [];
+
+  for (const line of lines) {
+    const cols = line.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+    // Skip header row
+    if (cols[0].toLowerCase() === 'name') continue;
+
+    const name = cols[0] || '';
+    const pass = cols[1] || '';
+
+    if (!name && !pass) continue;
+    if (!name)  { errors.push(`Missing name in: "${line}"`); continue; }
+    if (!pass)  { errors.push(`Missing password for: "${name}"`); continue; }
+    if (!isValidUsername(name)) { errors.push(`Invalid name "${name}" — 3-24 chars, letters/numbers/_/-`); continue; }
+    if (gameState.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+      skipped.push(name + ' (duplicate)');
+      continue;
+    }
+
+    gameState.players.push({ name, password: pass, status: 'alive', target: null, kills: 0, lastKill: null, ghostTarget: null, votes: null });
+    added++;
+  }
+
+  if (added > 0) await updateGameState({ players: gameState.players });
+  renderPendingPlayers();
+
+  const parts = [];
+  if (added > 0)        parts.push(`<span style="color:var(--alive);">✓ ${added} player${added !== 1 ? 's' : ''} added</span>`);
+  if (skipped.length)   parts.push(`<span style="color:var(--blade);">⚠ Skipped: ${skipped.join(', ')}</span>`);
+  if (errors.length)    parts.push(`<span style="color:var(--blood);">✕ ${errors.join(' | ')}</span>`);
+  if (!parts.length)    parts.push(`<span style="color:var(--cream3);">No valid rows found.</span>`);
+  resultEl.innerHTML = parts.join('<br>');
 }
 
 async function addMod() {

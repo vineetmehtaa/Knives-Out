@@ -324,7 +324,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <button class="tab-btn" onclick="switchAuthTab('signup', this)">SIGN UP</button>
       </div>
 
-      <div class="tab-content active" id="auth-login">
+      <div class="tab-content active" id="auth-login" style="display:block">
         <label>Username</label>
         <input type="text" id="login-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
         <label>Password</label>
@@ -334,7 +334,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <button class="btn btn-blade btn-full" onclick="doLogin()">ENTER GAME</button>
       </div>
 
-      <div class="tab-content" id="auth-signup">
+      <div class="tab-content" id="auth-signup" style="display:none">
         <label>New Username</label>
         <input type="text" id="signup-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
         <label>Password</label>
@@ -364,6 +364,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
     <button class="btn btn-blade btn-sm" onclick="exitImpersonation()" style="width:auto; flex-shrink:0;">↩ RETURN TO MOD</button>
   </div>
+  <!-- PLAYER NOTIFICATION TOASTS -->
+  <div id="player-toast-container" style="position:fixed;top:64px;right:16px;z-index:9000;display:flex;flex-direction:column;gap:8px;max-width:320px;width:calc(100vw - 32px);pointer-events:none;"></div>
   <nav>
     <div class="nav-logo">KNIVES<span>OUT</span></div>
     <div class="nav-right">
@@ -375,6 +377,13 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   </nav>
   <div class="main">
     <div style="max-width: 580px; margin: 0 auto;">
+      <div class="tabs" style="margin-bottom:0;">
+        <button class="tab active" id="player-tab-btn-game" onclick="switchPlayerTab('game', this)">GAME</button>
+        <button class="tab" id="player-tab-btn-notifications" onclick="switchPlayerTab('notifications', this)">NOTIFICATIONS <span id="player-notif-unseen-badge" style="background:var(--blood);color:var(--cream);padding:1px 6px;font-size:8px;letter-spacing:1px;margin-left:4px;border-radius:2px;display:none;vertical-align:middle;"></span></button>
+      </div>
+
+      <!-- GAME TAB -->
+      <div id="player-tab-game" class="tab-content active" style="display:block;">
       <div class="player-status-card" id="player-status-card">
         <button id="reveal-btn" class="hold-btn" 
                 onmousedown="toggleSecret(true)" onmouseup="toggleSecret(false)" onmouseleave="toggleSecret(false)"
@@ -436,6 +445,17 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <button class="btn btn-blood btn-full" onclick="confirmKillAsVictim()">CONFIRM DEAD</button>
         </div>
       </div>
+      </div><!-- end player-tab-game -->
+
+      <!-- NOTIFICATIONS TAB -->
+      <div id="player-tab-notifications" class="tab-content" style="display:none;">
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">🔔 NOTIFICATIONS</div>
+          <div id="player-notif-list" style="max-height:500px;overflow-y:auto;"></div>
+          <div id="player-notif-empty" class="text-dim" style="padding:10px 0;display:none;">No notifications yet.</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -503,6 +523,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     @keyframes toastIn  { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
     @keyframes toastOut { from { opacity:1; transform: translateX(0); } to { opacity:0; transform: translateX(20px); } }
     @keyframes toastBar { from { width: 100%; } to { width: 0%; } }
+    /* Player toast shares mod-toast styles */
+    #player-toast-container .mod-toast { pointer-events: all; }
+    .notif-log-item { padding: 10px 0; border-bottom: 1px solid var(--seam); font-size: 11px; line-height: 1.5; }
+    .notif-log-item:last-child { border-bottom: none; }
+    .notif-log-item .notif-meta { font-size: 9px; color: var(--cream3); letter-spacing: 1px; margin-top: 3px; }
+    .notif-log-item.unseen { background: rgba(212,160,23,0.04); border-left: 2px solid var(--blade); padding-left: 8px; }
+    .notif-log-item .notif-type-kill { color: var(--blood); }
+    .notif-log-item .notif-type-ghost { color: var(--ghost2); }
+    .notif-log-item .notif-type-custom { color: var(--blade); }
   </style>
   <div class="main">
     <div class="section-title">MODERATOR CONTROL PANEL</div>
@@ -516,6 +545,30 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <button class="tab" onclick="switchModTab('immunity')">IMMUNITY</button>
       <button class="tab" onclick="switchModTab('ghost')">GHOST RULE</button>
       <button class="tab" onclick="switchModTab('settings')">SETTINGS</button>
+      <button class="tab" onclick="switchModTab('notifications')">NOTIFICATIONS <span id="mod-notif-unseen-badge" style="background:var(--blood);color:var(--cream);padding:1px 6px;font-size:8px;letter-spacing:1px;margin-left:4px;border-radius:2px;display:none;vertical-align:middle;"></span></button>
+    </div>
+
+    <div class="tab-content" id="mod-tab-notifications">
+      <div class="card">
+        <div class="card-title">📤 SEND CUSTOM NOTIFICATION</div>
+        <div style="margin-bottom:12px;">
+          <label>Target</label>
+          <select id="notif-target-select" style="margin-bottom:12px;"></select>
+          <label>Message</label>
+          <input type="text" id="notif-custom-message" placeholder="Enter notification message..." style="margin-bottom:12px;">
+          <button class="btn btn-blade btn-full" onclick="modSendCustomNotification()">SEND NOTIFICATION</button>
+          <div class="error-msg" id="notif-send-error"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔔 ALL NOTIFICATIONS LOG</div>
+        <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="renderModNotifications('all')">ALL</button>
+          <button class="btn btn-outline btn-sm" onclick="renderModNotifications('kill')">KILLS</button>
+          <button class="btn btn-outline btn-sm" onclick="renderModNotifications('custom')">CUSTOM</button>
+        </div>
+        <div id="mod-notif-log" style="max-height:500px;overflow-y:auto;"></div>
+      </div>
     </div>
 
     <div class="tab-content active" id="mod-tab-dashboard">
@@ -757,6 +810,18 @@ let missedTimerInterval = null;
 const USERNAME_REGEX = /^[A-Za-z0-9_-]{3,24}$/;
 const MISSED_IMMUNITY_WINDOW_MS = (5 * 60 * 1000) + 990;
 
+// Defined early so onclick handlers on login page can call it before rest of script loads
+function switchAuthTab(tab, trigger) {
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  if (trigger) trigger.classList.add('active');
+  document.getElementById('auth-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('auth-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  if (tab !== 'signup') {
+    const signupErr = document.getElementById('signup-error');
+    if (signupErr) signupErr.textContent = '';
+  }
+}
+
 function initFirebase() {
   const errEl = document.getElementById('firebase-error');
   const cfgInput = document.getElementById('firebase-config');
@@ -801,40 +866,194 @@ function initFirebase() {
 }
 
 // =====================================================================
-// MOD NOTIFICATION SYSTEM
+// NOTIFICATION SYSTEM
 // =====================================================================
-const _notifSeen = { killLog: new Set(), claims: new Set(), votes: new Set() };
-let _notifReady = false; // Don't fire on initial load
+let _notifReady = false;
+const _toastedNotifIds = new Set(); // local dedup so each notif toasts exactly once per session
 
-function modToast(type, title, body, durationMs = 6000) {
-  if (currentPage !== 'mod' || !currentIsMod) return;
-  const container = document.getElementById('mod-toast-container');
+// ── Core toast renderer (works for both mod and player containers)
+function showToast(containerId, type, title, body, durationMs = 7000) {
+  const container = document.getElementById(containerId);
   if (!container) return;
-  const icons = { kill: '⚔', immunity: '🛡', ghost: '👻', system: '🔔' };
+  const icons = { kill: '⚔', ghost: '👻', custom: '📢', immunity: '🛡', system: '🔔' };
+  const colors = { kill: 'var(--blood)', ghost: 'var(--ghost2)', custom: 'var(--blade)', immunity: 'var(--blade)', system: 'var(--cream3)' };
   const toast = document.createElement('div');
   toast.className = `mod-toast ${type}`;
+  toast.style.borderLeftColor = colors[type] || 'var(--cream3)';
   toast.innerHTML = `
     <span class="mod-toast-title"><span class="mod-toast-icon">${icons[type] || '🔔'}</span>${title}</span>
-    ${body}
-    <div class="mod-toast-bar" style="animation-duration:${durationMs}ms;color:${type==='kill'?'var(--blood)':type==='immunity'?'var(--blade)':'var(--ghost2)'};"></div>
+    <div style="color:var(--cream2);margin-top:2px;">${body}</div>
+    <div class="mod-toast-bar" style="animation-duration:${durationMs}ms;color:${colors[type] || 'var(--cream3)'};"></div>
   `;
   toast.onclick = () => toast.remove();
   container.appendChild(toast);
-  // Also try browser notification if permission granted
-  if (Notification?.permission === 'granted') {
-    try { new Notification(`Knives Out — ${title}`, { body, icon: '' }); } catch(e) {}
-  }
   setTimeout(() => {
     toast.style.animation = 'toastOut .25s ease forwards';
     setTimeout(() => toast.remove(), 250);
   }, durationMs);
 }
 
-function requestNotifPermission() {
-  if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-    Notification.requestPermission();
-  }
+// ── Write a notification to Firebase (mod-only kills; custom by mod)
+async function pushNotification(type, title, body, target) {
+  // target: 'mod' | playerName | 'all'
+  if (!db) return;
+  const notif = { id: Date.now() + '_' + Math.random().toString(36).slice(2,7), type, title, body, target, time: new Date().toISOString(), seenBy: {} };
+  // Read fresh from Firebase to avoid stale array → object collision
+  const snap = await db.ref('/game/notifications').once('value');
+  const raw = snap.val();
+  const current = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
+  current.push(notif);
+  await db.ref('/game/notifications').set(current);
 }
+
+// ── Mark a notification seen for current user in Firebase
+async function markNotifSeen(notifId) {
+  if (!db || !currentUser) return;
+  const notifs = gameState?.notifications || [];
+  const n = notifs.find(x => x.id === notifId);
+  if (!n) return;
+  if (!n.seenBy) n.seenBy = {};
+  n.seenBy[currentUser] = true;
+  await updateGameState({ notifications: notifs });
+}
+
+// ── Check if a notification is relevant to current user
+function notifIsForMe(n) {
+  if (!n || !currentUser) return false;
+  if (currentIsMod && n.target === 'mod') return true;
+  if (n.target === 'all') return true;
+  if (n.target === currentUser) return true;
+  return false;
+}
+
+function notifSeenByMe(n) {
+  return n.seenBy && n.seenBy[currentUser];
+}
+
+// ── On login: show unseen toasts and mark them seen
+async function deliverPendingNotifications() {
+  const notifs = gameState?.notifications || [];
+  const mine = notifs.filter(n => notifIsForMe(n) && !notifSeenByMe(n));
+  if (!mine.length) return;
+  const containerId = currentIsMod ? 'mod-toast-container' : 'player-toast-container';
+  // Stagger them
+  mine.forEach((n, i) => {
+    setTimeout(() => {
+      if (_toastedNotifIds.has(n.id)) return;
+      _toastedNotifIds.add(n.id);
+      showToast(containerId, n.type, n.title, n.body, 9000);
+      markNotifSeen(n.id);
+    }, i * 600);
+  });
+  // Refresh notification UI after marking seen
+  setTimeout(() => {
+    if (currentIsMod) renderModNotifications();
+    else renderPlayerNotifications();
+  }, mine.length * 600 + 200);
+}
+
+// ── Live watcher: show toast immediately if session is active
+function handleLiveNotification(n) {
+  if (!notifIsForMe(n)) return;
+  if (_toastedNotifIds.has(n.id)) return; // already toasted this session
+  _toastedNotifIds.add(n.id);
+  const containerId = currentIsMod ? 'mod-toast-container' : 'player-toast-container';
+  showToast(containerId, n.type, n.title, n.body, 7000);
+  markNotifSeen(n.id);
+  // Refresh log
+  setTimeout(() => {
+    if (currentIsMod) { renderModNotifications(); updateModNotifBadge(); }
+    else { renderPlayerNotifications(); updatePlayerNotifBadge(); }
+  }, 300);
+}
+
+// ── Mod: send custom notification
+async function modSendCustomNotification() {
+  const target = document.getElementById('notif-target-select')?.value;
+  const msg = document.getElementById('notif-custom-message')?.value.trim();
+  const errEl = document.getElementById('notif-send-error');
+  if (errEl) errEl.textContent = '';
+  if (!msg) { if (errEl) errEl.textContent = 'Enter a message.'; return; }
+  if (!target) { if (errEl) errEl.textContent = 'Select a target.'; return; }
+  const label = target === 'all' ? 'All Players' : target;
+  await pushNotification('custom', `📢 From Moderator`, msg, target);
+  document.getElementById('notif-custom-message').value = '';
+  if (errEl) errEl.textContent = '';
+  // Show confirmation toast to mod
+  showToast('mod-toast-container', 'custom', 'Notification sent', `To: ${label}`, 4000);
+}
+
+// ── Render mod notification log
+function renderModNotifications(filter = 'all') {
+  const el = document.getElementById('mod-notif-log');
+  if (!el) return;
+  const notifs = (gameState?.notifications || []).slice().reverse();
+  const filtered = filter === 'all' ? notifs : notifs.filter(n => n.type === filter || (filter === 'kill' && n.type === 'ghost'));
+  if (!filtered.length) { el.innerHTML = '<div class="text-dim" style="padding:10px 0;">No notifications yet.</div>'; return; }
+  el.innerHTML = filtered.map(n => {
+    const seen = notifSeenByMe(n);
+    const seenCount = Object.keys(n.seenBy || {}).length;
+    const t = new Date(n.time).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    const d = new Date(n.time).toLocaleDateString([], { month:'short', day:'numeric' });
+    const typeClass = `notif-type-${n.type}`;
+    return `<div class="notif-log-item${seen ? '' : ' unseen'}">
+      <span class="${typeClass}" style="font-weight:700;">${n.title}</span>
+      <div>${n.body}</div>
+      <div class="notif-meta">→ ${n.target} &nbsp;·&nbsp; ${d} ${t} &nbsp;·&nbsp; seen by ${seenCount}</div>
+    </div>`;
+  }).join('');
+  updateModNotifBadge();
+}
+
+// ── Render player notification list
+function renderPlayerNotifications() {
+  const el = document.getElementById('player-notif-list');
+  const emptyEl = document.getElementById('player-notif-empty');
+  if (!el) return;
+  const mine = (gameState?.notifications || []).filter(n => notifIsForMe(n)).slice().reverse();
+  if (emptyEl) emptyEl.style.display = mine.length ? 'none' : 'block';
+  if (!mine.length) { el.innerHTML = ''; updatePlayerNotifBadge(); return; }
+  el.innerHTML = mine.map(n => {
+    const seen = notifSeenByMe(n);
+    const t = new Date(n.time).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    const d = new Date(n.time).toLocaleDateString([], { month:'short', day:'numeric' });
+    const typeClass = `notif-type-${n.type}`;
+    return `<div class="notif-log-item${seen ? '' : ' unseen'}">
+      <span class="${typeClass}" style="font-weight:700;">${n.title}</span>
+      <div>${n.body}</div>
+      <div class="notif-meta">${d} ${t}</div>
+    </div>`;
+  }).join('');
+  updatePlayerNotifBadge();
+}
+
+// ── Badge counts
+function updateModNotifBadge() {
+  const badge = document.getElementById('mod-notif-unseen-badge');
+  if (!badge) return;
+  const count = (gameState?.notifications || []).filter(n => notifIsForMe(n) && !notifSeenByMe(n)).length;
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'inline' : 'none';
+}
+
+function updatePlayerNotifBadge() {
+  const badge = document.getElementById('player-notif-unseen-badge');
+  if (!badge) return;
+  const count = (gameState?.notifications || []).filter(n => notifIsForMe(n) && !notifSeenByMe(n)).length;
+  badge.textContent = count + ' new';
+  badge.style.display = count > 0 ? 'inline' : 'none';
+}
+
+// ── Populate target select in mod notifications tab
+function populateNotifTargetSelect() {
+  const sel = document.getElementById('notif-target-select');
+  if (!sel || !gameState) return;
+  const players = (gameState.players || []).filter(p => p.status !== 'dead');
+  sel.innerHTML = `<option value="all">All Players</option>` +
+    players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+}
+
+function requestNotifPermission() {} // no-op, keeping for compat
 
 function setupGame() {
   if (!db) return;
@@ -867,82 +1086,26 @@ function setupGame() {
     }, 300);
   });
 
-  // ── Kill notifications: watch killLog length
-  db.ref('/game/killLog').on('value', snap => {
-    if (!currentIsMod || !_notifReady) return;
-    const log = snap.val();
-    if (!log) return;
-    const entries = typeof log === 'object' ? Object.values(log) : log;
-    entries.forEach(k => {
-      const key = k.killer + '→' + k.victim + '@' + k.time;
-      if (_notifSeen.killLog.has(key)) return;
-      _notifSeen.killLog.add(key);
-      const isGhost = k.ghost ? ' (Ghost kill)' : '';
-      const isSystem = k.killer === 'SYSTEM' ? ' · Auto-killed: target dead' : '';
-      modToast('kill', `${k.killer} eliminated ${k.victim}`, `${isGhost}${isSystem}`, 8000);
+  // ── Live notifications watcher: deliver to active sessions immediately
+  db.ref('/game/notifications').on('value', snap => {
+    if (!_notifReady || !currentUser) return;
+    const raw = snap.val();
+    if (!raw) return;
+    const notifs = Array.isArray(raw) ? raw : Object.values(raw);
+    // Find any for me that aren't seen yet — these are new since last check
+    notifs.forEach(n => {
+      if (notifIsForMe(n) && !notifSeenByMe(n)) {
+        handleLiveNotification(n);
+      }
     });
+    // Refresh UI
+    if (currentIsMod) { renderModNotifications(); updateModNotifBadge(); }
+    else if (currentPage === 'player') { renderPlayerNotifications(); updatePlayerNotifBadge(); }
   });
 
-  // ── Immunity claim notifications
-  db.ref('/game/immunity/claims').on('child_added', snap => {
-    if (!currentIsMod || !_notifReady) return;
-    const name = snap.key;
-    if (_notifSeen.claims.has(name)) return;
-    _notifSeen.claims.add(name);
-    modToast('immunity', `${name} claimed immunity`, 'Check the immunity tab for the updated queue.', 6000);
-  });
-
-  // ── Ghost vote notifications: watch for new votes
-  db.ref('/game/players').on('value', snap => {
-    if (!currentIsMod || !_notifReady) return;
-    const players = snap.val();
-    if (!players || !Array.isArray(players)) return;
-    players.forEach(p => {
-      if (!p?.votes || !p?.name) return;
-      const key = p.name + ':' + p.votes;
-      if (_notifSeen.votes.has(key)) return;
-      _notifSeen.votes.add(key);
-      const phase = gameState?.ghost?.phase || 0;
-      const label = phase === 1 ? 'voted to revive' : 'voted for target';
-      modToast('ghost', `${p.name} ${label}: ${p.votes}`, 'Check Ghost Rule tab for the tally.', 6000);
-    });
-  });
-
-  // ── Ghost phase change notifications
-  let _lastGhostPhase = 0;
-  db.ref('/game/ghost/phase').on('value', snap => {
-    if (!currentIsMod || !_notifReady) return;
-    const phase = snap.val() || 0;
-    if (phase === _lastGhostPhase) return;
-    _lastGhostPhase = phase;
-    if (phase === 1) modToast('ghost', 'Ghost voting started', 'Stage 1: alive players are voting to revive a dead player.', 7000);
-    if (phase === 2) modToast('ghost', 'Stage 2 unlocked', `Ghost selected. Dead players are now voting for the target.`, 7000);
-    if (phase === 0 && _lastGhostPhase > 0) modToast('ghost', 'Ghost voting ended', 'Voting has been reset or completed.', 5000);
-  });
-
-  // ── Immunity window open/close notifications
-  let _lastWindowOpen = null;
-  db.ref('/game/immunity/claimWindowOpen').on('value', snap => {
-    if (!currentIsMod || !_notifReady) return;
-    const open = Boolean(snap.val());
-    if (_lastWindowOpen === open) return;
-    _lastWindowOpen = open;
-    if (open) modToast('immunity', 'Claim window OPEN', 'Players can now submit immunity claims.', 6000);
-    else modToast('immunity', 'Claim window CLOSED', 'No more claims accepted.', 6000);
-  });
-
-  // Mark ready after a short delay so initial load doesn't spam notifications
+  // Mark ready after short delay (avoids firing on initial data load)
   setTimeout(() => {
     _notifReady = true;
-    // Pre-seed seen sets with current data so old events don't re-fire
-    (gameState?.killLog || []).forEach(k => {
-      _notifSeen.killLog.add(k.killer + '→' + k.victim + '@' + k.time);
-    });
-    Object.keys(gameState?.immunity?.claims || {}).forEach(n => _notifSeen.claims.add(n));
-    (gameState?.players || []).filter(p => p.votes).forEach(p => _notifSeen.votes.add(p.name + ':' + p.votes));
-    _lastGhostPhase = gameState?.ghost?.phase || 0;
-    _lastWindowOpen = Boolean(gameState?.immunity?.claimWindowOpen);
-    requestNotifPermission();
   }, 2500);
 }
 
@@ -1014,6 +1177,7 @@ function normalizeState(raw) {
     merged.auditLog = [];
   }
   merged.pendingCodes = merged.pendingCodes || merged.codes || {};
+  merged.notifications = Array.isArray(merged.notifications) ? merged.notifications : (merged.notifications && typeof merged.notifications === 'object' ? Object.values(merged.notifications) : []);
   
   merged.settings = merged.settings || { immunityEnabled: true, ghostEnabled: true };
 
@@ -1149,17 +1313,6 @@ async function getGameState() {
   if (!db) return getDefaultState();
   const snap = await db.ref('/game').once('value');
   return snap.val() || getDefaultState();
-}
-
-function switchAuthTab(tab, trigger) {
-  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  if (trigger) trigger.classList.add('active');
-  document.getElementById('auth-' + tab).classList.add('active');
-  if (tab !== 'signup') {
-    const signupErr = document.getElementById('signup-error');
-    if (signupErr) signupErr.textContent = '';
-  }
 }
 
 function toggleSignupModField(show) {
@@ -1416,12 +1569,16 @@ function enterPlayer() {
   document.getElementById('nav-player-name').textContent = currentUser.toUpperCase();
   renderPlayerView(player);
   showPage('player');
+  // Deliver any unseen notifications
+  setTimeout(() => deliverPendingNotifications(), 800);
 }
 
 function enterMod() {
   document.getElementById('nav-mod-name').textContent = currentUser.toUpperCase();
   renderModView();
   showPage('mod');
+  // Deliver any unseen notifications
+  setTimeout(() => deliverPendingNotifications(), 800);
 }
 
 function enterPlayerAsImpersonator(playerName) {
@@ -1454,6 +1611,9 @@ function exitImpersonation() {
 }
 
 function renderPlayerView(player) {
+  // Update notification card
+  renderPlayerNotifications();
+
   // Check for game winner
   if (gameState?.gameStarted) {
     const winner = getWinner(gameState);
@@ -1753,9 +1913,22 @@ function updateGhostTimer(expiresAt) {
   ghostTimerInterval = setInterval(tick, 1000);
 }
 
+function switchPlayerTab(tab, trigger) {
+  document.querySelectorAll('#page-player > .main .tabs > .tab').forEach(t => t.classList.remove('active'));
+  if (trigger) trigger.classList.add('active');
+  document.getElementById('player-tab-game').style.display = tab === 'game' ? 'block' : 'none';
+  document.getElementById('player-tab-notifications').style.display = tab === 'notifications' ? 'block' : 'none';
+  if (tab === 'notifications') {
+    renderPlayerNotifications();
+    (gameState?.notifications || []).filter(n => notifIsForMe(n) && !notifSeenByMe(n)).forEach(n => markNotifSeen(n.id));
+  }
+}
+
 function switchKillTab(tab, trigger) {
-  document.querySelectorAll('#page-player .tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#page-player .tab-content').forEach(t => t.classList.remove('active'));
+  const killSection = document.getElementById('player-kill-section');
+  if (!killSection) return;
+  killSection.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  killSection.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   if (trigger) trigger.classList.add('active');
   document.getElementById('kill-tab-' + tab).classList.add('active');
 }
@@ -1801,6 +1974,8 @@ async function confirmKillAsVictim() {
       reason: 'attacked_once_immunity_stripped'
     });
     errEl.innerHTML = '<span style="color: var(--alive);">🛡 You were attacked — your immunity has been used up! You survived this time, but you are no longer immune.</span>';
+    // Notify mod
+    pushNotification('immunity', `${entry.killer}'s attack on ${name} was saved by immunity`, `${name} used their immunity. They are no longer protected.`, 'mod');
     // Clean up the marker after 15s
     setTimeout(() => {
       delete gameState.pendingCodes[code];
@@ -1814,6 +1989,14 @@ async function confirmKillAsVictim() {
   await processKill(entry.killer, entry.victim);
   delete gameState.pendingCodes[code];
   await updateGameState({ killLog: gameState.killLog, players: gameState.players, pendingCodes: gameState.pendingCodes, ghost: gameState.ghost });
+  // Push kill notification for mod (done here so it fires from any session)
+  const _isGhostKill = gameState.players.find(p => p.name === entry.killer)?.status === 'alive' && gameState.killLog.slice(-1)[0]?.ghost;
+  const _lastKill = gameState.killLog[gameState.killLog.length - 1];
+  if (_lastKill) {
+    const _type = _lastKill.ghost ? 'ghost' : 'kill';
+    const _title = _lastKill.ghost ? `${_lastKill.killer} ghost-killed ${_lastKill.victim}` : `${_lastKill.killer} killed ${_lastKill.victim}`;
+    await pushNotification(_type, _title, 'Kill confirmed.', 'mod');
+  }
   document.getElementById('victim-code-input').value = '';
   
   const player = gameState.players.find(p => p.name === currentUser);
@@ -1949,6 +2132,9 @@ function renderModView() {
     const winner = getWinner(gameState);
     if (winner) showWinScreen(winner, true);
   }
+
+  // Update notification badge
+  updateModNotifBadge();
 }
 
 // Silent update helpers — update internal state without touching inputs or timers
@@ -2597,7 +2783,7 @@ function switchModTab(tab) {
   document.querySelectorAll('#page-mod .tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('#page-mod .tab-content').forEach(t => t.classList.remove('active'));
   const tabs = document.querySelectorAll('#page-mod .tab');
-  const tabMap = ['dashboard','analytics','players','kills','immunity','ghost','settings'];
+  const tabMap = ['dashboard','analytics','players','kills','immunity','ghost','settings','notifications'];
   const idx = tabMap.indexOf(tab);
   if (tabs[idx]) tabs[idx].classList.add('active');
   document.getElementById('mod-tab-' + tab).classList.add('active');
@@ -2610,13 +2796,14 @@ function switchModTab(tab) {
 
   // Render the newly active tab with fresh data
   switch (tab) {
-    case 'dashboard': renderModDashboard(); break;
-    case 'analytics': renderModAnalytics(); break;
-    case 'players':   renderModPlayers(); break;
-    case 'kills':     renderModKillLog(); break;
-    case 'immunity':  renderModImmunity(); break;
-    case 'ghost':     renderModGhost(); break;
-    case 'settings':  renderModSettings(); break;
+    case 'dashboard':      renderModDashboard(); break;
+    case 'analytics':      renderModAnalytics(); break;
+    case 'players':        renderModPlayers(); break;
+    case 'kills':          renderModKillLog(); break;
+    case 'immunity':       renderModImmunity(); break;
+    case 'ghost':          renderModGhost(); break;
+    case 'settings':       renderModSettings(); break;
+    case 'notifications':  renderModNotifications(); populateNotifTargetSelect(); break;
   }
 }
 
@@ -3004,6 +3191,7 @@ async function modKillPlayer(name) {
     victim: name,
     killer: killer ? killer.name : null
   });
+  await pushNotification('kill', `Mod eliminated ${name}`, 'Manually killed by moderator.', 'mod');
   renderModView();
 }
 

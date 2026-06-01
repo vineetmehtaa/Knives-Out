@@ -592,6 +592,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
 
     <div class="tab-content" id="mod-tab-analytics">
+      <div class="card analytics-session-card" style="margin-bottom: 16px;">
+        <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:16px;">
+          <div style="min-width:200px;">
+            <div style="font-size:9px;letter-spacing:3px;color:var(--cream3);text-transform:uppercase;margin-bottom:8px;"><span class="analytics-pulse-dot"></span>GAME ELAPSED</div>
+            <div id="analytics-live-elapsed" class="analytics-live-elapsed">—</div>
+            <div style="margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+              <span id="analytics-live-ist" class="analytics-live-ist-sub">--:--:-- IST</span>
+              <span id="analytics-live-meta" class="text-dim" style="font-size:9px;letter-spacing:1px;">Waiting for sync…</span>
+            </div>
+          </div>
+          <div id="analytics-session-strip" style="flex:1;min-width:min(100%,320px);"></div>
+        </div>
+      </div>
       <div class="mod-grid" id="analytics-stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));"></div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;" id="analytics-visual-row">
         <div class="card" style="margin-bottom: 0;">
@@ -604,8 +617,13 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
       </div>
       <div class="card">
-        <div class="card-title">KILL TIMELINE</div>
+        <div class="card-title">KILL TIMELINE <span class="text-dim" style="font-size:9px;letter-spacing:1px;font-weight:400;">· hover bars for details</span></div>
         <div id="analytics-kill-timeline"></div>
+        <div id="analytics-timeline-tooltip" class="analytics-tl-tooltip text-dim">Hover a bar to see kills in that period.</div>
+      </div>
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title">KILL ACTIVITY BY HOUR (IST)</div>
+        <div id="analytics-hour-heatmap"></div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;" id="analytics-lower-row">
         <div class="card" style="margin-bottom: 0;">
@@ -707,6 +725,22 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
         <div class="card-title mt16">IMMUNE NOW</div>
         <ul class="inline-list" id="immune-players-list"></ul>
+
+        <div id="immunity-action-feedback" class="alert alert-gold hidden mt16" role="status" style="line-height:1.5;"></div>
+
+        <hr class="divider">
+        <div class="card-title mt16">HOW THIS PAGE WORKS</div>
+        <div class="text-dim" style="line-height:1.7;font-size:11px;">
+          <p style="margin:0 0 10px;"><strong>SAVE</strong> — Sets max immune slots and daily claim start time (window lasts 5 minutes).</p>
+          <p style="margin:0 0 10px;"><strong>OPEN / CLOSE WINDOW</strong> — Manual override. OPEN allows claims; CLOSE blocks new claims and finalizes winners with 23h 30m protection.</p>
+          <p style="margin:0 0 10px;"><strong>CLEAR OVERRIDE</strong> — Returns to automatic schedule (start time + 5 min).</p>
+          <p style="margin:0 0 10px;"><strong>REPAIR</strong> — Rebuilds the immune list from the claim queue (top N by time).</p>
+          <p style="margin:0 0 10px;"><strong>CLEAR CLAIM QUEUE</strong> — Removes pending claims only.</p>
+          <p style="margin:0 0 10px;"><strong>CLEAR WINNERS ONLY</strong> — Removes current immune players; claims stay in queue.</p>
+          <p style="margin:0 0 10px;"><strong>ROUND RESET</strong> — Full reset: closed window, no override, no claims, no immune players.</p>
+          <p style="margin:0 0 10px;"><strong>GRANT / REVOKE</strong> — Manually add or remove one player. Default protection lasts <strong>23h 30m</strong> after the claim window ends.</p>
+          <p style="margin:0;"><strong>IMMUNE NOW</strong> — Live list with countdown. Immunity ends at expiry or if consumed by an attack.</p>
+        </div>
       </div>
     </div>
 
@@ -768,9 +802,12 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
           <div style="margin-bottom: 12px;">
             <input type="file" id="csv-import-input" accept=".csv,text/csv" style="display:none;" onchange="importPlayersFromCSV(this)">
-            <button class="btn btn-outline btn-sm btn-full" onclick="document.getElementById('csv-import-input').click()" style="border-color: var(--blade2); color: var(--blade);">⬆ IMPORT FROM CSV</button>
+            <div class="flex-btn-group mb16" style="margin-bottom: 8px;">
+              <button class="btn btn-outline btn-sm btn-full" onclick="document.getElementById('csv-import-input').click()" style="border-color: var(--blade2); color: var(--blade);">⬆ IMPORT FROM CSV</button>
+              <button class="btn btn-outline btn-sm btn-full" onclick="exportPlayersToCSV()" style="border-color: var(--alive); color: var(--alive);">⬇ EXPORT PLAYERS CSV</button>
+            </div>
             <div style="margin-top: 6px; font-size: 10px; color: var(--cream3); line-height: 1.6;">
-              One player per line — <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">name,password</code> (header row auto-skipped)
+              CSV format: header <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">players</code>, then one row per line — <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">username,password</code>
             </div>
             <div id="csv-import-result" style="margin-top: 8px; font-size: 11px; min-height: 14px; line-height: 1.6;"></div>
           </div>
@@ -808,11 +845,16 @@ const FIREBASE_CONFIG = {
 
 let db = null, firebaseReady = false, currentUser = null, currentIsMod = false, currentPage = 'login', gameState = null, connectionState = 'reconnecting';
 let modImpersonating = null; // name of player being impersonated by mod, or null
+let modSessionUser = null; // mod's real username saved during impersonation
+let _deliverPendingPromise = null;
+let _analyticsLiveInterval = null;
+let _analyticsTimelineBuckets = [];
 let immunityWindowSyncInFlight = false;
 let ghostTimerInterval = null;
 let missedTimerInterval = null;
 const USERNAME_REGEX = /^[A-Za-z0-9_-]{3,24}$/;
 const MISSED_IMMUNITY_WINDOW_MS = (5 * 60 * 1000) + 990;
+const IMMUNITY_DURATION_MS = ((23 * 60) + 30) * 60 * 1000; // 23h 30m after claim window ends
 
 // Defined early so onclick handlers on login page can call it before rest of script loads
 function switchAuthTab(tab, trigger) {
@@ -873,7 +915,35 @@ function initFirebase() {
 // NOTIFICATION SYSTEM
 // =====================================================================
 let _notifReady = false;
-const _toastedNotifIds = new Set(); // local dedup so each notif toasts exactly once per session
+const _toastedNotifIds = new Set(); // session + localStorage dedup so each notif toasts once
+
+function getToastedNotifStorageKey() {
+  return `ko_toasted_notifs_${(currentUser || 'anon').replace(/\s/g, '_')}`;
+}
+
+function loadToastedNotifIdsFromStorage() {
+  try {
+    const raw = localStorage.getItem(getToastedNotifStorageKey());
+    if (!raw) return;
+    JSON.parse(raw).forEach(id => { if (id) _toastedNotifIds.add(id); });
+  } catch (e) {}
+}
+
+function rememberToastedNotifId(id) {
+  if (!id) return;
+  _toastedNotifIds.add(id);
+  try {
+    const arr = [..._toastedNotifIds].slice(-200);
+    localStorage.setItem(getToastedNotifStorageKey(), JSON.stringify(arr));
+  } catch (e) {}
+}
+
+function shouldToastNotification(n) {
+  if (!n?.id || !notifIsForMe(n)) return false;
+  if (notifSeenByMe(n)) return false;
+  if (_toastedNotifIds.has(n.id)) return false;
+  return true;
+}
 
 // ── Core toast renderer (works for both mod and player containers)
 function showToast(containerId, type, title, body, durationMs = 7000) {
@@ -901,30 +971,51 @@ function showToast(containerId, type, title, body, durationMs = 7000) {
 async function pushNotification(type, title, body, target) {
   // target: 'mod' | playerName | 'all'
   if (!db) return;
-  const notif = { id: Date.now() + '_' + Math.random().toString(36).slice(2,7), type, title, body, target, time: new Date().toISOString(), seenBy: {} };
-  // Read fresh from Firebase to avoid stale array → object collision
-  const snap = await db.ref('/game/notifications').once('value');
-  const raw = snap.val();
-  const current = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
-  current.push(notif);
-  await db.ref('/game/notifications').set(current);
+  const notif = { id: Date.now() + '_' + Math.random().toString(36).slice(2, 7), type, title, body, target, time: new Date().toISOString(), seenBy: {} };
+  await db.ref('/game/notifications').transaction(raw => {
+    const current = notificationsToArray(raw);
+    current.push(notif);
+    return current;
+  });
 }
 
-// ── Mark a notification seen for current user in Firebase
+// ── Mark a notification seen for current user in Firebase (read fresh — gameState may lag)
 async function markNotifSeen(notifId) {
-  if (!db || !currentUser) return;
-  const notifs = gameState?.notifications || [];
-  const n = notifs.find(x => x.id === notifId);
-  if (!n) return;
-  if (!n.seenBy) n.seenBy = {};
-  n.seenBy[currentUser] = true;
-  await updateGameState({ notifications: notifs });
+  if (!db || !currentUser || !notifId) return false;
+  rememberToastedNotifId(notifId);
+  try {
+    let found = false;
+    await db.ref('/game/notifications').transaction(raw => {
+      const current = notificationsToArray(raw);
+      const n = current.find(x => x && x.id === notifId);
+      if (!n) return raw;
+      if (n.seenBy && n.seenBy[currentUser]) {
+        found = true;
+        return raw;
+      }
+      if (!n.seenBy) n.seenBy = {};
+      n.seenBy[currentUser] = true;
+      found = true;
+      return current;
+    });
+    if (gameState?.notifications) {
+      const local = gameState.notifications.find(x => x && x.id === notifId);
+      if (local) {
+        if (!local.seenBy) local.seenBy = {};
+        local.seenBy[currentUser] = true;
+      }
+    }
+    return found;
+  } catch (e) {
+    console.error('markNotifSeen failed', e);
+    return false;
+  }
 }
 
 // ── Check if a notification is relevant to current user
 function notifIsForMe(n) {
   if (!n || !currentUser) return false;
-  if (currentIsMod && n.target === 'mod') return true;
+  if (currentIsMod && !modImpersonating && n.target === 'mod') return true;
   if (n.target === 'all') return true;
   if (n.target === currentUser) return true;
   return false;
@@ -934,22 +1025,35 @@ function notifSeenByMe(n) {
   return n.seenBy && n.seenBy[currentUser];
 }
 
-// ── On login: show unseen toasts and mark them seen
+// ── On login: show unseen toasts and mark them seen (deduped if called multiple times)
 async function deliverPendingNotifications() {
-  const notifs = gameState?.notifications || [];
-  const mine = notifs.filter(n => notifIsForMe(n) && !notifSeenByMe(n));
+  if (_deliverPendingPromise) return _deliverPendingPromise;
+  _deliverPendingPromise = deliverPendingNotificationsInner().finally(() => {
+    _deliverPendingPromise = null;
+  });
+  return _deliverPendingPromise;
+}
+
+async function deliverPendingNotificationsInner() {
+  if (!db) return;
+  const snap = await db.ref('/game/notifications').once('value');
+  const raw = snap.val();
+  const notifs = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
+  if (gameState) gameState.notifications = notifs;
+  const mine = notifs.filter(n => shouldToastNotification(n));
+  // Mark already-seen (Firebase or local) without toasting again
+  notifs.filter(n => notifIsForMe(n) && !notifSeenByMe(n) && _toastedNotifIds.has(n.id))
+    .forEach(n => markNotifSeen(n.id));
   if (!mine.length) return;
   const containerId = currentIsMod ? 'mod-toast-container' : 'player-toast-container';
-  // Stagger them
   mine.forEach((n, i) => {
-    setTimeout(() => {
-      if (_toastedNotifIds.has(n.id)) return;
-      _toastedNotifIds.add(n.id);
+    setTimeout(async () => {
+      if (!shouldToastNotification(n)) return;
+      rememberToastedNotifId(n.id);
       showToast(containerId, n.type, n.title, n.body, 9000);
-      markNotifSeen(n.id);
+      await markNotifSeen(n.id);
     }, i * 600);
   });
-  // Refresh notification UI after marking seen
   setTimeout(() => {
     if (currentIsMod) renderModNotifications();
     else renderPlayerNotifications();
@@ -957,14 +1061,12 @@ async function deliverPendingNotifications() {
 }
 
 // ── Live watcher: show toast immediately if session is active
-function handleLiveNotification(n) {
-  if (!notifIsForMe(n)) return;
-  if (_toastedNotifIds.has(n.id)) return; // already toasted this session
-  _toastedNotifIds.add(n.id);
+async function handleLiveNotification(n) {
+  if (!shouldToastNotification(n)) return;
+  rememberToastedNotifId(n.id);
   const containerId = currentIsMod ? 'mod-toast-container' : 'player-toast-container';
   showToast(containerId, n.type, n.title, n.body, 7000);
-  markNotifSeen(n.id);
-  // Refresh log
+  await markNotifSeen(n.id);
   setTimeout(() => {
     if (currentIsMod) { renderModNotifications(); updateModNotifBadge(); }
     else { renderPlayerNotifications(); updatePlayerNotifBadge(); }
@@ -1110,15 +1212,11 @@ function setupGame() {
   db.ref('/game/notifications').on('value', snap => {
     if (!_notifReady || !currentUser) return;
     const raw = snap.val();
-    if (!raw) return;
-    const notifs = Array.isArray(raw) ? raw : Object.values(raw);
-    // Find any for me that aren't seen yet — these are new since last check
+    const notifs = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
+    if (gameState) gameState.notifications = notifs;
     notifs.forEach(n => {
-      if (notifIsForMe(n) && !notifSeenByMe(n)) {
-        handleLiveNotification(n);
-      }
+      if (shouldToastNotification(n)) handleLiveNotification(n);
     });
-    // Refresh UI
     if (currentIsMod) { renderModNotifications(); updateModNotifBadge(); }
     else if (currentPage === 'player') { renderPlayerNotifications(); updatePlayerNotifBadge(); }
   });
@@ -1201,6 +1299,12 @@ function normalizeState(raw) {
   
   merged.settings = merged.settings || { immunityEnabled: true, ghostEnabled: true };
 
+  if (merged.gameStarted && !merged.gameStartedAt) {
+    const sortedKills = [...(merged.killLog || [])].sort((a, b) => new Date(a.time) - new Date(b.time));
+    const startEv = (merged.auditLog || []).find(e => e.action === 'game.started');
+    merged.gameStartedAt = startEv?.iso || startEv?.ts || sortedKills[0]?.time || null;
+  }
+
   merged.immunity = {
     ...base.immunity,
     ...(merged.immunity || {}),
@@ -1265,7 +1369,7 @@ function reconcileGhostExpirations() {
 function getDefaultState() {
   return {
     gameName: 'Knives Out', gamePassword: 'huh', modPassword: 'sssts@$$',
-    gameStarted: false, players: [], mods: [], killLog: [], auditLog: [], pendingCodes: {},
+    gameStarted: false, gameStartedAt: null, players: [], mods: [], killLog: [], auditLog: [], pendingCodes: {},
     settings: { immunityEnabled: true, ghostEnabled: true },
     immunity: {
       slots: 2,
@@ -1357,6 +1461,15 @@ function isValidUsername(username) {
   return USERNAME_REGEX.test(username);
 }
 
+function escapeJsString(value) {
+  return String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r/g, '').replace(/\n/g, '\\n');
+}
+
+function notificationsToArray(raw) {
+  if (!raw) return [];
+  return Array.isArray(raw) ? [...raw] : Object.values(raw).filter(Boolean);
+}
+
 function getCurrentMinutesOfDay() {
   // Lock clock strictly to Indian Standard Time (IST)
   const now = new Date();
@@ -1426,16 +1539,61 @@ function getEffectiveClaimWindowOpen() {
   return isWithinImmunityWindow();
 }
 
+function getScheduledWindowEndMs() {
+  const endStr = gameState?.immunity?.end;
+  if (!endStr?.includes(':')) return Date.now();
+  const [endH, endM] = endStr.split(':').map(Number);
+  if (Number.isNaN(endH) || Number.isNaN(endM)) return Date.now();
+  const ist = getCurrentIstDate();
+  return new Date(ist.getFullYear(), ist.getMonth(), ist.getDate(), endH, endM, 0, 0).getTime();
+}
+
+function getClaimWindowCloseMs() {
+  if (gameState?.immunity?.lastClosedAt) {
+    const t = new Date(gameState.immunity.lastClosedAt).getTime();
+    if (!Number.isNaN(t)) return t;
+  }
+  return getScheduledWindowEndMs();
+}
+
+function getDefaultImmunityExpiresAt() {
+  const closeMs = getEffectiveClaimWindowOpen()
+    ? getScheduledWindowEndMs()
+    : getClaimWindowCloseMs();
+  return new Date(closeMs + IMMUNITY_DURATION_MS).toISOString();
+}
+
+function showImmunityFeedback(title, body) {
+  showToast('mod-toast-container', 'immunity', title, body, 5000);
+  const el = document.getElementById('immunity-action-feedback');
+  if (el) {
+    el.textContent = `${title}: ${body}`;
+    el.classList.remove('hidden');
+  }
+}
+
+async function afterImmunityAction(title, body) {
+  showImmunityFeedback(title, body);
+  renderModImmunity();
+}
+
 function getEligibleClaimants() {
   return gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
+}
+
+function getClaimSortTime(entry) {
+  if (!entry) return null;
+  if (typeof entry.ts === 'number' && !Number.isNaN(entry.ts)) return entry.ts;
+  if (typeof entry.clientTs === 'number' && !Number.isNaN(entry.clientTs)) return entry.clientTs;
+  return null;
 }
 
 function getSortedClaimEntries() {
   const claims = gameState.immunity.claims || {};
   const eligibleNames = new Set(getEligibleClaimants().map(p => p.name));
   return Object.entries(claims)
-    .filter(([name, entry]) => eligibleNames.has(name) && entry && typeof entry.ts === 'number')
-    .sort((a, b) => a[1].ts - b[1].ts);
+    .filter(([name, entry]) => eligibleNames.has(name) && entry && getClaimSortTime(entry) !== null)
+    .sort((a, b) => getClaimSortTime(a[1]) - getClaimSortTime(b[1]));
 }
 
 async function recomputeImmunityFromClaims(persist = false) {
@@ -1443,14 +1601,24 @@ async function recomputeImmunityFromClaims(persist = false) {
   const slots = Math.max(0, parseInt(gameState.immunity.slots, 10) || 0);
   const newImmunePlayers = sorted.slice(0, slots).map(([name]) => name);
   const immuneSet = new Set(newImmunePlayers);
-  // Prune grants for anyone who lost their slot (keeps grants consistent with immunePlayers)
-  if (gameState.immunity.grants) {
-    Object.keys(gameState.immunity.grants).forEach(name => {
-      if (!immuneSet.has(name)) delete gameState.immunity.grants[name];
-    });
-  }
+  const windowClosed = !getEffectiveClaimWindowOpen();
+  const grantedAt = new Date().toISOString();
+  if (!gameState.immunity.grants) gameState.immunity.grants = {};
+  Object.keys(gameState.immunity.grants).forEach(name => {
+    if (!immuneSet.has(name)) delete gameState.immunity.grants[name];
+  });
+  newImmunePlayers.forEach(name => {
+    const existing = gameState.immunity.grants[name];
+    const grant = { grantedAt: existing?.grantedAt || grantedAt };
+    if (windowClosed) {
+      grant.expiresAt = getDefaultImmunityExpiresAt();
+    } else if (existing?.expiresAt) {
+      grant.expiresAt = existing.expiresAt;
+    }
+    gameState.immunity.grants[name] = grant;
+  });
   gameState.immunity.immunePlayers = newImmunePlayers;
-  gameState.immunity.lastComputedAt = new Date().toISOString();
+  gameState.immunity.lastComputedAt = grantedAt;
   if (persist) await updateGameState({ immunity: gameState.immunity });
 }
 
@@ -1463,11 +1631,10 @@ async function syncScheduledImmunityWindow() {
     const wasOpen = Boolean(gameState.immunity.claimWindowOpen);
     gameState.immunity.claimWindowOpen = effectiveOpen;
     if (!wasOpen && effectiveOpen) gameState.immunity.lastOpenedAt = new Date().toISOString();
-    if (wasOpen && !effectiveOpen) gameState.immunity.lastClosedAt = new Date().toISOString();
-    if (!effectiveOpen) {
+    if (wasOpen && !effectiveOpen) {
+      gameState.immunity.lastClosedAt = new Date().toISOString();
+      await recomputeImmunityFromClaims(false);
       gameState.immunity.claims = {};
-      gameState.immunity.immunePlayers = [];
-      gameState.immunity.grants = {};
     }
     await updateGameState({ immunity: gameState.immunity });
   } finally {
@@ -1604,7 +1771,8 @@ async function doSignup() {
 
 function doLogout() {
   clearRememberMe();
-  currentUser = null; currentIsMod = false; modImpersonating = null;
+  stopAnalyticsLiveClock();
+  currentUser = null; currentIsMod = false; modImpersonating = null; modSessionUser = null;
   document.getElementById('impersonate-banner').style.display = 'none';
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
@@ -1639,26 +1807,27 @@ function enterPlayer() {
   const player = gameState.players.find(p => p.name === currentUser);
   if (!player) return;
   document.getElementById('nav-player-name').textContent = currentUser.toUpperCase();
+  loadToastedNotifIdsFromStorage();
   renderPlayerView(player);
   showPage('player');
-  // Deliver any unseen notifications
   setTimeout(() => deliverPendingNotifications(), 800);
 }
 
 function enterMod() {
   document.getElementById('nav-mod-name').textContent = currentUser.toUpperCase();
+  loadToastedNotifIdsFromStorage();
   showPage('mod');
   renderModView();
-  // Deliver any unseen notifications
   setTimeout(() => deliverPendingNotifications(), 800);
 }
 
 function enterPlayerAsImpersonator(playerName) {
   const player = gameState.players.find(p => p.name === playerName);
   if (!player) return;
+  if (!modSessionUser) modSessionUser = currentUser;
   modImpersonating = playerName;
-  // Swap currentUser to the target player so all player actions work for real
   currentUser = playerName;
+  loadToastedNotifIdsFromStorage();
   // Show the impersonation banner
   const banner = document.getElementById('impersonate-banner');
   document.getElementById('impersonate-name').textContent = playerName;
@@ -1671,12 +1840,15 @@ function enterPlayerAsImpersonator(playerName) {
 
 function exitImpersonation() {
   if (!modImpersonating) return;
-  // Restore mod's own username
-  currentUser = document.getElementById('nav-mod-name').textContent.toLowerCase();
-  // Find canonical name from mods list (preserves casing)
-  const modEntry = (gameState?.mods || []).find(m => m.toLowerCase() === currentUser.toLowerCase());
-  if (modEntry) currentUser = modEntry;
+  if (modSessionUser) {
+    currentUser = modSessionUser;
+  } else {
+    const modEntry = (gameState?.mods || []).find(m => m.toLowerCase() === String(currentUser).toLowerCase());
+    if (modEntry) currentUser = modEntry;
+  }
+  modSessionUser = null;
   modImpersonating = null;
+  loadToastedNotifIdsFromStorage();
   document.getElementById('impersonate-banner').style.display = 'none';
   renderModView();
   showPage('mod');
@@ -1866,6 +2038,7 @@ async function claimImmunity() {
   // This is safe for 50+ simultaneous claims since each path is unique and Firebase handles concurrent writes to different nodes.
   await db.ref(`/game/immunity/claims/${player.name}`).set({
     ts: firebase.database.ServerValue.TIMESTAMP,
+    clientTs: Date.now(),
     source: 'claim'
   });
   await logAuditEvent('immunity.claim_submitted', {
@@ -1929,7 +2102,7 @@ function renderVotingPanel(player) {
   
   document.getElementById('player-already-voted').classList.add('hidden');
   list.innerHTML = candidates.map(c => `
-    <button class="btn btn-ghost-btn" onclick="castVote('${c.name}')">${c.name}</button>
+    <button class="btn btn-ghost-btn" onclick="castVote('${escapeJsString(c.name)}')">${c.name}</button>
   `).join('');
 }
 
@@ -2169,7 +2342,7 @@ function renderStatusPage() {
 }
 
 function getActiveModTab() {
-  const tabs = ['dashboard','analytics','players','kills','immunity','ghost','settings'];
+  const tabs = ['dashboard','analytics','players','kills','immunity','ghost','settings','notifications'];
   return tabs.find(t => document.getElementById('mod-tab-' + t)?.classList.contains('active')) || 'dashboard';
 }
 
@@ -2192,14 +2365,11 @@ function renderModView() {
     case 'immunity':  renderModImmunity(); break;
     case 'ghost':     renderModGhost(); break;
     case 'settings':  renderModSettings(); break;
+    case 'notifications': renderModNotifications(); populateNotifTargetSelect(); break;
   }
 
-  // Always silently update inactive tabs' data so they're fresh when switched to
-  // but only touch DOM for the active tab (done above)
-  if (activeTab !== 'players')  renderModPlayers();
-  if (activeTab !== 'kills')    renderModKillLog();
+  // Quiet updates for inactive tabs — never full re-render (preserves inputs/timers)
   if (activeTab !== 'immunity') _renderModImmunityQuiet();
-  if (activeTab !== 'ghost')    renderModGhost();
   if (activeTab !== 'settings') _renderModSettingsQuiet();
 
   // Win detection
@@ -2316,7 +2486,7 @@ function renderModPlayers() {
       <td>${statusBadge}</td>
       <td class="text-gold" style="font-weight: 700;">${p.status === 'ghost' ? (p.ghostTarget || '—') : (p.target || '—')}</td>
       <td>${p.kills || 0}</td>
-      <td><div class="flex-btn-group">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${p.name}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${p.name}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${p.name}')">TARGET</button><button class="btn btn-outline btn-sm" style="color:var(--blade);border-color:var(--blade2);" onclick="enterPlayerAsImpersonator('${p.name}')">👁 VIEW</button></div></td>
+      <td><div class="flex-btn-group">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${escapeJsString(p.name)}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${escapeJsString(p.name)}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${escapeJsString(p.name)}')">TARGET</button><button class="btn btn-outline btn-sm" style="color:var(--blade);border-color:var(--blade2);" onclick="enterPlayerAsImpersonator('${escapeJsString(p.name)}')">👁 VIEW</button></div></td>
     </tr>`;
   }).join('');
 }
@@ -2349,6 +2519,7 @@ function renderModKillLog() {
 }
 
 function renderModImmunity() {
+  const overrideBanner = document.getElementById('immunity-override-banner');
   const sel = document.getElementById('immunity-player-select');
   sel.innerHTML = gameState.players
     .filter(p => p.status === 'alive' && !isModUser(gameState, p.name))
@@ -2380,7 +2551,7 @@ function renderModImmunity() {
       return `<li style="flex-direction:column;align-items:flex-start;gap:10px;padding:14px 16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
           <span style="font-weight:700;font-size:13px;color:var(--blade);">${name}</span>
-          <button class="remove" onclick="modRevokeImmunity('${name}')" title="Revoke immunity">×</button>
+          <button class="remove" onclick="modRevokeImmunity('${escapeJsString(name)}')" title="Revoke immunity">×</button>
         </div>
         <div id="immunity-countdown-${name.replace(/\s/g,'_')}" style="font-size:10px;letter-spacing:1px;color:${isExpired ? 'var(--blood)' : remaining !== null && remaining < 3600000 ? 'var(--blade)' : 'var(--cream3)'};">
           🕐 ${countdown}
@@ -2389,7 +2560,7 @@ function renderModImmunity() {
         <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
           <input type="datetime-local" id="expiry-input-${name.replace(/\s/g,'_')}" value="${inputVal}"
             style="flex:1;min-width:160px;font-size:11px;background:var(--ink3);border:1px solid var(--seam);color:var(--cream);padding:6px 8px;font-family:monospace;">
-          <button class="btn btn-blade btn-sm" onclick="modSetImmunityExpiry('${name}')">SET EXPIRY</button>
+          <button class="btn btn-blade btn-sm" onclick="modSetImmunityExpiry('${escapeJsString(name)}')">SET EXPIRY</button>
         </div>
       </li>`;
     }).join('');
@@ -2430,8 +2601,9 @@ function renderModImmunity() {
   const openBtn = document.getElementById('immunity-open-btn');
   const closeBtn = document.getElementById('immunity-close-btn');
   const clearOverrideBtn = document.getElementById('immunity-clear-override-btn');
-  if (openBtn) openBtn.disabled = Boolean(gameState.immunity.claimWindowOpen) && gameState.immunity.manualOverride === 'open';
-  if (closeBtn) closeBtn.disabled = !Boolean(gameState.immunity.claimWindowOpen) && gameState.immunity.manualOverride === 'closed';
+  const windowOpen = Boolean(gameState.immunity.claimWindowOpen);
+  if (openBtn) openBtn.disabled = windowOpen;
+  if (closeBtn) closeBtn.disabled = !windowOpen;
   if (clearOverrideBtn) clearOverrideBtn.disabled = !hasOverride;
   const queueEl = document.getElementById('immunity-claim-queue');
   const sorted = getSortedClaimEntries();
@@ -2439,7 +2611,10 @@ function renderModImmunity() {
   const winners = sorted.slice(0, slots).map(([name]) => name);
   const previewEl = document.getElementById('immunity-computed-preview');
   if (previewEl) {
-    previewEl.innerHTML = `Slots: <span class="text-gold">${slots}</span> | Claims: <span class="text-gold">${sorted.length}</span> | Winners preview: <span class="text-green">${winners.length ? winners.join(', ') : 'None'}</span>`;
+    const expiryHint = !windowOpen && winners.length
+      ? ` | Expires: <span class="text-gold">${formatTime(getDefaultImmunityExpiresAt())}</span>`
+      : '';
+    previewEl.innerHTML = `Slots: <span class="text-gold">${slots}</span> | Claims: <span class="text-gold">${sorted.length}</span> | Winners preview: <span class="text-green">${winners.length ? winners.join(', ') : 'None'}</span>${expiryHint}`;
   }
   queueEl.innerHTML = sorted.length === 0
     ? '<div class="text-dim">No claims yet.</div>'
@@ -2623,7 +2798,7 @@ function renderModGhost() {
         const remaining = new Date(g.expiresAt).getTime() - Date.now();
         const h = Math.max(0, Math.floor(remaining / 3600000));
         const m = Math.max(0, Math.floor((remaining % 3600000) / 60000));
-        return `<div class="kill-entry" style="align-items: center;"><span class="badge badge-ghost">GHOST</span><span style="flex: 1; font-weight: 700;">${g.name}</span><span class="text-dim">Target: <span class="text-gold font-weight-bold">${player?.ghostTarget || '—'}</span></span><span class="text-purple font-weight-bold">${h}h ${m}m</span><button class="btn btn-blood btn-sm" onclick="modEliminateGhost('${g.name}')">KILL</button></div>`;
+        return `<div class="kill-entry" style="align-items: center;"><span class="badge badge-ghost">GHOST</span><span style="flex: 1; font-weight: 700;">${g.name}</span><span class="text-dim">Target: <span class="text-gold font-weight-bold">${player?.ghostTarget || '—'}</span></span><span class="text-purple font-weight-bold">${h}h ${m}m</span><button class="btn btn-blood btn-sm" onclick="modEliminateGhost('${escapeJsString(g.name)}')">KILL</button></div>`;
       }).join('');
 }
 
@@ -2846,12 +3021,12 @@ function renderModSettings() {
 
 function renderPendingPlayers() {
   const el = document.getElementById('players-pending-list');
-  el.innerHTML = gameState.players.map(p => `<li>${p.name} <button class="remove" onclick="removePlayer('${p.name}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
+  el.innerHTML = gameState.players.map(p => `<li>${p.name} <button class="remove" onclick="removePlayer('${escapeJsString(p.name)}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
 }
 
 function renderModsList() {
   const el = document.getElementById('mods-list');
-  el.innerHTML = gameState.mods.map(m => `<li>${m} <button class="remove" onclick="removeMod('${m}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
+  el.innerHTML = gameState.mods.map(m => `<li>${m} <button class="remove" onclick="removeMod('${escapeJsString(m)}')" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--blood); font-size: 14px; font-weight: 700;">×</button></li>`).join('');
 }
 
 function switchModTab(tab) {
@@ -2868,6 +3043,8 @@ function switchModTab(tab) {
     clearInterval(window._immunityCountdownInterval);
     window._immunityCountdownInterval = null;
   }
+  if (tab !== 'analytics') stopAnalyticsLiveClock();
+  else startAnalyticsLiveClock();
 
   // Render the newly active tab with fresh data
   switch (tab) {
@@ -2902,6 +3079,39 @@ async function removePlayer(name) {
   renderPendingPlayers();
 }
 
+function escapeCsvField(value) {
+  const s = String(value ?? '');
+  if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function exportPlayersToCSV() {
+  const resultEl = document.getElementById('csv-import-result');
+  if (!gameState) return;
+  const players = gameState.players.filter(p => !isModUser(gameState, p.name));
+  if (!players.length) {
+    if (resultEl) resultEl.innerHTML = '<span style="color:var(--blood);">No players to export.</span>';
+    return;
+  }
+  const lines = ['players'];
+  players.forEach(p => {
+    lines.push(`${escapeCsvField(p.name)},${escapeCsvField(p.password || '')}`);
+  });
+  const csv = lines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const safeName = String(gameState.gameName || 'knives-out').replace(/[^\w.-]+/g, '_').slice(0, 40);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${safeName}-players.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 500);
+  if (resultEl) {
+    resultEl.innerHTML = `<span style="color:var(--alive);">✓ Exported ${players.length} player${players.length !== 1 ? 's' : ''} to <strong>${safeName}-players.csv</strong></span>`;
+  }
+}
+
 async function importPlayersFromCSV(inputEl) {
   const resultEl = document.getElementById('csv-import-result');
   resultEl.innerHTML = '';
@@ -2919,7 +3129,8 @@ async function importPlayersFromCSV(inputEl) {
   for (const line of lines) {
     const cols = line.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
     // Skip header row
-    if (cols[0].toLowerCase() === 'name') continue;
+    const header = cols[0].toLowerCase();
+    if (header === 'name' || header === 'players') continue;
 
     const name = cols[0] || '';
     const pass = cols[1] || '';
@@ -2993,7 +3204,9 @@ async function startGame() {
   }
   gameState.players.forEach(p => { if (isModUser(gameState, p.name)) p.target = null; });
   gameState.gameStarted = true;
-  await updateGameState({ gameStarted: true, players: gameState.players });
+  gameState.gameStartedAt = new Date().toISOString();
+  await updateGameState({ gameStarted: true, gameStartedAt: gameState.gameStartedAt, players: gameState.players });
+  await logAuditEvent('game.started', { playerCount: activePlayers.length });
   renderModView();
   alert('Game started! Kill chain assigned.');
 }
@@ -3041,18 +3254,16 @@ async function saveImmunitySettings() {
       manualOverride: gameState.immunity.manualOverride
     }
   });
-  renderModImmunity();
-  alert('Saved.');
+  await afterImmunityAction('Settings saved', `Window ${gameState.immunity.start}–${gameState.immunity.end}, ${gameState.immunity.slots} slot(s).`);
 }
 
 async function grantImmunity() {
   if (gameState.immunity.claimWindowOpen && !confirm('Claim window is OPEN. Granting now can change live outcomes. Continue?')) return;
   const name = document.getElementById('immunity-player-select').value;
-  if (!name) return;
+  if (!name) { showImmunityFeedback('Grant failed', 'Select a player first.'); return; }
   if (!gameState.immunity.claims[name]) gameState.immunity.claims[name] = { ts: Date.now(), source: 'mod' };
-  // Default expiry: 24 hours from now
   const grantedAt = new Date().toISOString();
-  const expiresAt = new Date(Date.now() + 24 * 3600000).toISOString();
+  const expiresAt = getDefaultImmunityExpiresAt();
   if (!gameState.immunity.grants) gameState.immunity.grants = {};
   gameState.immunity.grants[name] = { grantedAt, expiresAt };
   await recomputeImmunityFromClaims(false);
@@ -3064,18 +3275,19 @@ async function grantImmunity() {
     expiresAt,
     immunePlayers: gameState.immunity.immunePlayers
   });
-  renderModImmunity();
+  await afterImmunityAction('Immunity granted', `${name} protected until ${formatTime(expiresAt)}.`);
 }
 
 async function revokeImmunity() {
   if (gameState.immunity.claimWindowOpen && !confirm('Claim window is OPEN. Revoking now can change live outcomes. Continue?')) return;
   const name = document.getElementById('immunity-player-select').value;
+  if (!name) { showImmunityFeedback('Revoke failed', 'Select a player first.'); return; }
   gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== name);
   delete gameState.immunity.claims[name];
   if (gameState.immunity.grants) delete gameState.immunity.grants[name];
   await updateGameState({ immunity: gameState.immunity });
   await logAuditEvent('immunity.revoked', { player: name, source: 'selector' });
-  renderModImmunity();
+  await afterImmunityAction('Immunity revoked', `${name} is no longer protected.`);
 }
 
 async function modRevokeImmunity(name) {
@@ -3084,25 +3296,35 @@ async function modRevokeImmunity(name) {
   if (gameState.immunity.grants) delete gameState.immunity.grants[name];
   await updateGameState({ immunity: gameState.immunity });
   await logAuditEvent('immunity.revoked', { player: name, source: 'inline_list' });
-  renderModImmunity();
+  await afterImmunityAction('Immunity revoked', `${name} is no longer protected.`);
 }
 
 async function modSetImmunityExpiry(name) {
   const inputId = 'expiry-input-' + name.replace(/\s/g, '_');
   const input = document.getElementById(inputId);
-  if (!input || !input.value) { alert('Please set a date and time first.'); return; }
+  if (!input || !input.value) {
+    showImmunityFeedback('Set expiry failed', 'Pick a date and time first.');
+    return;
+  }
   const newExpiry = new Date(input.value).toISOString();
   if (!gameState.immunity.grants) gameState.immunity.grants = {};
   if (!gameState.immunity.grants[name]) gameState.immunity.grants[name] = { grantedAt: new Date().toISOString() };
   const prevExpiry = gameState.immunity.grants[name].expiresAt || null;
   gameState.immunity.grants[name].expiresAt = newExpiry;
+  if (!gameState.immunity.immunePlayers.includes(name)) {
+    gameState.immunity.immunePlayers.push(name);
+  }
   await updateGameState({ immunity: gameState.immunity });
   await logAuditEvent('immunity.expiry_set', { player: name, prevExpiry, newExpiry, setBy: 'mod' });
-  renderModImmunity();
+  await afterImmunityAction('Expiry updated', `${name} until ${formatTime(newExpiry)}.`);
 }
 
 async function modOpenClaimWindow() {
-  if (gameState.immunity.claimWindowOpen && gameState.immunity.manualOverride === 'open') return;
+  if (gameState.immunity.claimWindowOpen && gameState.immunity.manualOverride === 'open') {
+    showImmunityFeedback('Already open', 'Claim window is already open.');
+    renderModImmunity();
+    return;
+  }
   gameState.immunity.manualOverride = 'open';
   gameState.immunity.claimWindowOpen = true;
   gameState.immunity.lastOpenedAt = new Date().toISOString();
@@ -3111,18 +3333,26 @@ async function modOpenClaimWindow() {
     mode: 'manual_override',
     manualOverride: gameState.immunity.manualOverride
   });
+  await afterImmunityAction('Window opened', 'Players can claim immunity now.');
 }
 
 async function modCloseClaimWindow() {
-  if (!confirm('Close immunity window now? This immediately blocks new claims.')) return;
+  if (!confirm('Close immunity window now? Winners keep immunity for 23h 30m after close.')) return;
   gameState.immunity.manualOverride = 'closed';
   gameState.immunity.claimWindowOpen = false;
   gameState.immunity.lastClosedAt = new Date().toISOString();
+  await recomputeImmunityFromClaims(false);
+  gameState.immunity.claims = {};
   await updateGameState({ immunity: gameState.immunity });
   await logAuditEvent('immunity.window_closed', {
     mode: 'manual_override',
-    manualOverride: gameState.immunity.manualOverride
+    manualOverride: gameState.immunity.manualOverride,
+    winners: gameState.immunity.immunePlayers
   });
+  const winners = gameState.immunity.immunePlayers.length
+    ? gameState.immunity.immunePlayers.join(', ')
+    : 'none';
+  await afterImmunityAction('Window closed', `Claims blocked. Immune: ${winners}.`);
 }
 
 async function modClearClaims() {
@@ -3132,6 +3362,7 @@ async function modClearClaims() {
   await recomputeImmunityFromClaims(false);
   await updateGameState({ immunity: gameState.immunity });
   await logAuditEvent('immunity.claims_cleared', { previousClaims });
+  await afterImmunityAction('Claim queue cleared', previousClaims.length ? `Removed ${previousClaims.length} claim(s).` : 'Queue was already empty.');
 }
 
 async function modClearImmunity() {
@@ -3141,6 +3372,7 @@ async function modClearImmunity() {
   gameState.immunity.grants = {};
   await updateGameState({ immunity: gameState.immunity });
   await logAuditEvent('immunity.list_cleared', { previousImmune });
+  await afterImmunityAction('Winners cleared', previousImmune.length ? `Removed: ${previousImmune.join(', ')}.` : 'No one was immune.');
 }
 
 async function modClearWindowOverride() {
@@ -3148,17 +3380,19 @@ async function modClearWindowOverride() {
   const previousOverride = gameState.immunity.manualOverride;
   gameState.immunity.manualOverride = null;
   const scheduledOpen = isWithinImmunityWindow();
+  const wasOpen = Boolean(gameState.immunity.claimWindowOpen);
   gameState.immunity.claimWindowOpen = scheduledOpen;
-  if (!scheduledOpen) {
+  if (wasOpen && !scheduledOpen) {
+    gameState.immunity.lastClosedAt = new Date().toISOString();
+    await recomputeImmunityFromClaims(false);
     gameState.immunity.claims = {};
-    gameState.immunity.immunePlayers = [];
   }
   await updateGameState({ immunity: gameState.immunity });
   await logAuditEvent('immunity.override_cleared', {
     previousOverride,
-    scheduledOpen,
-    claimsReset: !scheduledOpen
+    scheduledOpen
   });
+  await afterImmunityAction('Override cleared', scheduledOpen ? 'Back on schedule — window is OPEN.' : 'Back on schedule — window is CLOSED.');
 }
 
 async function repairImmunityState() {
@@ -3168,7 +3402,10 @@ async function repairImmunityState() {
     winners: gameState.immunity.immunePlayers,
     claimCount: Object.keys(gameState.immunity.claims || {}).length
   });
-  renderModImmunity();
+  const winners = gameState.immunity.immunePlayers.length
+    ? gameState.immunity.immunePlayers.join(', ')
+    : 'none';
+  await afterImmunityAction('State repaired', `Immune now: ${winners}.`);
 }
 
 async function modResetImmunityRound() {
@@ -3185,7 +3422,7 @@ async function modResetImmunityRound() {
     by: currentUser || 'SYSTEM',
     mode: 'full_reset'
   });
-  renderModImmunity();
+  await afterImmunityAction('Round reset', 'Window closed, claims and immunity cleared.');
 }
 
 async function saveGhostSettings() {
@@ -3357,6 +3594,158 @@ function formatClockTimeWithCentis(value) {
 // =====================================================================
 // ANALYTICS DASHBOARD
 // =====================================================================
+function formatDurationMs(ms, compact) {
+  if (ms == null || Number.isNaN(ms) || ms < 0) return '—';
+  const sec = Math.floor(ms / 1000);
+  const min = Math.floor(sec / 60);
+  const hr = Math.floor(min / 60);
+  const day = Math.floor(hr / 24);
+  if (day > 0) {
+    if (compact) return `${day}d ${hr % 24}h`;
+    return `${day}d ${hr % 24}h ${min % 60}m ${sec % 60}s`;
+  }
+  if (hr > 0) return compact ? `${hr}h ${min % 60}m` : `${hr}h ${min % 60}m ${sec % 60}s`;
+  if (min > 0) return `${min}m ${sec % 60}s`;
+  return `${sec}s`;
+}
+
+function getGameStartMs() {
+  if (!gameState) return null;
+  if (gameState.gameStartedAt) {
+    const t = new Date(gameState.gameStartedAt).getTime();
+    if (!Number.isNaN(t)) return t;
+  }
+  const kills = [...(gameState.killLog || [])].sort((a, b) => new Date(a.time) - new Date(b.time));
+  if (kills.length) return new Date(kills[0].time).getTime();
+  return null;
+}
+
+function getFirstKillMs() {
+  const kills = [...(gameState?.killLog || [])].sort((a, b) => new Date(a.time) - new Date(b.time));
+  if (!kills.length) return null;
+  const t = new Date(kills[0].time).getTime();
+  return Number.isNaN(t) ? null : t;
+}
+
+function getIstClockString(now) {
+  const d = now || getCurrentIstDate();
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const s = String(d.getSeconds()).padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
+function getMsUntilNextImmunityBoundary() {
+  if (!gameState?.immunity || !gameState.settings.immunityEnabled) return null;
+  const start = parseTimeToMinutes(gameState.immunity.start);
+  const end = parseTimeToMinutes(gameState.immunity.end);
+  if (start === null || end === null) return null;
+  const ist = getCurrentIstDate();
+  const nowMin = ist.getHours() * 60 + ist.getMinutes() + ist.getSeconds() / 60;
+  const open = getEffectiveClaimWindowOpen();
+  if (open) {
+    let minsUntilEnd = end - nowMin;
+    if (minsUntilEnd < 0) minsUntilEnd += 1440;
+    return { label: 'Window closes in', ms: Math.max(0, minsUntilEnd * 60000) };
+  }
+  let minsUntilStart = start - nowMin;
+  if (minsUntilStart <= 0) minsUntilStart += 1440;
+  return { label: 'Window opens in', ms: Math.max(0, minsUntilStart * 60000) };
+}
+
+function countAuditAction(action) {
+  return (gameState?.auditLog || []).filter(e => e.action === action).length;
+}
+
+function stopAnalyticsLiveClock() {
+  if (_analyticsLiveInterval) {
+    clearInterval(_analyticsLiveInterval);
+    _analyticsLiveInterval = null;
+  }
+}
+
+function startAnalyticsLiveClock() {
+  stopAnalyticsLiveClock();
+  updateAnalyticsLivePanel();
+  _analyticsLiveInterval = setInterval(() => {
+    if (getActiveModTab() !== 'analytics') {
+      stopAnalyticsLiveClock();
+      return;
+    }
+    updateAnalyticsLivePanel();
+  }, 1000);
+}
+
+function updateAnalyticsLivePanel() {
+  if (!gameState) return;
+  const istNow = getCurrentIstDate();
+  const nowMs = istNow.getTime();
+  const elapsedEl = document.getElementById('analytics-live-elapsed');
+  const clockEl = document.getElementById('analytics-live-ist');
+  const metaEl = document.getElementById('analytics-live-meta');
+  const stripEl = document.getElementById('analytics-session-strip');
+  const startMs = getGameStartMs();
+
+  if (elapsedEl) {
+    if (gameState.gameStarted && startMs) {
+      elapsedEl.textContent = formatDurationMs(nowMs - startMs, false);
+    } else if (gameState.gameStarted) {
+      elapsedEl.textContent = '0s';
+    } else {
+      elapsedEl.textContent = '—';
+      elapsedEl.style.color = 'var(--cream3)';
+    }
+    if (gameState.gameStarted && startMs) elapsedEl.style.color = 'var(--cream)';
+  }
+  if (clockEl) clockEl.textContent = `${getIstClockString(istNow)} IST`;
+  if (metaEl) {
+    metaEl.textContent = gameState.gameStarted ? 'Game in progress' : 'Lobby — not started';
+  }
+  if (!stripEl) return;
+
+  const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
+  const alive = realPlayers.filter(p => p.status === 'alive').length;
+  const killLog = gameState.killLog || [];
+  const firstKillMs = getFirstKillMs();
+  const hourAgo = nowMs - 3600000;
+  const killsLastHour = killLog.filter(k => new Date(k.time).getTime() >= hourAgo).length;
+
+  let sinceFirstKill = '—';
+  if (firstKillMs) sinceFirstKill = formatDurationMs(nowMs - firstKillMs, true);
+
+  stripEl.innerHTML = `
+    <div class="analytics-metric-grid">
+      <div class="analytics-metric">
+        <div class="analytics-metric-label">Since first kill</div>
+        <div class="analytics-metric-value">${sinceFirstKill}</div>
+      </div>
+      <div class="analytics-metric">
+        <div class="analytics-metric-label">Kills (last hour)</div>
+        <div class="analytics-metric-value danger">${killsLastHour}</div>
+      </div>
+      <div class="analytics-metric">
+        <div class="analytics-metric-label">Alive / total</div>
+        <div class="analytics-metric-value alive">${alive} / ${realPlayers.length}</div>
+      </div>
+    </div>
+  `;
+}
+
+function showAnalyticsTimelineBucket(idx) {
+  const tip = document.getElementById('analytics-timeline-tooltip');
+  if (!tip || !_analyticsTimelineBuckets[idx]) return;
+  const b = _analyticsTimelineBuckets[idx];
+  if (!b.kills.length) {
+    tip.innerHTML = `<span class="text-dim">Interval ${idx + 1}: no kills</span>`;
+    return;
+  }
+  tip.innerHTML = `<div style="font-weight:700;color:var(--cream);margin-bottom:6px;">${b.label} · ${b.kills.length} kill${b.kills.length !== 1 ? 's' : ''}</div>${b.kills.map(k => {
+    const t = new Date(k.time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const g = k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : '';
+    return `<div style="margin-bottom:4px;"><span style="color:var(--blood);">${k.killer}</span> → ${k.victim} <span class="text-dim">${t}</span>${g}</div>`;
+  }).join('')}`;
+}
+
 function renderModAnalytics() {
   if (!gameState) return;
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
@@ -3383,14 +3772,6 @@ function renderModAnalytics() {
     avgKillMins = avg < 3600000 ? Math.round(avg/60000)+'m' : (avg/3600000).toFixed(1)+'h';
   }
 
-  // Game duration
-  let gameDuration = '—';
-  if (killLog.length > 0) {
-    const sk = [...killLog].sort((a,b)=>new Date(a.time)-new Date(b.time));
-    const ms = new Date(sk[sk.length-1].time)-new Date(sk[0].time);
-    gameDuration = ms < 3600000 ? Math.round(ms/60000)+'m' : (ms/3600000).toFixed(1)+'h';
-  }
-
   document.getElementById('analytics-stat-grid').innerHTML = `
     ${winner ? `<div class="stat-box" style="grid-column:1/-1;border-top:3px solid var(--blade);padding:18px;text-align:center;">
       <div style="font-size:9px;letter-spacing:3px;color:var(--blade);text-transform:uppercase;margin-bottom:4px;">🏆 WINNER</div>
@@ -3404,7 +3785,6 @@ function renderModAnalytics() {
     <div class="stat-box"><div class="stat-num">${survivalPct}%</div><div class="stat-label">Survival Rate</div></div>
     <div class="stat-box"><div class="stat-num red">${totalKills}</div><div class="stat-label">Total Kills</div></div>
     <div class="stat-box"><div class="stat-num gold">${avgKillMins}</div><div class="stat-label">Avg Kill Gap</div></div>
-    <div class="stat-box"><div class="stat-num">${gameDuration}</div><div class="stat-label">Game Span</div></div>
   `;
 
   // Progress bar
@@ -3452,20 +3832,61 @@ function renderModAnalytics() {
     </div>
   `;
 
-  // Kill timeline
+  // Kill timeline (interactive buckets)
   const tlEl = document.getElementById('analytics-kill-timeline');
-  if (killLog.length===0) { tlEl.innerHTML='<div class="text-dim" style="padding:12px;">No kills yet.</div>'; }
-  else {
-    const sk=[...killLog].sort((a,b)=>new Date(a.time)-new Date(b.time));
-    const first=new Date(sk[0].time).getTime(),last=new Date(sk[sk.length-1].time).getTime();
-    const span=Math.max(last-first,1);
-    const B=12,buckets=new Array(B).fill(0);
-    sk.forEach(k=>{const i=Math.min(B-1,Math.floor(((new Date(k.time).getTime()-first)/span)*B));buckets[i]++;});
-    const mx=Math.max(...buckets,1);
-    const W=520,H=80,P=10,bw=(W-P*2)/B-3;
-    const bars=buckets.map((c,i)=>{const x=P+i*((W-P*2)/B),bh=c===0?2:Math.max(4,(c/mx)*(H-20)),y=H-bh-5;return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="var(--blood)" opacity="${c===0?.2:.85}" rx="1"/>${c>0?`<text x="${(x+bw/2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="8" fill="var(--cream3)" font-family="monospace">${c}</text>`:''}`}).join('');
-    const sl=span<3600000?Math.round(span/60000)+' minute span':(span/3600000).toFixed(1)+' hour span';
-    tlEl.innerHTML=`<div style="font-size:9px;color:var(--cream3);letter-spacing:1.5px;margin-bottom:6px;text-transform:uppercase;">${sl} · ${B} intervals</div><div style="overflow-x:auto;"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" style="min-width:280px;">${bars}<line x1="${P}" y1="${H-4}" x2="${W-P}" y2="${H-4}" stroke="var(--seam)" stroke-width="1"/></svg></div><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--cream3);letter-spacing:1px;margin-top:2px;"><span>First kill</span><span>KILLS OVER TIME</span><span>Latest</span></div>`;
+  _analyticsTimelineBuckets = [];
+  if (!tlEl) { /* skip */ }
+  else if (killLog.length === 0) {
+    tlEl.innerHTML = '<div class="text-dim" style="padding:12px;">No kills yet — timeline will populate after first blood.</div>';
+  } else {
+    const sk = [...killLog].sort((a, b) => new Date(a.time) - new Date(b.time));
+    const first = new Date(sk[0].time).getTime();
+    const last = new Date(sk[sk.length - 1].time).getTime();
+    const span = Math.max(last - first, 1);
+    const B = 12;
+    const bucketKills = Array.from({ length: B }, () => []);
+    sk.forEach(k => {
+      const i = Math.min(B - 1, Math.floor(((new Date(k.time).getTime() - first) / span) * B));
+      bucketKills[i].push(k);
+    });
+    const buckets = bucketKills.map(arr => arr.length);
+    _analyticsTimelineBuckets = bucketKills.map((kills, i) => {
+      const t0 = first + (span * i) / B;
+      const t1 = first + (span * (i + 1)) / B;
+      const label = `${new Date(t0).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} – ${new Date(t1).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`;
+      return { kills, label };
+    });
+    const mx = Math.max(...buckets, 1);
+    const W = 520, H = 88, P = 10, bw = (W - P * 2) / B - 3;
+    const bars = buckets.map((c, i) => {
+      const x = P + i * ((W - P * 2) / B);
+      const bh = c === 0 ? 2 : Math.max(4, (c / mx) * (H - 24));
+      const y = H - bh - 8;
+      return `<rect class="analytics-tl-bar" data-bucket="${i}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="var(--blood)" opacity="${c === 0 ? 0.25 : 0.9}" rx="2" style="cursor:pointer" onmouseenter="showAnalyticsTimelineBucket(${i})" onfocus="showAnalyticsTimelineBucket(${i})"/>` +
+        (c > 0 ? `<text x="${(x + bw / 2).toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" font-size="8" fill="var(--cream3)" font-family="monospace" pointer-events="none">${c}</text>` : '');
+    }).join('');
+    const sl = span < 3600000 ? Math.round(span / 60000) + ' min span' : (span / 3600000).toFixed(1) + ' h span';
+    const startMs = getGameStartMs();
+    const startNote = startMs ? ` · Game +${formatDurationMs(first - startMs, true)} to first kill` : '';
+    tlEl.innerHTML = `<div style="font-size:9px;color:var(--cream3);letter-spacing:1.5px;margin-bottom:6px;text-transform:uppercase;">${sl} · ${B} buckets${startNote}</div><div style="overflow-x:auto;"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="xMidYMid meet" style="min-width:280px;display:block;">${bars}<line x1="${P}" y1="${H - 6}" x2="${W - P}" y2="${H - 6}" stroke="var(--seam)" stroke-width="1"/></svg></div><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--cream3);letter-spacing:1px;margin-top:4px;"><span>${new Date(sk[0].time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span><span>KILLS OVER TIME (IST)</span><span>${new Date(sk[sk.length - 1].time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span></div>`;
+  }
+
+  // Hour heatmap (IST)
+  const heatEl = document.getElementById('analytics-hour-heatmap');
+  if (heatEl) {
+    const hourCounts = new Array(24).fill(0);
+    killLog.forEach(k => {
+      const d = new Date(k.time);
+      const ist = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+      hourCounts[ist.getHours()]++;
+    });
+    const maxH = Math.max(...hourCounts, 1);
+    const nowH = getCurrentIstDate().getHours();
+    heatEl.innerHTML = `<div class="analytics-heat-row">${hourCounts.map((c, h) => {
+      const intensity = c === 0 ? 0.12 : 0.2 + (c / maxH) * 0.8;
+      const border = h === nowH ? 'border-color:var(--blade);box-shadow:0 0 6px var(--blade)' : '';
+      return `<div class="analytics-heat-cell" title="${h}:00 IST — ${c} kill${c !== 1 ? 's' : ''}" style="background:rgba(139,26,26,${intensity});${border}"><span>${h}</span></div>`;
+    }).join('')}</div><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--cream3);margin-top:6px;"><span>00:00</span><span>Current hour highlighted</span><span>23:00</span></div>`;
   }
 
   // Leaderboard
@@ -3486,25 +3907,35 @@ function renderModAnalytics() {
   }).join('');
 
   // Ghost & immunity
-  const gPhase=gameState.ghost?.phase||0;
-  const claimCounts={};
-  Object.values(gameState.immunity?.claims||{}).forEach(e=>{if(e&&e.name)claimCounts[e.name]=(claimCounts[e.name]||0)+1;});
-  const topC=Object.entries(claimCounts).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const totalClaims=Object.values(gameState.immunity?.claims||{}).filter(e=>e&&e.name).length;
-  document.getElementById('analytics-ghost-immunity').innerHTML=`
+  const gPhase = gameState.ghost?.phase || 0;
+  const claims = gameState.immunity?.claims || {};
+  const claimCounts = {};
+  Object.keys(claims).forEach(name => {
+    if (claims[name]) claimCounts[name] = 1;
+  });
+  const topC = Object.keys(claimCounts).slice(0, 8);
+  const totalClaims = Object.keys(claims).filter(n => claims[n]).length;
+  const immuneNames = gameState.settings.immunityEnabled ? (gameState.immunity.immunePlayers || []) : [];
+  const slotsMax = parseInt(gameState.immunity?.slots, 10) || 0;
+  document.getElementById('analytics-ghost-immunity').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
       <div class="stat-box"><div class="stat-num purple">${ghostKills}</div><div class="stat-label">Ghost Kills</div></div>
       <div class="stat-box"><div class="stat-num purple">${ghosts.length}</div><div class="stat-label">Active Ghosts</div></div>
-      <div class="stat-box"><div class="stat-num gold">${immune.length}</div><div class="stat-label">Immune Now</div></div>
-      <div class="stat-box"><div class="stat-num gold">${totalClaims}</div><div class="stat-label">Total Claims</div></div>
+      <div class="stat-box"><div class="stat-num gold">${immuneNames.length}</div><div class="stat-label">Immune Now</div></div>
+      <div class="stat-box"><div class="stat-num gold">${totalClaims}</div><div class="stat-label">Claims (queue)</div></div>
     </div>
     <div style="font-size:9px;letter-spacing:2px;color:var(--cream3);text-transform:uppercase;margin-bottom:10px;">Ghost Rule</div>
     <div style="padding:10px 12px;background:var(--ink3);border:1px solid var(--seam);border-left:3px solid var(--ghost2);margin-bottom:12px;">
-      <div style="font-size:11px;color:var(--ghost2);font-weight:700;">Phase ${gPhase} Active</div>
-      <div style="font-size:10px;color:var(--cream3);margin-top:4px;">Threshold: ${gameState.ghost?.deathThreshold||'—'} deaths · Window: ${gameState.ghost?.killHours||'—'}h</div>
-      <div style="font-size:10px;color:var(--cream3);margin-top:2px;">Auto-kill: ghost dies when target is already dead ✓</div>
+      <div style="font-size:11px;color:var(--ghost2);font-weight:700;">Phase ${gPhase} ${gPhase === 0 ? '(idle)' : '(active)'}</div>
+      <div style="font-size:10px;color:var(--cream3);margin-top:4px;">Threshold: ${gameState.ghost?.deathThreshold || '—'} deaths · Window: ${gameState.ghost?.killHours || '—'}h</div>
+      <div style="font-size:10px;color:var(--cream3);margin-top:2px;">Immunity consumed by attacks: <span style="color:var(--blade);font-weight:700;">${countAuditAction('immunity.consumed_by_attack')}</span></div>
     </div>
-    ${topC.length>0?`<div style="font-size:9px;letter-spacing:2px;color:var(--cream3);text-transform:uppercase;margin-bottom:8px;">Top Claimers</div>${topC.map(([n,c])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--ink3);border:1px solid var(--seam);margin-bottom:4px;font-size:11px;"><span style="color:var(--cream2);">${n}</span><span style="color:var(--blade);font-weight:700;">${c}× claimed</span></div>`).join('')}`:'<div class="text-dim">No immunity claims yet.</div>'}
+    <div style="font-size:9px;letter-spacing:2px;color:var(--cream3);text-transform:uppercase;margin-bottom:8px;">Immunity window · ${gameState.immunity?.start || '—'} – ${gameState.immunity?.end || '—'} IST</div>
+    <div style="padding:8px 10px;background:var(--ink3);border:1px solid var(--seam);margin-bottom:12px;font-size:11px;">
+      Status: ${getEffectiveClaimWindowOpen() ? '<span style="color:var(--alive);font-weight:700;">OPEN</span>' : '<span class="text-dim">CLOSED</span>'}
+      · Slots filled: <span style="color:var(--blade);font-weight:700;">${immuneNames.length}/${slotsMax}</span>
+    </div>
+    ${topC.length > 0 ? `<div style="font-size:9px;letter-spacing:2px;color:var(--cream3);text-transform:uppercase;margin-bottom:8px;">Recent claimants</div>${topC.map(n => `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--ink3);border:1px solid var(--seam);margin-bottom:4px;font-size:11px;"><span style="color:var(--cream2);">${n}</span>${immuneNames.includes(n) ? '<span class="badge badge-immune">IMMUNE</span>' : '<span class="badge">claimed</span>'}</div>`).join('')}` : '<div class="text-dim">No immunity claims yet.</div>'}
   `;
 
   // Survivor standings
@@ -3522,6 +3953,9 @@ function renderModAnalytics() {
       <td style="color:var(--blade);">${tgt}</td>
     </tr>`;
   }).join('')}</tbody></table></div>`;
+
+  updateAnalyticsLivePanel();
+  if (getActiveModTab() === 'analytics') startAnalyticsLiveClock();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -3552,6 +3986,25 @@ document.addEventListener('DOMContentLoaded', () => {
 @keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
 @keyframes winGlow{0%,100%{box-shadow:0 0 40px rgba(212,160,23,.3)}50%{box-shadow:0 0 80px rgba(212,160,23,.7)}}
 @media(max-width:599px){#analytics-visual-row,#analytics-lower-row{grid-template-columns:1fr!important}}
+.analytics-session-card{border-left:3px solid var(--blade);background:linear-gradient(135deg,var(--ink2) 0%,rgba(26,42,74,.35) 100%)}
+.analytics-live-clock{font-family:'Courier Prime',monospace;font-size:clamp(22px,5vw,32px);font-weight:700;color:var(--blade);letter-spacing:2px;line-height:1.2}
+.analytics-live-elapsed{font-family:'Playfair Display',serif;font-size:clamp(36px,8vw,56px);font-weight:900;font-style:italic;color:var(--cream);letter-spacing:1px;line-height:1.05}
+.analytics-live-ist-sub{font-family:'Courier Prime',monospace;font-size:13px;color:var(--cream3);letter-spacing:1px}
+.analytics-pulse-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--alive);box-shadow:0 0 8px var(--alive);animation:analyticsPulse 1.5s ease-in-out infinite;margin-right:8px;vertical-align:middle}
+@keyframes analyticsPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+.analytics-metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+.analytics-metric{padding:12px 14px;background:var(--ink3);border:1px solid var(--seam);border-radius:2px}
+.analytics-metric-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--cream3);margin-bottom:6px}
+.analytics-metric-value{font-size:15px;font-weight:700;color:var(--cream);line-height:1.3}
+.analytics-metric-value.accent{color:var(--blade)}
+.analytics-metric-value.danger{color:var(--blood)}
+.analytics-metric-value.alive{color:var(--alive)}
+.analytics-heat-row{display:flex;gap:3px;margin-top:8px;flex-wrap:wrap}
+.analytics-heat-cell{flex:1;min-width:12px;height:28px;border-radius:2px;border:1px solid var(--seam);position:relative;cursor:default}
+.analytics-heat-cell span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7px;color:var(--cream);opacity:.9}
+.analytics-tl-tooltip{margin-top:10px;padding:12px;background:var(--ink3);border:1px solid var(--seam);border-left:3px solid var(--blood);font-size:10px;line-height:1.6;min-height:48px}
+.analytics-tl-bar{cursor:pointer;transition:opacity .15s}
+.analytics-tl-bar:hover{opacity:1!important}
 </style>
 <div id="win-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at 50% 35%,#1f0d00 0%,#0c0b09 65%);overflow:hidden;align-items:center;justify-content:center;flex-direction:column;">
   <canvas id="win-particles" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
@@ -3606,7 +4059,7 @@ function showWinScreen(winner, isMod) {
     `${kills} KILL${kills !== 1 ? 'S' : ''}${ghostKills > 0 ? ` &nbsp;·&nbsp; ${ghostKills} AS GHOST` : ''} &nbsp;·&nbsp; ${totalPlayers} PLAYERS`;
 
   // Runner-up (last person killed)
-  const lastKill = [...killLog].reverse().find(k => !k.ghost || true);
+  const lastKill = [...killLog].reverse().find(k => !k.ghost) || [...killLog].reverse()[0];
   if (lastKill) document.getElementById('win-runner-up').textContent = `Final kill: ${lastKill.victim}`;
 
   if (isMod) document.getElementById('win-dismiss').style.display = 'block';

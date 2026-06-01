@@ -1466,8 +1466,6 @@ async function syncScheduledImmunityWindow() {
     if (wasOpen && !effectiveOpen) gameState.immunity.lastClosedAt = new Date().toISOString();
     if (!effectiveOpen) {
       gameState.immunity.claims = {};
-      gameState.immunity.immunePlayers = [];
-      gameState.immunity.grants = {};
     }
     await updateGameState({ immunity: gameState.immunity });
   } finally {

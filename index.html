@@ -329,6 +329,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <input type="text" id="login-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
         <label>Password</label>
         <input type="password" id="login-password" placeholder="••••••••">
+        <label class="mod-toggle" style="margin-top:0; margin-bottom:16px;">
+          <input type="checkbox" id="login-remember-me">
+          Remember me on this device
+        </label>
         <div class="login-note">Players use account password. Moderators can login with moderator password or personal account password.</div>
         <div class="error-msg" id="login-error"></div>
         <button class="btn btn-blade btn-full" onclick="doLogin()">ENTER GAME</button>
@@ -1057,6 +1061,7 @@ function requestNotifPermission() {} // no-op, keeping for compat
 
 function setupGame() {
   if (!db) return;
+  let _autoLoginAttempted = false;
   db.ref('.info/connected').on('value', snap => {
     setConnectionState(snap.val() ? 'live' : 'offline');
   });
@@ -1064,6 +1069,21 @@ function setupGame() {
     gameState = normalizeState(snap.val());
     reconcileGhostExpirations();
     syncScheduledImmunityWindow();
+
+    // On first data arrival, attempt auto-login via Remember Me
+    if (!_autoLoginAttempted) {
+      _autoLoginAttempted = true;
+      const saved = loadRememberMe();
+      if (saved?.username && !currentUser) {
+        tryAutoLogin().then(ok => {
+          if (!ok) {
+            // Auto-login failed — stay on login page, already pre-filled username
+          }
+        });
+        return; // Don't render any page yet; tryAutoLogin will route correctly
+      }
+    }
+
     if (currentPage === 'player' && currentUser) {
       const player = gameState.players.find(p => p.name === currentUser);
       if (player) renderPlayerView(player);
@@ -1455,9 +1475,56 @@ async function syncScheduledImmunityWindow() {
   }
 }
 
+// =====================================================================
+// REMEMBER ME
+// =====================================================================
+const REMEMBER_ME_KEY = 'ko_remember_me';
+
+function saveRememberMe(username, isMod) {
+  try {
+    localStorage.setItem(REMEMBER_ME_KEY, JSON.stringify({ username, isMod }));
+  } catch(e) {}
+}
+
+function clearRememberMe() {
+  try { localStorage.removeItem(REMEMBER_ME_KEY); } catch(e) {}
+}
+
+function loadRememberMe() {
+  try {
+    const raw = localStorage.getItem(REMEMBER_ME_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+async function tryAutoLogin() {
+  const saved = loadRememberMe();
+  if (!saved?.username) return false;
+  const state = await getGameState();
+  gameState = normalizeState(state);
+  const isMod = isModUser(state, saved.username);
+  const player = findPlayerByName(state, saved.username);
+  if (isMod) {
+    currentUser = (player ? player.name : saved.username);
+    currentIsMod = true;
+    enterMod();
+    return true;
+  }
+  if (player) {
+    currentUser = player.name;
+    currentIsMod = false;
+    enterPlayer();
+    return true;
+  }
+  // Saved user no longer exists in game — clear stale remember-me
+  clearRememberMe();
+  return false;
+}
+
 async function doLogin() {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
+  const rememberMe = document.getElementById('login-remember-me')?.checked || false;
   const errEl = document.getElementById('login-error');
   errEl.textContent = '';
   if (!username || !password) { errEl.textContent = 'Enter username and password.'; return; }
@@ -1475,6 +1542,8 @@ async function doLogin() {
   if (modAuthOk) {
     currentUser = player ? player.name : username;
     currentIsMod = true;
+    if (rememberMe) saveRememberMe(currentUser, true);
+    else clearRememberMe();
     document.getElementById('page-login').style.display = 'none';
     enterMod();
     return;
@@ -1483,6 +1552,8 @@ async function doLogin() {
   if (player && (password === player.password || password === state.gamePassword)) {
     currentUser = player.name;
     currentIsMod = isModUser(state, player.name);
+    if (rememberMe) saveRememberMe(currentUser, currentIsMod);
+    else clearRememberMe();
     document.getElementById('page-login').style.display = 'none';
     enterPlayer();
     return;
@@ -1532,6 +1603,7 @@ async function doSignup() {
 }
 
 function doLogout() {
+  clearRememberMe();
   currentUser = null; currentIsMod = false; modImpersonating = null;
   document.getElementById('impersonate-banner').style.display = 'none';
   document.getElementById('login-username').value = '';
@@ -1575,8 +1647,8 @@ function enterPlayer() {
 
 function enterMod() {
   document.getElementById('nav-mod-name').textContent = currentUser.toUpperCase();
-  renderModView();
   showPage('mod');
+  renderModView();
   // Deliver any unseen notifications
   setTimeout(() => deliverPendingNotifications(), 800);
 }
@@ -2102,7 +2174,10 @@ function getActiveModTab() {
 }
 
 function renderModView() {
-  document.getElementById('mod-game-name-display').textContent = gameState.gameName;
+  if (!gameState) return;
+  const modNameDisplay = document.getElementById('mod-game-name-display');
+  if (!modNameDisplay) return; // page not yet active, bail safely
+  modNameDisplay.textContent = gameState.gameName;
   const activeTab = getActiveModTab();
 
   // Always render dashboard stats (even when not active — they're small)
@@ -3453,6 +3528,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const cfgInput = document.getElementById('firebase-config');
   if (cfgInput) cfgInput.value = JSON.stringify(FIREBASE_CONFIG, null, 2);
   toggleSignupModField(false);
+
+  // Pre-fill username from Remember Me
+  const saved = loadRememberMe();
+  if (saved?.username) {
+    const usernameEl = document.getElementById('login-username');
+    if (usernameEl) usernameEl.value = saved.username;
+    const rememberEl = document.getElementById('login-remember-me');
+    if (rememberEl) rememberEl.checked = true;
+  }
+
   initFirebase();
   document.getElementById('login-password').addEventListener('keyup', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('login-username').addEventListener('keyup', e => { if (e.key === 'Enter') doLogin(); });

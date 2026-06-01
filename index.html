@@ -282,6 +282,25 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 .flex-btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
 .flex-btn-group .btn { flex: 1 1 calc(50% - 4px); min-width: 120px; }
+@media (max-width: 479px) {
+  #game-control-buttons .btn { flex: 1 1 100%; min-width: 100%; }
+}
+.game-modal-overlay { display: none; position: fixed; inset: 0; z-index: 100000; background: rgba(8, 7, 6, 0.92); overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; align-items: flex-start; justify-content: center; }
+.game-modal-overlay.open { display: flex; }
+.game-modal { width: 100%; max-width: 520px; background: var(--ink2); border: 2px solid var(--blade); padding: 20px 16px; margin: auto 0; max-height: calc(100vh - 32px); overflow-y: auto; }
+.game-modal-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--blade); margin-bottom: 16px; letter-spacing: 1px; }
+.chain-preview-list { list-style: none; padding: 0; margin: 0 0 16px; }
+.chain-preview-list li { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-bottom: 1px solid var(--seam); font-size: 12px; min-height: 44px; flex-wrap: wrap; }
+.chain-preview-list li:last-child { border-bottom: none; }
+.chain-preview-rank { color: var(--cream3); font-size: 10px; min-width: 24px; }
+.chain-preview-arrow { color: var(--blade); font-weight: 700; }
+.chain-order-row { display: flex; align-items: center; gap: 8px; padding: 10px 8px; border-bottom: 1px solid var(--seam); min-height: 48px; }
+.chain-order-row:last-child { border-bottom: none; }
+.chain-order-btns { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.chain-order-btns button { min-width: 44px; min-height: 28px; padding: 4px 8px; font-size: 12px; }
+.player-game-banner { padding: 14px 16px; margin-bottom: 16px; text-align: center; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; border-radius: 2px; }
+.player-game-banner.paused { background: #2b220d; border: 1px solid var(--blade); color: var(--blade); }
+.player-game-banner.ended { background: var(--blood3); border: 1px solid var(--blood); color: var(--blood); }
 </style>
 </head>
 <body>
@@ -388,6 +407,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
       <!-- GAME TAB -->
       <div id="player-tab-game" class="tab-content active" style="display:block;">
+      <div id="player-game-banner" class="player-game-banner hidden" role="status"></div>
       <div class="player-status-card" id="player-status-card">
         <button id="reveal-btn" class="hold-btn" 
                 onmousedown="toggleSecret(true)" onmouseup="toggleSecret(false)" onmouseleave="toggleSecret(false)"
@@ -792,9 +812,16 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
 
         <hr class="divider">
-        <div class="card-title">ADD PLAYERS</div>
+        <div class="card-title">PLAYERS</div>
+        <div id="settings-players-export" class="mb16">
+          <button class="btn btn-outline btn-sm btn-full" onclick="exportPlayersToCSV()" style="border-color: var(--alive); color: var(--alive);">⬇ EXPORT PLAYERS CSV</button>
+          <div style="margin-top: 6px; font-size: 10px; color: var(--cream3); line-height: 1.6;">
+            Opens in Excel with two columns: row 1 title <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">Players</code>, row 2 headers <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">Username</code> | <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">Password</code>, then data rows.
+          </div>
+          <div id="csv-export-result" style="margin-top: 8px; font-size: 11px; min-height: 14px; line-height: 1.6;"></div>
+        </div>
         <div id="settings-game-started-players">
-          <p class="text-dim mb16">Add before starting game.</p>
+          <p class="text-dim mb16">Add or import before starting game.</p>
           <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
             <input type="text" id="new-player-name" placeholder="Name" style="margin-bottom: 0; flex: 1; min-width: 100px;" autocapitalize="off" autocorrect="off">
             <input type="text" id="new-player-password" placeholder="Pass" style="margin-bottom: 0; flex: 1; min-width: 100px;" autocapitalize="off" autocorrect="off">
@@ -802,12 +829,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
           <div style="margin-bottom: 12px;">
             <input type="file" id="csv-import-input" accept=".csv,text/csv" style="display:none;" onchange="importPlayersFromCSV(this)">
-            <div class="flex-btn-group mb16" style="margin-bottom: 8px;">
-              <button class="btn btn-outline btn-sm btn-full" onclick="document.getElementById('csv-import-input').click()" style="border-color: var(--blade2); color: var(--blade);">⬆ IMPORT FROM CSV</button>
-              <button class="btn btn-outline btn-sm btn-full" onclick="exportPlayersToCSV()" style="border-color: var(--alive); color: var(--alive);">⬇ EXPORT PLAYERS CSV</button>
-            </div>
+            <button class="btn btn-outline btn-sm btn-full mb16" onclick="document.getElementById('csv-import-input').click()" style="border-color: var(--blade2); color: var(--blade);">⬆ IMPORT FROM CSV</button>
             <div style="margin-top: 6px; font-size: 10px; color: var(--cream3); line-height: 1.6;">
-              CSV format: header <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">players</code>, then one row per line — <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">username,password</code>
+              Import format: same as export — <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">Players</code>, then <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">Username</code> / <code style="background: var(--ink3); padding: 2px 6px; color: var(--blade);">Password</code> headers, then data rows.
             </div>
             <div id="csv-import-result" style="margin-top: 8px; font-size: 11px; min-height: 14px; line-height: 1.6;"></div>
           </div>
@@ -823,8 +847,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <ul class="inline-list mb16" id="mods-list"></ul>
 
         <hr class="divider">
-        <button class="btn btn-blade btn-full mb16" id="start-game-btn" onclick="startGame()">⚔ START GAME</button>
-        <button class="btn btn-outline btn-full" onclick="saveSettings()">SAVE SETTINGS</button>
+        <div class="card-title">GAME CONTROL</div>
+        <div id="game-control-status" class="text-dim mb16" style="font-size:11px;line-height:1.6;">Lobby — add players, then start the game.</div>
+        <div class="flex-btn-group mb16" id="game-control-buttons">
+          <button class="btn btn-blade btn-sm" id="start-game-btn" onclick="openStartGameFlow()">⚔ START GAME</button>
+          <button class="btn btn-outline btn-sm hidden" id="pause-game-btn" onclick="togglePauseGame()">⏸ PAUSE</button>
+          <button class="btn btn-blood btn-sm hidden" id="end-game-btn" onclick="endGameByKills()">■ END GAME</button>
+        </div>
+        <button class="btn btn-outline btn-full mb16" onclick="saveSettings()">SAVE SETTINGS</button>
 
         <hr class="divider">
         <div class="card-title text-red">DANGER ZONE</div>
@@ -849,6 +879,8 @@ let modSessionUser = null; // mod's real username saved during impersonation
 let _deliverPendingPromise = null;
 let _analyticsLiveInterval = null;
 let _analyticsTimelineBuckets = [];
+let _startGameDraftOrder = [];
+let _startGameDraftMode = 'random';
 let immunityWindowSyncInFlight = false;
 let ghostTimerInterval = null;
 let missedTimerInterval = null;
@@ -1304,6 +1336,10 @@ function normalizeState(raw) {
     const startEv = (merged.auditLog || []).find(e => e.action === 'game.started');
     merged.gameStartedAt = startEv?.iso || startEv?.ts || sortedKills[0]?.time || null;
   }
+  merged.gamePaused = Boolean(merged.gamePaused);
+  merged.gameEnded = Boolean(merged.gameEnded);
+  merged.gameEndResult = merged.gameEndResult || null;
+  merged.killChainOrder = Array.isArray(merged.killChainOrder) ? merged.killChainOrder : [];
 
   merged.immunity = {
     ...base.immunity,
@@ -1369,7 +1405,9 @@ function reconcileGhostExpirations() {
 function getDefaultState() {
   return {
     gameName: 'Knives Out', gamePassword: 'huh', modPassword: 'sssts@$$',
-    gameStarted: false, gameStartedAt: null, players: [], mods: [], killLog: [], auditLog: [], pendingCodes: {},
+    gameStarted: false, gameStartedAt: null, gamePaused: false, gamePausedAt: null,
+    gameEnded: false, gameEndedAt: null, gameEndResult: null, killChainOrder: [],
+    players: [], mods: [], killLog: [], auditLog: [], pendingCodes: {},
     settings: { immunityEnabled: true, ghostEnabled: true },
     immunity: {
       slots: 2,
@@ -1858,14 +1896,15 @@ function renderPlayerView(player) {
   // Update notification card
   renderPlayerNotifications();
 
-  // Check for game winner
-  if (gameState?.gameStarted) {
+  maybeShowGameEndOverlay();
+  if (gameState?.gameStarted && !gameState.gameEnded) {
     const winner = getWinner(gameState);
     if (winner && winner.name === player.name) {
       showWinScreen(winner, false);
     }
   }
 
+  const gameBanner = document.getElementById('player-game-banner');
   const card = document.getElementById('player-status-card');
   const statusText = document.getElementById('player-status-text');
   const badge = document.getElementById('nav-player-badge');
@@ -1885,6 +1924,8 @@ function renderPlayerView(player) {
   votingSection.classList.add('hidden');
   claimSection.classList.add('hidden');
 
+  if (gameBanner) gameBanner.classList.add('hidden');
+
   if (!gameState.gameStarted) {
     revealBtn.style.display = 'none';
     document.getElementById('secret-info').classList.add('visible');
@@ -1895,6 +1936,52 @@ function renderPlayerView(player) {
     targetSection.style.display = 'none';
     killSection.style.display = 'none';
     claimSection.classList.add('hidden');
+    return;
+  }
+
+  if (gameState.gameEnded) {
+    revealBtn.style.display = 'none';
+    document.getElementById('secret-info').classList.add('visible');
+    statusText.textContent = 'GAME OVER';
+    statusText.className = 'status-value';
+    statusText.style.color = 'var(--blood)';
+    card.classList.add('dead');
+    badge.textContent = 'ENDED';
+    badge.className = 'badge badge-dead';
+    targetSection.style.display = 'none';
+    killSection.style.display = 'none';
+    claimSection.classList.add('hidden');
+    votingSection.classList.add('hidden');
+    if (gameBanner) {
+      gameBanner.classList.remove('hidden', 'paused');
+      gameBanner.classList.add('ended');
+      const er = gameState.gameEndResult;
+      gameBanner.textContent = er
+        ? (er.mode === 'manual_none' ? 'GAME ENDED BY MODERATOR — no survivors'
+          : (er.mode === 'manual_tie' || er.mode === 'tie') ? `GAME ENDED — TIE (${er.topKills} kills among alive)`
+          : (er.mode === 'manual_kills' || er.mode === 'kills') ? `GAME ENDED — ${er.winners[0]} wins (${er.topKills} kills, among alive)`
+          : 'GAME ENDED')
+        : 'GAME ENDED';
+    }
+    return;
+  }
+
+  if (gameState.gamePaused) {
+    revealBtn.style.display = 'none';
+    document.getElementById('secret-info').classList.add('visible');
+    statusText.textContent = 'PAUSED';
+    statusText.className = 'status-value';
+    statusText.style.color = 'var(--blade)';
+    card.classList.add('alive');
+    targetSection.style.display = 'none';
+    killSection.style.display = 'none';
+    claimSection.classList.add('hidden');
+    votingSection.classList.add('hidden');
+    if (gameBanner) {
+      gameBanner.classList.remove('hidden', 'ended');
+      gameBanner.classList.add('paused');
+      gameBanner.textContent = '⏸ GAME PAUSED — stand by for moderator';
+    }
     return;
   }
 
@@ -2031,6 +2118,7 @@ function renderPlayerView(player) {
 }
 
 async function claimImmunity() {
+  if (isPlayerGameplayBlocked()) return;
   const player = gameState.players.find(p => p.name === currentUser);
   if (!player || player.status !== 'alive' || !getEffectiveClaimWindowOpen() || isModUser(gameState, player.name)) return;
   if (gameState.immunity.claims[player.name]) return;
@@ -2107,6 +2195,7 @@ function renderVotingPanel(player) {
 }
 
 async function castVote(targetName) {
+  if (isPlayerGameplayBlocked()) return;
   const player = gameState.players.find(p => p.name === currentUser);
   if (!player || player.votes) return;
   const phase = gameState.ghost.phase || 0;
@@ -2179,6 +2268,7 @@ function switchKillTab(tab, trigger) {
 }
 
 async function generateKillCode() {
+  if (isPlayerGameplayBlocked()) return;
   const player = gameState.players.find(p => p.name === currentUser);
   if (!player || player.status === 'dead') return;
   const target = player.status === 'ghost' ? (player.ghostTarget || player.target) : player.target;
@@ -2196,6 +2286,10 @@ async function generateKillCode() {
 }
 
 async function confirmKillAsVictim() {
+  if (isPlayerGameplayBlocked()) {
+    document.getElementById('victim-code-error').textContent = gameState.gamePaused ? 'Game is paused.' : 'Game is not active.';
+    return;
+  }
   const code = document.getElementById('victim-code-input').value.trim().toUpperCase();
   const errEl = document.getElementById('victim-code-error');
   errEl.textContent = '';
@@ -2372,8 +2466,9 @@ function renderModView() {
   if (activeTab !== 'immunity') _renderModImmunityQuiet();
   if (activeTab !== 'settings') _renderModSettingsQuiet();
 
-  // Win detection
-  if (gameState?.gameStarted) {
+  // Win detection (last alive) or mod-ended game
+  maybeShowGameEndOverlay();
+  if (gameState?.gameStarted && !gameState.gameEnded) {
     const winner = getWinner(gameState);
     if (winner) showWinScreen(winner, true);
   }
@@ -2408,19 +2503,7 @@ function _renderModImmunityQuiet() {
 }
 
 function _renderModSettingsQuiet() {
-  // Only update the game-started UI state — never overwrite text inputs
-  const warning = document.getElementById('settings-game-started-warning');
-  const startBtn = document.getElementById('start-game-btn');
-  if (!warning || !startBtn) return;
-  if (gameState.gameStarted) {
-    warning.classList.remove('hidden');
-    startBtn.textContent = '✓ GAME IN PROGRESS';
-    startBtn.disabled = true;
-  } else {
-    warning.classList.add('hidden');
-    startBtn.textContent = '⚔ START GAME';
-    startBtn.disabled = false;
-  }
+  renderModSettings();
 }
 
 function renderModDashboard() {
@@ -3002,18 +3085,54 @@ function renderModSettings() {
 
   const warning = document.getElementById('settings-game-started-warning');
   const startBtn = document.getElementById('start-game-btn');
-  if (gameState.gameStarted) {
+  const pauseBtn = document.getElementById('pause-game-btn');
+  const endBtn = document.getElementById('end-game-btn');
+  const statusEl = document.getElementById('game-control-status');
+  const running = gameState.gameStarted && !gameState.gameEnded;
+  const lobby = !gameState.gameStarted && !gameState.gameEnded;
+
+  if (running || gameState.gameEnded) {
     warning.classList.remove('hidden');
-    startBtn.textContent = '✓ GAME IN PROGRESS';
-    startBtn.disabled = true;
     document.getElementById('settings-game-started-players').style.opacity = '0.5';
     document.getElementById('settings-game-started-players').style.pointerEvents = 'none';
   } else {
     warning.classList.add('hidden');
-    startBtn.textContent = '⚔ START GAME';
-    startBtn.disabled = false;
     document.getElementById('settings-game-started-players').style.opacity = '';
     document.getElementById('settings-game-started-players').style.pointerEvents = '';
+  }
+
+  if (startBtn) {
+    startBtn.textContent = '⚔ START GAME';
+    startBtn.disabled = !lobby;
+  }
+  if (pauseBtn) {
+    pauseBtn.classList.toggle('hidden', !running);
+    pauseBtn.textContent = gameState.gamePaused ? '▶ RESUME' : '⏸ PAUSE';
+    pauseBtn.disabled = !running;
+  }
+  if (endBtn) {
+    endBtn.classList.toggle('hidden', !running);
+    endBtn.disabled = !running;
+  }
+  if (statusEl) {
+    if (gameState.gameEnded) {
+      const er = gameState.gameEndResult;
+      statusEl.innerHTML = er
+        ? (er.mode === 'manual_none'
+          ? '<span class="text-dim">Game ended manually — no alive players.</span>'
+          : (er.mode === 'manual_tie' || er.mode === 'tie')
+          ? `<span style="color:var(--blade);">Ended manually — tie among alive: ${er.winners.join(', ')} (${er.topKills} kills each)</span>`
+          : (er.mode === 'manual_kills' || er.mode === 'kills')
+          ? `<span style="color:var(--alive);">Ended manually — <strong>${er.winners[0]}</strong> most kills among alive (${er.topKills})</span>`
+          : '<span class="text-dim">Game ended.</span>')
+        : '<span class="text-dim">Game ended.</span>';
+    } else if (gameState.gamePaused) {
+      statusEl.innerHTML = '<span style="color:var(--blade);">⏸ Game paused — players cannot act until you resume.</span>';
+    } else if (running) {
+      statusEl.innerHTML = '<span style="color:var(--alive);">Game in progress.</span>';
+    } else {
+      statusEl.textContent = 'Lobby — add players, then start the game.';
+    }
   }
   renderPendingPlayers();
   renderModsList();
@@ -3085,19 +3204,25 @@ function escapeCsvField(value) {
   return s;
 }
 
+function csvRow(cells) {
+  return cells.map(c => escapeCsvField(c)).join(',');
+}
+
 function exportPlayersToCSV() {
-  const resultEl = document.getElementById('csv-import-result');
+  const resultEl = document.getElementById('csv-export-result');
   if (!gameState) return;
   const players = gameState.players.filter(p => !isModUser(gameState, p.name));
   if (!players.length) {
     if (resultEl) resultEl.innerHTML = '<span style="color:var(--blood);">No players to export.</span>';
     return;
   }
-  const lines = ['players'];
-  players.forEach(p => {
-    lines.push(`${escapeCsvField(p.name)},${escapeCsvField(p.password || '')}`);
-  });
-  const csv = lines.join('\n');
+  const lines = [
+    csvRow(['Players', '']),
+    csvRow(['Username', 'Password']),
+    ...players.map(p => csvRow([p.name, p.password || '']))
+  ];
+  // BOM + CRLF so Excel opens two columns (A=Username, B=Password)
+  const csv = '\uFEFF' + lines.join('\r\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const safeName = String(gameState.gameName || 'knives-out').replace(/[^\w.-]+/g, '_').slice(0, 40);
   const a = document.createElement('a');
@@ -3128,9 +3253,11 @@ async function importPlayersFromCSV(inputEl) {
 
   for (const line of lines) {
     const cols = line.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
-    // Skip header row
-    const header = cols[0].toLowerCase();
-    if (header === 'name' || header === 'players') continue;
+    // Skip title / column header rows
+    const col0 = cols[0].toLowerCase();
+    const col1 = (cols[1] || '').toLowerCase();
+    if (col0 === 'players' || col0 === 'name') continue;
+    if (col0 === 'username' && col1 === 'password') continue;
 
     const name = cols[0] || '';
     const pass = cols[1] || '';
@@ -3192,23 +3319,200 @@ async function saveSettings() {
   alert('Saved.');
 }
 
-async function startGame() {
-  const activePlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
-  if (activePlayers.length < 2) { alert('Need at least 2 non-moderator players.'); return; }
-  if (gameState.gameStarted) { alert('Already started.'); return; }
-  const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
-  for (let i = 0; i < shuffled.length; i++) {
-    const nextIdx = (i + 1) % shuffled.length;
-    const player = gameState.players.find(p => p.name === shuffled[i].name);
-    player.target = shuffled[nextIdx].name;
+function getActiveNonModPlayerNames() {
+  return gameState.players.filter(p => !isModUser(gameState, p.name)).map(p => p.name);
+}
+
+function applyKillChainFromOrder(orderedNames) {
+  const n = orderedNames.length;
+  for (let i = 0; i < n; i++) {
+    const player = gameState.players.find(p => p.name === orderedNames[i]);
+    if (player) player.target = orderedNames[(i + 1) % n];
   }
   gameState.players.forEach(p => { if (isModUser(gameState, p.name)) p.target = null; });
+}
+
+function buildChainPreviewRows(orderedNames) {
+  const n = orderedNames.length;
+  return orderedNames.map((name, i) => ({
+    hunter: name,
+    target: orderedNames[(i + 1) % n]
+  }));
+}
+
+function isPlayerGameplayBlocked() {
+  if (currentIsMod && !modImpersonating) return false;
+  return !gameState?.gameStarted || Boolean(gameState?.gamePaused) || Boolean(gameState?.gameEnded);
+}
+
+function openStartGameFlow() {
+  const names = getActiveNonModPlayerNames();
+  if (names.length < 2) { alert('Need at least 2 non-moderator players.'); return; }
+  if (gameState.gameStarted && !gameState.gameEnded) { alert('Game already in progress.'); return; }
+  _startGameDraftOrder = [...names];
+  _startGameDraftMode = 'random';
+  startGameShowStep('mode');
+  document.getElementById('game-start-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeStartGameModal() {
+  document.getElementById('game-start-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function startGameShowStep(step) {
+  document.getElementById('game-start-step-mode').classList.toggle('hidden', step !== 'mode');
+  document.getElementById('game-start-step-custom').classList.toggle('hidden', step !== 'custom');
+  document.getElementById('game-start-step-preview').classList.toggle('hidden', step !== 'preview');
+  const backBtn = document.getElementById('game-start-preview-back');
+  if (backBtn) {
+    backBtn.onclick = () => startGameShowStep(_startGameDraftMode === 'custom' ? 'custom' : 'mode');
+  }
+}
+
+function startGameChooseMode(mode) {
+  _startGameDraftMode = mode;
+  if (mode === 'random') {
+    _startGameDraftOrder = [..._startGameDraftOrder].sort(() => Math.random() - 0.5);
+    startGameShowPreview();
+    return;
+  }
+  renderChainOrderList();
+  startGameShowStep('custom');
+}
+
+function startGameShuffleDraft() {
+  _startGameDraftOrder = [..._startGameDraftOrder].sort(() => Math.random() - 0.5);
+  renderChainOrderList();
+}
+
+function startGameMoveDraft(idx, delta) {
+  const next = idx + delta;
+  if (next < 0 || next >= _startGameDraftOrder.length) return;
+  const arr = [..._startGameDraftOrder];
+  const tmp = arr[idx];
+  arr[idx] = arr[next];
+  arr[next] = tmp;
+  _startGameDraftOrder = arr;
+  renderChainOrderList();
+}
+
+function renderChainOrderList() {
+  const el = document.getElementById('chain-order-list');
+  if (!el) return;
+  el.innerHTML = _startGameDraftOrder.map((name, i) => `
+    <div class="chain-order-row">
+      <span class="chain-preview-rank">#${i + 1}</span>
+      <span style="flex:1;font-weight:700;word-break:break-word;">${name}</span>
+      <div class="chain-order-btns">
+        <button type="button" class="btn btn-outline btn-sm" onclick="startGameMoveDraft(${i},-1)" ${i === 0 ? 'disabled' : ''} aria-label="Move up">▲</button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="startGameMoveDraft(${i},1)" ${i === _startGameDraftOrder.length - 1 ? 'disabled' : ''} aria-label="Move down">▼</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function startGameShowPreview() {
+  const rows = buildChainPreviewRows(_startGameDraftOrder);
+  const list = document.getElementById('chain-preview-list');
+  if (list) {
+    list.innerHTML = rows.map((r, i) => `
+      <li>
+        <span class="chain-preview-rank">#${i + 1}</span>
+        <span style="font-weight:700;flex:1;word-break:break-word;">${r.hunter}</span>
+        <span class="chain-preview-arrow">→</span>
+        <span style="font-weight:700;color:var(--blade);word-break:break-word;">${r.target}</span>
+      </li>
+    `).join('');
+  }
+  startGameShowStep('preview');
+}
+
+async function commitStartGame() {
+  if (_startGameDraftOrder.length < 2) { alert('Need at least 2 players in the chain.'); return; }
+  applyKillChainFromOrder(_startGameDraftOrder);
   gameState.gameStarted = true;
   gameState.gameStartedAt = new Date().toISOString();
-  await updateGameState({ gameStarted: true, gameStartedAt: gameState.gameStartedAt, players: gameState.players });
-  await logAuditEvent('game.started', { playerCount: activePlayers.length });
+  gameState.gamePaused = false;
+  gameState.gamePausedAt = null;
+  gameState.gameEnded = false;
+  gameState.gameEndedAt = null;
+  gameState.gameEndResult = null;
+  gameState.killChainOrder = [..._startGameDraftOrder];
+  _winShownFor = null;
+  await updateGameState({
+    gameStarted: true,
+    gameStartedAt: gameState.gameStartedAt,
+    gamePaused: false,
+    gamePausedAt: null,
+    gameEnded: false,
+    gameEndedAt: null,
+    gameEndResult: null,
+    killChainOrder: gameState.killChainOrder,
+    players: gameState.players
+  });
+  await logAuditEvent('game.started', {
+    playerCount: _startGameDraftOrder.length,
+    mode: _startGameDraftMode,
+    order: _startGameDraftOrder
+  });
+  closeStartGameModal();
   renderModView();
-  alert('Game started! Kill chain assigned.');
+}
+
+async function togglePauseGame() {
+  if (!gameState.gameStarted || gameState.gameEnded) return;
+  gameState.gamePaused = !gameState.gamePaused;
+  gameState.gamePausedAt = gameState.gamePaused ? new Date().toISOString() : null;
+  await updateGameState({
+    gamePaused: gameState.gamePaused,
+    gamePausedAt: gameState.gamePausedAt
+  });
+  await logAuditEvent(gameState.gamePaused ? 'game.paused' : 'game.resumed', {});
+  renderModSettings();
+  if (currentPage === 'mod') renderModView();
+}
+
+async function endGameByKills() {
+  if (!gameState.gameStarted || gameState.gameEnded) return;
+  if (!confirm('End the game manually?\n\nAmong players still ALIVE, whoever has the most kills wins. If kills are tied, all tied alive players win.\n\n(Normal play always crowns the last person standing.)')) return;
+  const alive = gameState.players.filter(p => !isModUser(gameState, p.name) && p.status === 'alive');
+  let endResult;
+  if (alive.length === 0) {
+    if (!confirm('Nobody is alive. End with no winner?')) return;
+    endResult = { mode: 'manual_none', winners: [], topKills: 0 };
+  } else {
+    const maxKills = Math.max(...alive.map(p => p.kills || 0));
+    const winners = alive.filter(p => (p.kills || 0) === maxKills);
+    endResult = {
+      mode: winners.length > 1 ? 'manual_tie' : 'manual_kills',
+      winners: winners.map(p => p.name),
+      topKills: maxKills
+    };
+  }
+  gameState.gameEnded = true;
+  gameState.gameEndedAt = new Date().toISOString();
+  gameState.gamePaused = false;
+  gameState.gamePausedAt = null;
+  gameState.gameEndResult = endResult;
+  await updateGameState({
+    gameEnded: true,
+    gameEndedAt: gameState.gameEndedAt,
+    gamePaused: false,
+    gamePausedAt: null,
+    gameEndResult: gameState.gameEndResult
+  });
+  await logAuditEvent('game.ended', { ...gameState.gameEndResult });
+  showGameEndScreen(gameState.gameEndResult, true);
+  renderModSettings();
+  renderModView();
+}
+
+function maybeShowGameEndOverlay() {
+  if (!gameState?.gameEnded || !gameState.gameEndResult) return;
+  const isMod = currentIsMod && !modImpersonating;
+  showGameEndScreen(gameState.gameEndResult, isMod);
 }
 
 async function resetGame() {
@@ -3699,7 +4003,9 @@ function updateAnalyticsLivePanel() {
   }
   if (clockEl) clockEl.textContent = `${getIstClockString(istNow)} IST`;
   if (metaEl) {
-    metaEl.textContent = gameState.gameStarted ? 'Game in progress' : 'Lobby — not started';
+    if (gameState.gameEnded) metaEl.textContent = 'Game ended';
+    else if (gameState.gamePaused) metaEl.textContent = 'Game paused';
+    else metaEl.textContent = gameState.gameStarted ? 'Game in progress' : 'Lobby — not started';
   }
   if (!stripEl) return;
 
@@ -4011,14 +4317,45 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="win-content" style="position:relative;z-index:2;text-align:center;padding:24px 20px;max-width:640px;width:100%;animation:winRise .9s cubic-bezier(.16,1,.3,1) both;">
     <div style="font-size:clamp(40px,12vw,80px);animation:winSwordSpin .7s .2s cubic-bezier(.34,1.56,.64,1) both;display:block;">⚔</div>
     <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:5px;text-transform:uppercase;color:#3d3930;margin:8px 0 16px;animation:winFadeIn .8s .5s both;">— KNIVES OUT —</div>
-    <div style="font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,18px);font-weight:700;letter-spacing:4px;color:#7a7060;text-transform:uppercase;animation:winFadeIn .8s .6s both;">Last One Standing</div>
+    <div id="win-subtitle" style="font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,18px);font-weight:700;letter-spacing:4px;color:#7a7060;text-transform:uppercase;animation:winFadeIn .8s .6s both;">Last One Standing</div>
     <div id="win-name" style="font-family:'Playfair Display',serif;font-size:clamp(52px,16vw,120px);font-weight:900;font-style:italic;color:#d4a017;line-height:1.05;margin:12px 0 4px;animation:winNamePulse 2.5s 1.2s ease-in-out infinite,winRise .7s .4s cubic-bezier(.16,1,.3,1) both;">—</div>
-    <div style="font-family:'Playfair Display',serif;font-size:clamp(22px,6vw,42px);font-weight:900;letter-spacing:8px;color:#f0ead8;text-transform:uppercase;animation:winFadeIn .8s .9s both;">WINS</div>
+    <div id="win-wins-label" style="font-family:'Playfair Display',serif;font-size:clamp(22px,6vw,42px);font-weight:900;letter-spacing:8px;color:#f0ead8;text-transform:uppercase;animation:winFadeIn .8s .9s both;">WINS</div>
     <div style="width:160px;height:2px;background:linear-gradient(90deg,transparent,#d4a017,transparent);margin:20px auto;animation:winFadeIn .8s 1s both;"></div>
     <div id="win-stats" style="font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:2px;color:#7a7060;line-height:2.2;animation:winFadeIn .8s 1.1s both;"></div>
     <div id="win-runner-up" style="margin-top:20px;font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:1.5px;color:#3d3930;animation:winFadeIn .8s 1.3s both;"></div>
   </div>
   <button id="win-dismiss" onclick="document.getElementById('win-overlay').style.display='none';" style="display:none;position:absolute;top:16px;right:16px;background:transparent;border:1px solid #2e2b26;color:#3d3930;font-family:monospace;font-size:9px;letter-spacing:2px;padding:8px 14px;cursor:pointer;text-transform:uppercase;z-index:3;">✕ DISMISS</button>
+</div>
+
+<div id="game-start-modal" class="game-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="game-start-modal-title">
+  <div class="game-modal">
+    <div id="game-start-step-mode">
+      <div class="game-modal-title" id="game-start-modal-title">Start game</div>
+      <p class="text-dim mb16" style="line-height:1.6;font-size:11px;">Choose how to build the kill chain. You will preview the order before the game goes live.</p>
+      <button class="btn btn-blade btn-full mb16" onclick="startGameChooseMode('random')">🎲 RANDOM ORDER</button>
+      <button class="btn btn-outline btn-full mb16" onclick="startGameChooseMode('custom')">📋 CUSTOM ORDER</button>
+      <button class="btn btn-outline btn-full" onclick="closeStartGameModal()">CANCEL</button>
+    </div>
+    <div id="game-start-step-custom" class="hidden">
+      <div class="game-modal-title">Custom kill order</div>
+      <p class="text-dim mb16" style="font-size:11px;">Use ▲ ▼ to set who hunts whom (chain follows this list).</p>
+      <div id="chain-order-list" style="border:1px solid var(--seam);margin-bottom:16px;max-height:40vh;overflow-y:auto;"></div>
+      <div class="flex-btn-group">
+        <button class="btn btn-outline btn-sm" onclick="startGameShowStep('mode')">BACK</button>
+        <button class="btn btn-outline btn-sm" onclick="startGameShuffleDraft()">SHUFFLE</button>
+        <button class="btn btn-blade btn-sm" onclick="startGameShowPreview()">PREVIEW CHAIN</button>
+      </div>
+    </div>
+    <div id="game-start-step-preview" class="hidden">
+      <div class="game-modal-title">Confirm kill chain</div>
+      <p class="text-dim mb16" style="font-size:11px;">This is the hunt order. Confirm to start the game.</p>
+      <ol class="chain-preview-list" id="chain-preview-list"></ol>
+      <div class="flex-btn-group">
+        <button class="btn btn-outline btn-sm" id="game-start-preview-back">BACK</button>
+        <button class="btn btn-blade btn-sm" onclick="commitStartGame()">CONFIRM &amp; START</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -4028,41 +4365,91 @@ document.addEventListener('DOMContentLoaded', () => {
 let _winShownFor = null;
 
 function getWinner(gameState) {
-  if (!gameState?.gameStarted) return null;
+  // Normal win only: last person standing (1 alive, no ghosts). Manual mod end uses gameEndResult instead.
+  if (!gameState?.gameStarted || gameState?.gameEnded) return null;
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
-  // Only strictly alive players count as "active" for winning purposes
-  // (ghosts have been revived temporarily and don't constitute survival)
   const strictAlive = realPlayers.filter(p => p.status === 'alive');
   const active = realPlayers.filter(p => p.status === 'alive' || p.status === 'ghost');
-  // Need at least 2 players to have started meaningfully
   if (realPlayers.length < 2) return null;
-  // Winner: exactly 1 strictly-alive player and no active ghosts threatening them
   if (strictAlive.length === 1 && active.length === 1) return strictAlive[0];
-  // Also win if 1 alive player exists and any remaining "active" are only ghosts
-  // whose target is the alive player (ghost will kill them or die — not won yet)
-  // So: win only when strictly 1 alive and 0 ghosts
   return null;
 }
 
 function showWinScreen(winner, isMod) {
-  if (_winShownFor === winner.name) return;
-  _winShownFor = winner.name;
+  showGameEndScreen({
+    mode: 'survival',
+    winners: [winner.name],
+    topKills: winner.kills || 0,
+    survivalWinner: winner
+  }, isMod);
+}
+
+function showGameEndScreen(endResult, isMod) {
+  if (!endResult) return;
+  const hasWinners = (endResult.winners?.length || 0) > 0;
+  if (!hasWinners && endResult.mode !== 'manual_none') return;
+  const key = (hasWinners ? endResult.winners.join('|') : '_none') + ':' + (endResult.mode || '');
+  if (_winShownFor === key) return;
+  _winShownFor = key;
+
   const overlay = document.getElementById('win-overlay');
-  document.getElementById('win-name').textContent = winner.name;
+  const subtitle = document.getElementById('win-subtitle');
+  const winsLabel = document.getElementById('win-wins-label');
+  const nameEl = document.getElementById('win-name');
+  const statsEl = document.getElementById('win-stats');
+  const runnerEl = document.getElementById('win-runner-up');
 
-  // Stats
-  const killLog = gameState?.killLog || [];
-  const kills = winner.kills || 0;
-  const ghostKills = killLog.filter(k => k.killer === winner.name && k.ghost).length;
-  const totalPlayers = (gameState?.players || []).filter(p => !isModUser(gameState, p.name)).length;
-  document.getElementById('win-stats').innerHTML =
-    `${kills} KILL${kills !== 1 ? 'S' : ''}${ghostKills > 0 ? ` &nbsp;·&nbsp; ${ghostKills} AS GHOST` : ''} &nbsp;·&nbsp; ${totalPlayers} PLAYERS`;
-
-  // Runner-up (last person killed)
-  const lastKill = [...killLog].reverse().find(k => !k.ghost) || [...killLog].reverse()[0];
-  if (lastKill) document.getElementById('win-runner-up').textContent = `Final kill: ${lastKill.victim}`;
+  if (endResult.mode === 'manual_none') {
+    if (subtitle) subtitle.textContent = 'Moderator Ended Game';
+    if (winsLabel) winsLabel.textContent = 'NO SURVIVORS';
+    if (nameEl) nameEl.textContent = '—';
+    if (statsEl) statsEl.textContent = 'No alive players remained.';
+    if (runnerEl) runnerEl.textContent = '';
+  } else if (endResult.mode === 'manual_tie' || endResult.mode === 'tie') {
+    if (subtitle) subtitle.textContent = 'Manual End · Tie Among Alive';
+    if (winsLabel) winsLabel.textContent = 'TIE';
+    if (nameEl) {
+      nameEl.textContent = 'TIE';
+      nameEl.style.fontSize = 'clamp(40px,12vw,90px)';
+    }
+    if (statsEl) {
+      statsEl.innerHTML = `${endResult.topKills} KILL${endResult.topKills !== 1 ? 'S' : ''} EACH (among alive)<br><span style="color:var(--cream2);font-size:12px;letter-spacing:1px;">${endResult.winners.join(' · ')}</span>`;
+    }
+    if (runnerEl) runnerEl.textContent = 'Game ended by moderator';
+  } else if (endResult.mode === 'manual_kills' || endResult.mode === 'kills') {
+    const winnerName = endResult.winners[0];
+    const winner = gameState.players.find(p => p.name === winnerName);
+    if (subtitle) subtitle.textContent = 'Manual End · Most Kills (Alive)';
+    if (winsLabel) winsLabel.textContent = 'WINS';
+    if (nameEl) {
+      nameEl.textContent = winnerName;
+      nameEl.style.fontSize = '';
+    }
+    if (statsEl) {
+      statsEl.innerHTML = `${endResult.topKills} KILL${endResult.topKills !== 1 ? 'S' : ''} — top among survivors`;
+    }
+    if (runnerEl) runnerEl.textContent = 'Game ended by moderator';
+  } else if (endResult.mode === 'survival' && endResult.survivalWinner) {
+    const winner = endResult.survivalWinner;
+    if (subtitle) subtitle.textContent = 'Last One Standing';
+    if (winsLabel) winsLabel.textContent = 'WINS';
+    if (nameEl) {
+      nameEl.textContent = winner.name;
+      nameEl.style.fontSize = '';
+    }
+    const killLog = gameState?.killLog || [];
+    const kills = winner.kills || 0;
+    const ghostKills = killLog.filter(k => k.killer === winner.name && k.ghost).length;
+    const totalPlayers = (gameState?.players || []).filter(p => !isModUser(gameState, p.name)).length;
+    if (statsEl) {
+      statsEl.innerHTML = `${kills} KILL${kills !== 1 ? 'S' : ''}${ghostKills > 0 ? ` &nbsp;·&nbsp; ${ghostKills} AS GHOST` : ''} &nbsp;·&nbsp; ${totalPlayers} PLAYERS`;
+    }
+    const lastKill = [...killLog].reverse().find(k => !k.ghost) || [...killLog].reverse()[0];
+    if (runnerEl && lastKill) runnerEl.textContent = `Final kill: ${lastKill.victim}`;
+  }
 
   if (isMod) document.getElementById('win-dismiss').style.display = 'block';
+  else document.getElementById('win-dismiss').style.display = 'none';
 
   overlay.style.display = 'flex';
   startWinParticles();

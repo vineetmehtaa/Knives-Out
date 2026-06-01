@@ -424,12 +424,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="target-name" id="player-target-name">—</div>
           </div>
           
-          <div id="player-ghost-section" class="target-section hidden">
-            <div class="alert alert-purple" style="text-align: left;">👻 You are a GHOST. Hunt before time expires to steal their life.</div>
-            <div class="status-label">GHOST TARGET</div>
-            <div class="target-name" id="player-ghost-target">—</div>
-            <div class="status-label mt16">TIME REMAINING</div>
-            <div style="font-family: 'Playfair Display', serif; font-size: 32px; color: var(--ghost2); letter-spacing: 2px;" id="ghost-timer-display">24:00:00</div>
+          <div id="player-ghost-section" class="target-section hidden" style="text-align: center;">
+            <div class="status-label">👻 GHOST TIMER</div>
+            <div style="font-family: 'Playfair Display', serif; font-size: 40px; color: var(--ghost2); letter-spacing: 2px; line-height: 1.1;" id="ghost-timer-display">24:00:00</div>
           </div>
         </div>
       </div>
@@ -773,8 +770,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <input type="number" id="ghost-death-threshold" min="1" max="50" value="3">
           </div>
           <div>
-            <label>Ghost Kill Window (hours)</label>
-            <input type="number" id="ghost-kill-hours" min="0.01" max="168" step="any" value="24">
+            <label>Ghost Timer (hours)</label>
+            <input type="number" id="ghost-kill-hours" min="0.25" max="168" step="0.25" value="24" title="How long a revived ghost has to score a kill">
+            <div style="font-size:10px;color:var(--cream3);margin-top:6px;line-height:1.5;">Default 24h. Applies to new ghosts after save (existing timers keep their original expiry).</div>
           </div>
         </div>
         <button class="btn btn-blade btn-full" onclick="saveGhostSettings()">SAVE</button>
@@ -785,6 +783,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
         <hr class="divider">
         <div class="card-title">ACTIVE GHOSTS</div>
+        <p class="text-dim mb16" style="font-size:10px;line-height:1.5;">Adjust each ghost&apos;s timer below. Changes apply immediately and update the player&apos;s countdown.</p>
         <div id="ghost-list-mod"></div>
       </div>
     </div>
@@ -883,6 +882,38 @@ let _startGameDraftOrder = [];
 let _startGameDraftMode = 'random';
 let immunityWindowSyncInFlight = false;
 let ghostTimerInterval = null;
+let modGhostListTimerInterval = null;
+
+function getGhostTimerHours(state) {
+  const h = parseFloat(state?.ghost?.killHours);
+  return Number.isFinite(h) && h > 0 ? h : 24;
+}
+
+function getGhostTimerMs(state) {
+  return getGhostTimerHours(state) * 3600000;
+}
+
+function formatGhostTimerRemaining(ms) {
+  if (ms <= 0) return 'EXPIRED';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function ghostDomId(name) {
+  return String(name).replace(/[^\w-]/g, '_');
+}
+
+function isoToDatetimeLocalValue(iso) {
+  if (!iso) return '';
+  const d = new Date(new Date(iso).getTime() - new Date(iso).getTimezoneOffset() * 60000);
+  return d.toISOString().slice(0, 16);
+}
+
+function getGhostRevivedEntry(name) {
+  return (gameState?.ghost?.revived || []).find(r => r.name === name);
+}
 let missedTimerInterval = null;
 const USERNAME_REGEX = /^[A-Za-z0-9_-]{3,24}$/;
 const MISSED_IMMUNITY_WINDOW_MS = (5 * 60 * 1000) + 990;
@@ -1360,7 +1391,11 @@ function normalizeState(raw) {
     selectionMode: merged.ghost?.selectionMode || 'all',
     selectedAlive: Array.isArray(merged.ghost?.selectedAlive) ? merged.ghost.selectedAlive : [],
     selectedDead: Array.isArray(merged.ghost?.selectedDead) ? merged.ghost.selectedDead : [],
-    votingPoolSnapshot: merged.ghost?.votingPoolSnapshot || null
+    votingPoolSnapshot: merged.ghost?.votingPoolSnapshot || null,
+    killHours: (() => {
+      const h = parseFloat(merged.ghost?.killHours);
+      return Number.isFinite(h) && h > 0 ? h : 24;
+    })()
   };
   return merged;
 }
@@ -2011,12 +2046,20 @@ function renderPlayerView(player) {
     badge.className = 'badge badge-ghost';
     targetSection.style.display = 'none';
     ghostSection.classList.remove('hidden');
-    document.getElementById('player-ghost-target').textContent = player.ghostTarget || player.target || '—';
     const ghostEntry = gameState.ghost.revived.find(r => r.name === player.name);
-    if (ghostEntry) { updateGhostTimer(ghostEntry.expiresAt); }
+    if (ghostEntry) updateGhostTimer(ghostEntry.expiresAt);
+    else updateGhostTimer(new Date(Date.now() + getGhostTimerMs(gameState)).toISOString());
+    const killTitle = document.querySelector('#player-kill-section .card-title');
+    if (killTitle) {
+      const hunt = player.ghostTarget || player.target;
+      killTitle.textContent = hunt ? `⚔ HUNT: ${hunt}` : '⚔ CONFIRM A KILL (GHOST)';
+    }
     claimSection.classList.add('hidden');
     return;
   }
+
+  const killTitleReset = document.querySelector('#player-kill-section .card-title');
+  if (killTitleReset) killTitleReset.textContent = '⚔ CONFIRM A KILL';
 
   card.classList.add('alive');
   statusText.textContent = 'ALIVE';
@@ -2223,28 +2266,35 @@ async function castVote(targetName) {
 
 function updateGhostTimer(expiresAt) {
   if (ghostTimerInterval) clearInterval(ghostTimerInterval);
-  
   const tick = () => {
     const el = document.getElementById('ghost-timer-display');
     if (!el) return;
-    
     const remaining = new Date(expiresAt).getTime() - Date.now();
-    
-    if (remaining <= 0) { 
-      el.textContent = 'EXPIRED'; 
-      clearInterval(ghostTimerInterval);
-      return; 
-    }
-    
-    const h = Math.floor(remaining / 3600000);
-    const m = Math.floor((remaining % 3600000) / 60000);
-    const s = Math.floor((remaining % 60000) / 1000);
-    
-    el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    el.textContent = formatGhostTimerRemaining(remaining);
+    if (remaining <= 0) clearInterval(ghostTimerInterval);
   };
-  
   tick();
   ghostTimerInterval = setInterval(tick, 1000);
+}
+
+function stopModGhostListTimer() {
+  if (modGhostListTimerInterval) {
+    clearInterval(modGhostListTimerInterval);
+    modGhostListTimerInterval = null;
+  }
+}
+
+function startModGhostListTimer() {
+  stopModGhostListTimer();
+  const tick = () => {
+    document.querySelectorAll('[data-mod-ghost-expires]').forEach(el => {
+      const expiresAt = el.getAttribute('data-mod-ghost-expires');
+      if (!expiresAt) return;
+      el.textContent = formatGhostTimerRemaining(new Date(expiresAt).getTime() - Date.now());
+    });
+  };
+  tick();
+  modGhostListTimerInterval = setInterval(tick, 1000);
 }
 
 function switchPlayerTab(tab, trigger) {
@@ -2733,7 +2783,7 @@ function getRecentImmunityAudit() {
 
 function renderModGhost() {
   document.getElementById('ghost-death-threshold').value = gameState.ghost.deathThreshold;
-  document.getElementById('ghost-kill-hours').value = gameState.ghost.killHours;
+  document.getElementById('ghost-kill-hours').value = getGhostTimerHours(gameState);
   
   const panel = document.getElementById('ghost-mod-panel');
   const phase = gameState.ghost.phase || 0;
@@ -2874,15 +2924,42 @@ function renderModGhost() {
   panel.innerHTML = html;
 
   const listEl = document.getElementById('ghost-list-mod');
-  listEl.innerHTML = gameState.ghost.revived.length === 0
-    ? '<div class="text-dim">No active ghosts.</div>'
-    : gameState.ghost.revived.map(g => {
-        const player = gameState.players.find(p => p.name === g.name);
-        const remaining = new Date(g.expiresAt).getTime() - Date.now();
-        const h = Math.max(0, Math.floor(remaining / 3600000));
-        const m = Math.max(0, Math.floor((remaining % 3600000) / 60000));
-        return `<div class="kill-entry" style="align-items: center;"><span class="badge badge-ghost">GHOST</span><span style="flex: 1; font-weight: 700;">${g.name}</span><span class="text-dim">Target: <span class="text-gold font-weight-bold">${player?.ghostTarget || '—'}</span></span><span class="text-purple font-weight-bold">${h}h ${m}m</span><button class="btn btn-blood btn-sm" onclick="modEliminateGhost('${escapeJsString(g.name)}')">KILL</button></div>`;
-      }).join('');
+  if (gameState.ghost.revived.length === 0) {
+    stopModGhostListTimer();
+    listEl.innerHTML = '<div class="text-dim">No active ghosts.</div>';
+  } else {
+    listEl.innerHTML = gameState.ghost.revived.map(g => {
+      const domId = ghostDomId(g.name);
+      const remaining = new Date(g.expiresAt).getTime() - Date.now();
+      const hoursLeft = Math.max(0.25, Math.round((Math.max(0, remaining) / 3600000) * 100) / 100);
+      const defaultH = getGhostTimerHours(gameState);
+      const expiryInputVal = isoToDatetimeLocalValue(g.expiresAt);
+      const target = gameState.players.find(p => p.name === g.name);
+      return `<div class="kill-entry" style="flex-direction:column;align-items:stretch;gap:10px;padding:12px;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span class="badge badge-ghost">GHOST</span>
+          <span style="flex:1;font-weight:700;min-width:80px;">${g.name}</span>
+          <span class="text-purple font-weight-bold" style="font-family:'Playfair Display',serif;font-size:18px;letter-spacing:1px;" data-mod-ghost-expires="${g.expiresAt}">${formatGhostTimerRemaining(remaining)}</span>
+          <button class="btn btn-blood btn-sm" onclick="modEliminateGhost('${escapeJsString(g.name)}')">KILL</button>
+        </div>
+        ${target?.ghostTarget ? `<div style="font-size:10px;color:var(--cream3);">Hunting: <span style="color:var(--blade);font-weight:700;">${target.ghostTarget}</span></div>` : ''}
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+          <input type="number" id="ghost-hours-${domId}" min="0.25" max="168" step="0.25" value="${hoursLeft}"
+            title="Hours from now" style="width:72px;font-size:11px;background:var(--ink3);border:1px solid var(--seam);color:var(--cream);padding:6px 8px;">
+          <button class="btn btn-blade btn-sm" onclick="modSetGhostTimerFromNow('${escapeJsString(g.name)}')">SET HOURS</button>
+          <input type="datetime-local" id="ghost-expiry-${domId}" value="${expiryInputVal}"
+            style="flex:1;min-width:160px;font-size:11px;background:var(--ink3);border:1px solid var(--seam);color:var(--cream);padding:6px 8px;font-family:monospace;">
+          <button class="btn btn-blade btn-sm" onclick="modSetGhostExpiry('${escapeJsString(g.name)}')">SET EXPIRY</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button class="btn btn-outline btn-sm" onclick="modExtendGhostTimer('${escapeJsString(g.name)}', 1)">+1h</button>
+          <button class="btn btn-outline btn-sm" onclick="modExtendGhostTimer('${escapeJsString(g.name)}', 6)">+6h</button>
+          <button class="btn btn-outline btn-sm" onclick="modResetGhostTimer('${escapeJsString(g.name)}')">Reset ${defaultH}h</button>
+        </div>
+      </div>`;
+    }).join('');
+    startModGhostListTimer();
+  }
 }
 
 // GHOST VOTING LOGIC - MODERATOR
@@ -3002,7 +3079,7 @@ async function confirmGhost() {
 
   player.status = 'ghost';
   player.ghostTarget = targetName;
-  const expiresAt = new Date(Date.now() + gameState.ghost.killHours * 3600000).toISOString();
+  const expiresAt = new Date(Date.now() + getGhostTimerMs(gameState)).toISOString();
   if (!gameState.ghost.revived) gameState.ghost.revived = [];
   gameState.ghost.revived.push({ name: player.name, expiresAt });
 
@@ -3025,7 +3102,7 @@ async function confirmGhost() {
   });
 
   renderModGhost();
-  alert(`✓ ${player.name} is now a GHOST hunting ${targetName}. Window: ${gameState.ghost.killHours}h.`);
+  alert(`✓ ${player.name} is now a GHOST hunting ${targetName}. Timer: ${getGhostTimerHours(gameState)}h.`);
 }
 
 async function clearVotes() {
@@ -3164,6 +3241,7 @@ function switchModTab(tab) {
   }
   if (tab !== 'analytics') stopAnalyticsLiveClock();
   else startAnalyticsLiveClock();
+  if (tab !== 'ghost') stopModGhostListTimer();
 
   // Render the newly active tab with fresh data
   switch (tab) {
@@ -3732,10 +3810,14 @@ async function modResetImmunityRound() {
 async function saveGhostSettings() {
   const previous = {
     deathThreshold: gameState.ghost.deathThreshold,
-    killHours: gameState.ghost.killHours
+    killHours: getGhostTimerHours(gameState)
   };
-  gameState.ghost.deathThreshold = parseInt(document.getElementById('ghost-death-threshold').value) || 3;
-  gameState.ghost.killHours = parseFloat(document.getElementById('ghost-kill-hours').value) || 24;
+  gameState.ghost.deathThreshold = parseInt(document.getElementById('ghost-death-threshold').value, 10) || 3;
+  let hours = parseFloat(document.getElementById('ghost-kill-hours').value);
+  if (!Number.isFinite(hours) || hours <= 0) hours = 24;
+  hours = Math.min(168, Math.max(0.25, hours));
+  gameState.ghost.killHours = hours;
+  document.getElementById('ghost-kill-hours').value = hours;
   await updateGameState({ ghost: gameState.ghost });
   await logAuditEvent('ghost.settings_saved', {
     previous,
@@ -3744,7 +3826,79 @@ async function saveGhostSettings() {
       killHours: gameState.ghost.killHours
     }
   });
-  alert('Saved.');
+  alert(`Saved. Ghost timer: ${hours} hour${hours === 1 ? '' : 's'} (default 24h).`);
+}
+
+async function modUpdateGhostExpiry(name, newExpiresAt, reason) {
+  const entry = getGhostRevivedEntry(name);
+  if (!entry) {
+    alert(`No active ghost timer for ${name}.`);
+    return false;
+  }
+  const prevExpiry = entry.expiresAt;
+  entry.expiresAt = newExpiresAt;
+  await updateGameState({ ghost: gameState.ghost });
+  await logAuditEvent('ghost.timer_updated', {
+    ghostName: name,
+    prevExpiry,
+    newExpiry: newExpiresAt,
+    reason,
+    setBy: currentUser || 'mod'
+  });
+  renderModGhost();
+  if (currentUser === name) {
+    const player = gameState.players.find(p => p.name === name);
+    if (player?.status === 'ghost') updateGhostTimer(newExpiresAt);
+  }
+  return true;
+}
+
+async function modSetGhostExpiry(name) {
+  const input = document.getElementById('ghost-expiry-' + ghostDomId(name));
+  if (!input?.value) {
+    alert('Pick a date and time first.');
+    return;
+  }
+  const newExpiresAt = new Date(input.value).toISOString();
+  if (newExpiresAt <= new Date().toISOString()) {
+    alert('Expiry must be in the future.');
+    return;
+  }
+  if (await modUpdateGhostExpiry(name, newExpiresAt, 'datetime_set')) {
+    alert(`✓ ${name} ghost timer set to ${formatTime(newExpiresAt)}.`);
+  }
+}
+
+async function modSetGhostTimerFromNow(name) {
+  const input = document.getElementById('ghost-hours-' + ghostDomId(name));
+  let hours = parseFloat(input?.value);
+  if (!Number.isFinite(hours) || hours <= 0) {
+    alert('Enter a valid number of hours.');
+    return;
+  }
+  hours = Math.min(168, Math.max(0.25, hours));
+  const newExpiresAt = new Date(Date.now() + hours * 3600000).toISOString();
+  if (await modUpdateGhostExpiry(name, newExpiresAt, 'hours_from_now')) {
+    alert(`✓ ${name} has ${hours}h on the ghost timer.`);
+  }
+}
+
+async function modExtendGhostTimer(name, hours) {
+  const entry = getGhostRevivedEntry(name);
+  if (!entry) return;
+  const base = Math.max(Date.now(), new Date(entry.expiresAt).getTime());
+  const newExpiresAt = new Date(base + hours * 3600000).toISOString();
+  if (await modUpdateGhostExpiry(name, newExpiresAt, `extend_${hours}h`)) {
+    alert(`✓ Added ${hours}h to ${name}'s ghost timer.`);
+  }
+}
+
+async function modResetGhostTimer(name) {
+  const hours = getGhostTimerHours(gameState);
+  const newExpiresAt = new Date(Date.now() + hours * 3600000).toISOString();
+  if (await modUpdateGhostExpiry(name, newExpiresAt, 'reset_default')) {
+    alert(`✓ ${name} ghost timer reset to ${hours}h from now.`);
+  }
 }
 
 async function modEliminateGhost(name) {
@@ -4233,7 +4387,7 @@ function renderModAnalytics() {
     <div style="font-size:9px;letter-spacing:2px;color:var(--cream3);text-transform:uppercase;margin-bottom:10px;">Ghost Rule</div>
     <div style="padding:10px 12px;background:var(--ink3);border:1px solid var(--seam);border-left:3px solid var(--ghost2);margin-bottom:12px;">
       <div style="font-size:11px;color:var(--ghost2);font-weight:700;">Phase ${gPhase} ${gPhase === 0 ? '(idle)' : '(active)'}</div>
-      <div style="font-size:10px;color:var(--cream3);margin-top:4px;">Threshold: ${gameState.ghost?.deathThreshold || '—'} deaths · Window: ${gameState.ghost?.killHours || '—'}h</div>
+      <div style="font-size:10px;color:var(--cream3);margin-top:4px;">Threshold: ${gameState.ghost?.deathThreshold || '—'} deaths · Ghost timer: ${getGhostTimerHours(gameState)}h</div>
       <div style="font-size:10px;color:var(--cream3);margin-top:2px;">Immunity consumed by attacks: <span style="color:var(--blade);font-weight:700;">${countAuditAction('immunity.consumed_by_attack')}</span></div>
     </div>
     <div style="font-size:9px;letter-spacing:2px;color:var(--cream3);text-transform:uppercase;margin-bottom:8px;">Immunity window · ${gameState.immunity?.start || '—'} – ${gameState.immunity?.end || '—'} IST</div>

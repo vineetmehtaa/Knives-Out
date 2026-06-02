@@ -7,10 +7,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,900&family=Courier+Prime&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink:#0c0b09; --ink2:#141210; --ink3:#1c1a17;
-  --seam:#2e2b26; --blade:#d4a017;
-  --blood:#8b1a1a; --ghost:#5c4a8a;
-  --cream:#f0ead8; --cream2:#c8c0a8;
+  --ink:#060405; --ink2:#0e0809; --ink3:#160d10; --ink4:#1f1216;
+  --seam:#352428; --seam2:#4a2f38;
+  --blade:#c41e3a; --blade2:#8b1529;
+  --blood:#dc2626; --blood2:#991b1b; --blood3:#450a0a;
+  --ghost:#5c3a6a; --ghost2:#d8a8e8;
+  --cream:#ede4e0; --cream2:#b8a4a0; --cream3:#6b5558;
+  --alive:#2d6a3e; --alive2:#1a4a28;
 }
 
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
@@ -19,6 +22,7 @@ html { -webkit-text-size-adjust:100%; }
 
 body {
   background:var(--ink);
+  background-image:radial-gradient(ellipse at 50% 0%, rgba(139,21,41,0.22) 0%, transparent 55%);
   color:var(--cream2);
   font-family:'Courier Prime', monospace;
   font-size:14px;
@@ -39,10 +43,60 @@ body::after {
   z-index:0;
 }
 
+/* ── Cross-page nav ── */
+.site-bar {
+  position:sticky;
+  top:0;
+  z-index:50;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:10px 16px;
+  background:rgba(14,8,9,0.94);
+  border-bottom:1px solid var(--seam);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.site-bar-link {
+  font-size:9px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--cream3);
+  text-decoration:none;
+  padding:6px 11px;
+  border:1px solid var(--seam);
+  background:var(--ink3);
+  transition:color .2s, border-color .2s, background .2s;
+  white-space:nowrap;
+}
+.site-bar-link:hover {
+  color:var(--blade);
+  border-color:var(--blade2);
+  background:rgba(196,30,58,0.1);
+}
+.site-footer {
+  max-width:680px;
+  margin:8px auto 48px;
+  padding:0 12px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+.site-footer a {
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--cream3);
+  text-decoration:none;
+  border-bottom:1px solid transparent;
+  transition:color .2s, border-color .2s;
+}
+.site-footer a:hover { color:var(--blade); border-bottom-color:var(--blade2); }
+
 /* ── Header ── */
 .header {
   text-align:center;
-  padding:36px 16px 18px;
+  padding:28px 16px 18px;
   position:relative;
   z-index:1;
 }
@@ -81,10 +135,21 @@ body::after {
 }
 .card-title {
   font-size:10px;
-  letter-spacing:2.5px;
+  letter-spacing:2px;
   text-transform:uppercase;
-  color:var(--blade);
-  margin-bottom:14px;
+  color:var(--cream3);
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.card-title::after {
+  content:'';
+  flex:1;
+  height:1px;
+  background:var(--seam);
+  min-width:20px;
 }
 
 /* ── Body text ── */
@@ -103,49 +168,200 @@ body::after {
   line-height:1.6;
   border-radius:0 2px 2px 0;
 }
-.alert-gold   { background:#2b220d; border-color:var(--blade); color:var(--blade); }
+.alert-gold   { background:#2a0d12; border-color:var(--blade); color:var(--blade); }
 .alert-red    { background:#2a0d0d; border-color:var(--blood); color:#c05050; }
 .alert-purple { background:#1a1333; border-color:var(--ghost); color:#cbbaff; }
 
-/* ── Kill code display ── */
-.code {
+/* ── Game UI mirrors (from index.html) ── */
+.text-dim { color:var(--cream3); font-size:11px; line-height:1.55; }
+.dossier-label {
+  display:block;
+  font-size:9px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--cream3);
+  margin:12px 0 6px;
+}
+.code-display {
   font-family:'Playfair Display', serif;
-  font-size:30px;
+  font-size:36px;
+  font-weight:900;
   letter-spacing:6px;
-  background:#2a0d0d;
   color:var(--blood);
-  padding:14px 10px;
   text-align:center;
+  padding:20px 10px;
+  background:var(--blood3);
+  border:1px solid var(--blood2);
+  text-shadow:0 0 20px rgba(139,26,26,0.4);
   margin:12px 0;
 }
+.code-digits {
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin:14px 0 0;
+}
+.code-digit {
+  width:42px;
+  height:52px;
+  background:var(--blood3);
+  border:1px solid var(--blood2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Playfair Display', serif;
+  font-size:24px;
+  font-weight:900;
+  color:var(--blood);
+}
+.dossier-tabs {
+  display:flex;
+  border-bottom:1px solid var(--seam);
+  margin:14px 0 16px;
+}
+.dossier-tabs .tab {
+  flex:1;
+  padding:12px 8px;
+  font-size:9px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--cream3);
+  text-align:center;
+  border-bottom:2px solid transparent;
+  font-weight:700;
+}
+.dossier-tabs .tab.active {
+  color:var(--cream);
+  border-bottom-color:var(--blade);
+}
+.dossier-input-mock {
+  width:100%;
+  background:var(--ink3);
+  border:1px solid var(--seam);
+  color:var(--cream3);
+  font-family:'Courier Prime', monospace;
+  font-size:18px;
+  letter-spacing:4px;
+  text-align:center;
+  padding:12px;
+  margin-bottom:8px;
+}
+.dossier-kill-panel {
+  padding:4px 0 18px;
+  border-bottom:1px solid var(--seam);
+  margin-bottom:18px;
+}
+.dossier-kill-panel:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+.player-tab-mock {
+  display:flex;
+  gap:0;
+  margin-bottom:14px;
+  border:1px solid var(--seam);
+}
+.player-tab-mock span {
+  flex:1;
+  padding:10px 8px;
+  font-size:9px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  text-align:center;
+  color:var(--cream3);
+  background:var(--ink3);
+}
+.player-tab-mock span.active {
+  background:var(--blade);
+  color:var(--ink);
+  font-weight:700;
+}
+.hold-btn {
+  width:100%;
+  padding:18px 16px;
+  background:var(--ink3);
+  border:1px solid var(--seam);
+  color:var(--cream2);
+  font-family:'Courier Prime', monospace;
+  font-size:11px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  cursor:pointer;
+  user-select:none;
+  box-shadow:0 4px 0 var(--ink4);
+  border-radius:4px;
+  margin-top:12px;
+}
+.hold-btn:active {
+  background:var(--seam);
+  transform:translateY(4px);
+  box-shadow:0 0 0 var(--ink4);
+}
+.immunity-block-msg {
+  padding:16px 14px;
+  border:1px solid var(--blade);
+  border-left-width:4px;
+  background:linear-gradient(135deg, rgba(196,30,58,0.12) 0%, rgba(20,12,14,0.95) 100%);
+  text-align:center;
+  line-height:1.65;
+  margin-top:12px;
+}
+.immunity-block-msg--victim {
+  border-color:#3a7d44;
+  background:linear-gradient(135deg, rgba(45,106,62,0.14) 0%, rgba(12,18,14,0.95) 100%);
+}
+.immunity-block-title {
+  font-family:'Playfair Display', serif;
+  font-size:15px;
+  font-weight:900;
+  font-style:italic;
+  color:var(--cream);
+  margin-bottom:8px;
+}
+.immunity-block-body { font-size:12px; color:var(--cream2); }
 
 /* ── Buttons ── */
 .btn {
-  display:block;
-  padding:15px 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px 20px;
   text-align:center;
-  border:1px solid var(--seam);
-  background:var(--ink3);
+  border:none;
   letter-spacing:2px;
   margin-top:12px;
   font-family:'Courier Prime', monospace;
-  font-size:12px;
+  font-size:11px;
   color:var(--cream2);
   width:100%;
   min-height:48px;
-  border-radius:2px;
+  border-radius:0;
+  font-weight:700;
+  text-transform:uppercase;
+  cursor:default;
   -webkit-appearance:none;
 }
+.btn-blade { background:var(--blade); color:var(--ink); }
+.btn-blood { background:var(--blood); color:var(--cream); }
 .btn-glow {
-  background:var(--blade);
-  color:#0c0b09;
-  font-weight:700;
-  animation:pulse 1.5s infinite;
+  box-shadow:0 0 15px 2px var(--blade);
+  animation:pulseGlow 1.5s infinite;
 }
-@keyframes pulse {
-  0%   { box-shadow:0 0 8px var(--blade); }
-  50%  { box-shadow:0 0 22px var(--blade); }
-  100% { box-shadow:0 0 8px var(--blade); }
+@keyframes pulseGlow {
+  0%   { box-shadow:0 0 10px 1px var(--blade); }
+  50%  { box-shadow:0 0 20px 4px #e8354f; }
+  100% { box-shadow:0 0 10px 1px var(--blade); }
+}
+
+/* ── Immunity submitted (matches game UI) ── */
+.immunity-claim-done {
+  padding: 16px 14px;
+  text-align: center;
+  border: 1px solid #3a7d44;
+  background: rgba(45, 106, 62, 0.12);
+  color: #9fd4a8;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0;
 }
 
 /* ── Immunity timer ── */
@@ -187,74 +403,37 @@ body::after {
   margin-top:2px;
 }
 
-/* ── Hold-to-reveal demo ── */
-.hold-demo {
-  margin:14px 0 0;
-  padding:18px 14px;
-  background:var(--ink3);
-  border:1px solid var(--seam);
+/* ── Hold-to-reveal demo (secret intel) ── */
+.hold-demo-wrap { margin-top:12px; }
+.hold-demo-secret {
+  display:none;
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px dashed var(--seam);
   text-align:center;
-  font-size:12px;
-  letter-spacing:2px;
-  color:var(--cream2);
+}
+.hold-demo-wrap.revealed .hold-demo-secret { display:block; }
+.status-label {
+  font-size:9px;
+  letter-spacing:3px;
+  color:var(--cream3);
   text-transform:uppercase;
-  user-select:none;
-  -webkit-user-select:none;
-  position:relative;
-  overflow:hidden;
-  min-height:54px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:2px;
-  cursor:pointer;
-  touch-action:none;
+  margin-bottom:6px;
 }
-.hold-demo-fill {
-  position:absolute;
-  inset:0;
-  background:var(--blood);
-  opacity:0.18;
-  transform:scaleX(0);
-  transform-origin:left;
-  transition:transform 0s;
-}
-.hold-demo.holding .hold-demo-fill {
-  transform:scaleX(1);
-  transition:transform 2s linear;
-}
-.hold-demo-label { position:relative; z-index:1; }
-
-/* ── Code anatomy ── */
-.code-anatomy {
-  display:flex;
-  justify-content:center;
-  margin:14px 0 0;
-}
-.code-char {
-  flex:1;
-  max-width:48px;
-  height:58px;
-  background:#2a0d0d;
-  border:1px solid #3d1010;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:3px;
-}
-.code-char + .code-char { border-left:none; }
-.code-char-val {
+.status-value {
   font-family:'Playfair Display', serif;
-  font-size:22px;
-  color:var(--blood);
-  line-height:1;
+  font-size:28px;
+  font-weight:900;
+  font-style:italic;
+  color:var(--alive);
+  letter-spacing:2px;
 }
-.code-char-type {
-  font-size:8px;
-  letter-spacing:1px;
-  color:#5a3030;
-  text-transform:uppercase;
+.target-name-mock {
+  font-family:'Playfair Display', serif;
+  font-size:26px;
+  font-weight:900;
+  color:var(--blade);
+  margin-top:6px;
 }
 
 /* ── Kill Chain SVG ── */
@@ -428,6 +607,10 @@ em { color:var(--blade); font-style:normal; }
 </head>
 <body>
 
+<div class="site-bar">
+  <a href="index.html" class="site-bar-link">Enter game</a>
+</div>
+
 <div class="header">
   <div class="title">KNIVES<span>OUT</span></div>
   <div class="subtitle">PLAYER DOSSIER</div>
@@ -452,8 +635,8 @@ em { color:var(--blade); font-style:normal; }
     <strong>HOW TO JOIN:</strong>
     <div class="steps">
       <div class="step-row"><div class="step-num">1</div><div>Open the game link and tap <strong>SIGN UP</strong></div></div>
-      <div class="step-row"><div class="step-num">2</div><div>Enter your codename and a password you'll remember</div></div>
-      <div class="step-row"><div class="step-num">3</div><div>Once the moderator starts the game, log back in — your target will be waiting</div></div>
+      <div class="step-row"><div class="step-num">2</div><div>Enter a <strong>username</strong> (3–24 characters: letters, numbers, <code>_</code> or <code>-</code>) and a password</div></div>
+      <div class="step-row"><div class="step-num">3</div><div>Once the game has started, log back in — your target will be waiting</div></div>
     </div>
     <div class="alert alert-gold">Your codename is your identity for the entire game. Choose carefully.</div>
     <strong>LOGGING BACK IN:</strong><br>
@@ -463,23 +646,33 @@ em { color:var(--blade); font-style:normal; }
   <!-- DASHBOARD -->
   <div class="card">
     <div class="card-title">YOUR DASHBOARD</div>
-    Your status and target are hidden by default to protect your intel if someone glances at your screen.
-    <br><br>
-    <strong>TO REVEAL YOUR INFO:</strong>
-    <div class="hold-demo" id="holdDemo"
-      onmousedown="startHold()" onmouseup="stopHold()" onmouseleave="stopHold()"
-      ontouchstart="startHold(event)" ontouchend="stopHold()">
-      <div class="hold-demo-fill" id="holdFill"></div>
-      <div class="hold-demo-label">PRESS AND HOLD TO REVEAL INTEL</div>
+    <p>After login you land on the <strong>GAME</strong> tab (there is also a <strong>NOTIFICATIONS</strong> tab). Your status and target stay hidden until you hold the reveal button — same as in the live app.</p>
+    <div class="player-tab-mock" aria-hidden="true">
+      <span class="active">GAME</span>
+      <span>NOTIFICATIONS</span>
     </div>
-    <br>
-    Press and hold the button — your status, target name, and any active kill codes appear while held. Release to hide immediately.
+    <div class="hold-demo-wrap" id="holdDemoWrap">
+      <button type="button" class="hold-btn" id="holdDemoBtn"
+        onmousedown="startHold()" onmouseup="stopHold()" onmouseleave="stopHold()"
+        ontouchstart="startHold(event)" ontouchend="stopHold()">
+        PRESS AND HOLD TO REVEAL INTEL
+      </button>
+      <div class="hold-demo-secret">
+        <div class="status-label">YOUR STATUS</div>
+        <div class="status-value">ALIVE</div>
+        <div style="margin-top:18px;">
+          <div class="status-label">YOUR TARGET</div>
+          <div class="target-name-mock">RAVEN</div>
+        </div>
+      </div>
+    </div>
+    <p class="text-dim" style="margin-top:12px;">Hold to show status and target; release to hide. Kill codes are <strong>not</strong> here — they live under <strong>⚔ CONFIRM A KILL</strong> below.</p>
     <div class="alert alert-red">Never release in a public space. Your target's name is classified.</div>
-    <strong>WHAT YOU'LL SEE:</strong>
+    <strong>WHILE HOLDING YOU SEE:</strong>
     <div class="blist">
-      <div class="blist-item">Your current status (ALIVE / GHOST)</div>
-      <div class="blist-item">Your assigned target's name</div>
-      <div class="blist-item">Any active kill code you've generated</div>
+      <div class="blist-item">Status: <strong>ALIVE</strong>, <strong>DEAD</strong>, or <strong>GHOST</strong></div>
+      <div class="blist-item">Your assigned target (alive players) or ghost mission target</div>
+      <div class="blist-item">If you are a ghost: a live <strong>👻 GHOST TIMER</strong> on your dashboard</div>
     </div>
   </div>
 
@@ -507,32 +700,48 @@ em { color:var(--blade); font-style:normal; }
 
   <!-- KILL CONFIRMATION -->
   <div class="card">
-    <div class="card-title">KILL CONFIRMATION</div>
-    <strong>KILLER:</strong>
-    <div class="btn">GENERATE CODE</div>
-    <div class="code">X9K2L7</div>
-    <strong>VICTIM:</strong>
-    <div class="btn">ENTER CODE</div>
-    <div class="code">X9K2L7</div>
-    <br>
-    <strong>THE CODE:</strong><br>
-    Every kill code is 6 characters — a mix of letters and numbers. Always uppercase.
-    <div class="code-anatomy">
-      <div class="code-char"><div class="code-char-val">X</div><div class="code-char-type">let</div></div>
-      <div class="code-char"><div class="code-char-val">9</div><div class="code-char-type">num</div></div>
-      <div class="code-char"><div class="code-char-val">K</div><div class="code-char-type">let</div></div>
-      <div class="code-char"><div class="code-char-val">2</div><div class="code-char-type">num</div></div>
-      <div class="code-char"><div class="code-char-val">L</div><div class="code-char-type">let</div></div>
-      <div class="code-char"><div class="code-char-val">7</div><div class="code-char-type">num</div></div>
+    <div class="card-title">⚔ CONFIRM A KILL</div>
+    <p class="text-dim">This matches the in-game card on your <strong>GAME</strong> tab. Two sub-tabs: <strong>I AM KILLER</strong> and <strong>I AM VICTIM</strong>.</p>
+
+    <div class="dossier-tabs" aria-hidden="true">
+      <span class="tab active">I AM KILLER</span>
+      <span class="tab">I AM VICTIM</span>
     </div>
-    <div class="alert alert-red">Code expires in 10 minutes. Generate it only when you're face-to-face with your target — not in advance.</div>
-    <strong>RULES:</strong>
+
+    <div class="dossier-kill-panel">
+      <p class="text-dim" style="margin-bottom:10px;"><strong>Killer path</strong> — Generate a code. Show it to your target.</p>
+      <div class="btn btn-blood">GENERATE KILL CODE</div>
+      <div class="code-display">483921</div>
+      <p class="text-dim" style="text-align:center;margin-top:8px;">Expires in 10 minutes</p>
+    </div>
+
+    <div class="dossier-kill-panel">
+      <p class="text-dim" style="margin-bottom:10px;"><strong>Victim path</strong> — Enter the code your killer shows you.</p>
+      <span class="dossier-label">Code</span>
+      <div class="dossier-input-mock">6-DIGIT CODE</div>
+      <div class="btn btn-blood">CONFIRM DEAD</div>
+    </div>
+
+    <strong>THE CODE</strong>
+    <div class="blist" style="margin-top:10px;">
+      <div class="blist-item"><strong>6 digits only</strong> — numbers from <strong>100000</strong> to <strong>999999</strong> (no letters)</div>
+      <div class="blist-item">Valid for <strong>10 minutes</strong> after generation, then rejected as expired</div>
+      <div class="blist-item">Only the player named as the code's victim can confirm it (<em>Code not for you</em> otherwise)</div>
+      <div class="blist-item">Dead players cannot generate codes; <strong>ghosts</strong> generate codes against their ghost target</div>
+    </div>
+    <div class="code-digits" aria-hidden="true">
+      <div class="code-digit">4</div><div class="code-digit">8</div><div class="code-digit">3</div>
+      <div class="code-digit">9</div><div class="code-digit">2</div><div class="code-digit">1</div>
+    </div>
+    <div class="alert alert-red" style="margin-top:14px;">Generate only when you're face-to-face with your target — not in advance. Office rules and immunity still apply before the code matters.</div>
+    <strong>IF THE APP REJECTS A CODE</strong>
     <div class="blist">
-      <div class="blist-item">Only your assigned target can use your code</div>
-      <div class="blist-item">The victim enters the code to confirm the kill</div>
-      <div class="blist-item">An expired or wrong code will be rejected</div>
-      <div class="blist-item">You cannot generate a code if you are dead</div>
+      <div class="blist-item"><em>Invalid code</em> — wrong number or already used</div>
+      <div class="blist-item"><em>Code expired</em> — older than 10 minutes</div>
+      <div class="blist-item"><em>Code not for you</em> — you are not that kill's victim</div>
+      <div class="blist-item">If the victim had immunity, the kill is blocked, immunity is consumed, and both sides see a shield message (see Immunity)</div>
     </div>
+    <p class="text-dim" style="margin-top:10px;">On success the victim is eliminated in-app and sees: <em>Kill confirmed. You have been eliminated.</em></p>
   </div>
 
   <!-- KILL RULES -->
@@ -593,70 +802,117 @@ em { color:var(--blade); font-style:normal; }
 
   <!-- IMMUNITY -->
   <div class="card">
-    <div class="card-title">IMMUNITY SYSTEM</div>
-    <div class="alert alert-gold">LIMITED SLOTS. FIRST COME, FIRST SERVE.</div>
-    Moderator defines N (number of players who can be immune).
-    <br><br>
-    <strong>HOW IT WORKS:</strong>
-    <div class="blist">
-      <div class="blist-item">Claim window opens (~5 mins)</div>
-      <div class="blist-item">Only alive players can claim</div>
-      <div class="blist-item">Fastest N players get immunity</div>
-    </div>
+    <div class="card-title">🛡 IMMUNITY CLAIM</div>
+    <div class="alert alert-gold">Limited slots. First come, first served. Your claim time is your race position.</div>
 
-    <div class="btn btn-glow">CLAIM IMMUNITY</div>
-    <div class="btn">IMMUNITY SUBMITTED ✓</div>
-    <div class="timer" id="timer">00:00:000</div>
+  <strong>WHAT IT IS</strong>
+    <p style="margin:10px 0 0;line-height:1.75;">
+      Once per day there is a short <strong>immunity claim window</strong> (typically <strong>3:00–3:05 PM IST</strong>, five minutes).
+      Alive players tap <strong>CLAIM IMMUNITY</strong> as fast as they can. Only a <strong>limited number</strong> of players win each day —
+      the fastest valid claims take the slots.
+    </p>
+    <p style="margin:10px 0 0;line-height:1.75;">
+      If you win a slot, you are <strong>immune</strong> until <strong>2:30 PM the next day IST</strong> (30 minutes before the next window).
+      Immunity does <strong>not</strong> stack from one day to the next — each day is a new race.
+    </p>
 
-    <br>
-    <strong>RULES:</strong>
-    <div class="blist">
-      <div class="blist-item">Miss window → no immunity</div>
-      <div class="blist-item">Does not stack</div>
-      <div class="blist-item">Resets every round</div>
-      <div class="blist-item">Ends at moderator-defined time</div>
+    <strong>YOUR DAY (PLAYER VIEW)</strong>
+    <div class="steps" style="margin-top:10px;">
+      <div class="step-row"><div class="step-num">1</div><div><strong>~2 min before open</strong> — <strong>IMMUNITY CLAIM</strong> appears with “get ready.” No button yet.</div></div>
+      <div class="step-row"><div class="step-num">2</div><div><strong>Window open</strong> — Tap <strong>CLAIM IMMUNITY</strong> once. Spamming does not help; your first valid claim time is what counts.</div></div>
+      <div class="step-row"><div class="step-num">3</div><div><strong>Window closes</strong> — Fastest claimants win immunity. Everyone else does not.</div></div>
+      <div class="step-row"><div class="step-num">4</div><div><strong>Until ~2:30 PM tomorrow</strong> — If you won, you keep immunity until it is <strong>used up</strong> in a kill (see below) or the day’s round ends.</div></div>
     </div>
 
     <br>
-    <strong>WINDOW TIMELINE:</strong><br>
-    The immunity section on your dashboard shows different states as the window approaches and closes.
-
-    <div class="imm-track">
+    <strong>WINDOW TIMELINE (YOUR SCREEN)</strong>
+    <div class="imm-track" style="margin-top:12px;">
       <div class="imm-seg imm-seg-waiting">waiting</div>
       <div class="imm-seg imm-seg-prep">prep</div>
       <div class="imm-seg imm-seg-open">OPEN</div>
       <div class="imm-seg imm-seg-missed">late</div>
     </div>
     <div class="imm-labels">
-      <div style="flex:3;">not yet</div>
-      <div style="flex:1;">2 min</div>
+      <div style="flex:3;">card hidden</div>
+      <div style="flex:1;">get ready</div>
       <div style="flex:2;">claim now</div>
-      <div style="flex:1;">too late</div>
+      <div style="flex:1;">missed clock</div>
+    </div>
+
+    <div class="blist" style="margin-top:14px;">
+      <div class="blist-item"><strong>Waiting</strong> — No immunity card on your dashboard.</div>
+      <div class="blist-item"><strong>Prep</strong> — Card appears: “Immunity window opens at <em>15:00 IST</em> — get ready.” No button.</div>
+      <div class="blist-item"><strong>Open</strong> — “Claim now” message and glowing <strong>CLAIM IMMUNITY</strong> button.</div>
+      <div class="blist-item"><strong>Submitted</strong> — After you claim: green <strong>✓ Immunity claim submitted</strong>. Button disappears.</div>
+      <div class="blist-item"><strong>Missed</strong> — “You missed the immunity window by:” plus a live timer (~6 minutes), then the card hides until the next round.</div>
+    </div>
+
+    <div class="alert alert-red" style="margin-top:14px;">
+      <strong>You are not told if you won a slot.</strong> After you submit a claim, the app never shows rankings, a queue, or “you are immune.” You only know for sure when someone tries to kill you.
     </div>
 
     <br>
-    <strong>PREP STATE:</strong><br>
-    Up to 2 minutes before the window opens, the claim button appears faded with a "Get ready" message. You cannot claim yet — it's just an early warning.
-    <br><br>
-    <strong>IF YOU MISS IT:</strong><br>
-    A stopwatch appears briefly after the window closes showing exactly how late you were. After a short grace period, the section disappears until the next round.
+    <strong>WHAT IMMUNITY DOES IN A KILL</strong>
+    <p style="margin:10px 0 0;line-height:1.75;">
+      Immunity only matters when a valid kill code is entered against you. It does not stop meetings, desk rules, or eyewitness voids — those are separate kill rules.
+    </p>
+    <div class="steps" style="margin-top:10px;">
+      <div class="step-row"><div class="step-num">1</div><div><strong>First valid attack while immune</strong> — The kill does <strong>not</strong> count. You stay alive. Your immunity is <strong>used up</strong> (gone for the rest of this round).</div></div>
+      <div class="step-row"><div class="step-num">2</div><div><strong>Victim sees</strong> — A message that the attack was stopped and you no longer have immunity.</div></div>
+      <div class="step-row"><div class="step-num">3</div><div><strong>Killer sees</strong> — In the kill-code area (same styling as the game):</div></div>
+    </div>
+    <div class="immunity-block-msg" style="pointer-events:none;">
+      <div class="immunity-block-title">🛡 Immunity blocked your kill</div>
+      <p class="immunity-block-body">Your victim was <strong>immune</strong>. They're <strong>no longer protected</strong> — try again with a <strong>new code</strong>.</p>
+    </div>
+    <div class="immunity-block-msg immunity-block-msg--victim" style="pointer-events:none;margin-top:10px;">
+      <div class="immunity-block-title">🛡 You survived</div>
+      <p class="immunity-block-body">The attack was <strong>consumed by your immunity</strong>. You're now <strong>vulnerable</strong>.</p>
+    </div>
+    <div class="steps" style="margin-top:14px;">
+      <div class="step-row"><div class="step-num">4</div><div><strong>Second attack</strong> — After immunity is consumed, a new valid code confirms the kill normally.</div></div>
+    </div>
+    <div class="alert alert-gold" style="margin-top:14px;">One immunity = one block. It is not a permanent shield for the whole day after use.</div>
+
+    <br>
+    <strong>QUICK RULES</strong>
+    <div class="blist">
+      <div class="blist-item">Only <strong>alive</strong> players can claim (not dead, not ghosts)</div>
+      <div class="blist-item">Miss the window → no immunity for that day</div>
+      <div class="blist-item">Does not stack across days — each day is a new claim race</div>
+      <div class="blist-item">One claim per player per window — submit once and you're done</div>
+    </div>
+
+    <br>
+    <strong>UI EXAMPLES (NOT LIVE)</strong>
+    <div class="btn btn-blade btn-glow" style="margin-top:10px;pointer-events:none;opacity:0.9;">CLAIM IMMUNITY</div>
+    <p class="immunity-claim-done" style="margin-top:10px;">✓ Immunity claim submitted</p>
+    <p style="margin:8px 0 0;font-size:11px;color:var(--cream3);letter-spacing:1px;">Example missed-window timer (counts up after 3:05 PM):</p>
+    <div class="timer" id="timer" style="margin-top:6px;">00:00:000</div>
   </div>
 
   <!-- GHOST PROTOCOL -->
   <div class="card">
-    <div class="card-title">GHOST PROTOCOL</div>
-    <div class="alert alert-purple">Death may grant one final opportunity.</div>
-    When N players die, ghost system activates.
-    <br><br>
-    <strong>PHASE 1:</strong> Alive players vote → Ghost selected
-    <br><br>
-    <strong>PHASE 2:</strong> Dead players vote → Target assigned
-    <br><br>
-    <strong>OUTCOME:</strong>
-    <div class="alert alert-purple">SUCCESS → Return to game</div>
-    <div class="alert alert-red">FAIL → Permanent death</div>
+    <div class="card-title">👻 GHOST PROTOCOL</div>
+    <div class="alert alert-purple">Death may grant one final opportunity — when revival voting opens in your game.</div>
+    <p style="margin-top:10px;line-height:1.75;">
+      After enough eliminations, the app can open a two-stage vote. You will see a <strong>👻 GHOST REVIVAL VOTE</strong> card on your dashboard when it is your turn to participate.
+    </p>
+    <strong>STAGE 1 — ALIVE VOTE (👻 VOTE TO REVIVE)</strong>
+    <div class="blist" style="margin-top:8px;">
+      <div class="blist-item">If you are alive and eligible, pick one <strong>dead or ghost</strong> player to bring back</div>
+      <div class="blist-item">After you vote, you see a confirmation and must wait until Stage 2 opens</div>
+    </div>
+    <strong>STAGE 2 — DEAD VOTE (🎯 VOTE A TARGET FOR GHOST)</strong>
+    <div class="blist" style="margin-top:8px;">
+      <div class="blist-item">If you are dead and eligible, vote which <strong>alive</strong> player the ghost must assassinate</div>
+      <div class="blist-item">The revived player becomes a <strong>GHOST</strong> with that assignment</div>
+    </div>
+    <strong>OUTCOME</strong>
+    <div class="alert alert-purple" style="margin-top:12px;">SUCCESS → You return as <strong>GHOST</strong>, then <strong>ALIVE</strong> if you complete the kill in time</div>
+    <div class="alert alert-red">FAIL → Timer hits zero → status returns to <strong>DEAD</strong> permanently</div>
     <br>
-    <strong>WHAT HAPPENS IF YOU'RE SELECTED AS GHOST:</strong>
+    <strong>IF YOU ARE THE REVIVED GHOST:</strong>
     <div class="ghost-timeline">
       <div class="ghost-tl-row">
         <div class="ghost-tl-label">Revived</div>
@@ -679,8 +935,10 @@ em { color:var(--blade); font-style:normal; }
         Time expires → status changes to DEAD permanently. No further chances.
       </div>
     </div>
-    <div class="alert alert-purple" style="margin-top:16px;">As a ghost, use the same GENERATE CODE flow under "I AM KILLER" to make your kill.</div>
+    <div class="alert alert-purple" style="margin-top:16px;">Use <strong>⚔ CONFIRM A KILL → I AM KILLER → GENERATE KILL CODE</strong>. The code targets your ghost assignment, not your old chain target.</div>
   </div>
+
+  <p class="site-footer"><a href="index.html">Return to game login →</a></p>
 
 </div>
 
@@ -772,16 +1030,16 @@ em { color:var(--blade); font-style:normal; }
       const g=mk('g',{transform:`translate(${x},${y})`});
 
       if(isYou&&isAlive){
-        const ring=mk('circle',{r:NR+7,fill:'none',stroke:'#d4a017','stroke-width':'1','stroke-dasharray':'4 3',opacity:'0.5'});
+        const ring=mk('circle',{r:NR+7,fill:'none',stroke:'#c41e3a','stroke-width':'1','stroke-dasharray':'4 3',opacity:'0.5'});
         g.appendChild(ring);
         let angle=0;
         const spin=()=>{angle+=0.4;ring.setAttribute('transform',`rotate(${angle})`);requestAnimationFrame(spin);};
         spin();
       }
 
-      g.appendChild(mk('circle',{r:NR,fill:isAlive?(isYou?'#1e1608':'#1c1a17'):'#110f0d',stroke:isAlive?(isYou?'#d4a017':'#5a4a3a'):'#221e1a','stroke-width':isAlive?(isYou?'2':'1.5'):'1',opacity:isAlive?'1':'0.3'}));
+      g.appendChild(mk('circle',{r:NR,fill:isAlive?(isYou?'#1a0a0e':'#160d10'):'#110a0c',stroke:isAlive?(isYou?'#c41e3a':'#4a3038'):'#2a1518','stroke-width':isAlive?(isYou?'2':'1.5'):'1',opacity:isAlive?'1':'0.3'}));
 
-      const lbl=mk('text',{x:'0',y:'1',fill:isAlive?(isYou?'#d4a017':'#c8c0a8'):'#3a3530','font-size':isYou?'11px':'13px','font-family':'Courier Prime, monospace','font-weight':isYou?'bold':'normal','text-anchor':'middle','dominant-baseline':'middle','letter-spacing':isYou?'1px':'0',opacity:isAlive?'1':'0.35'});
+      const lbl=mk('text',{x:'0',y:'1',fill:isAlive?(isYou?'#c41e3a':'#b8a4a0'):'#4a3538','font-size':isYou?'11px':'13px','font-family':'Courier Prime, monospace','font-weight':isYou?'bold':'normal','text-anchor':'middle','dominant-baseline':'middle','letter-spacing':isYou?'1px':'0',opacity:isAlive?'1':'0.35'});
       lbl.textContent=p.name;
       g.appendChild(lbl);
 
@@ -818,7 +1076,7 @@ em { color:var(--blade); font-style:normal; }
   function travelDot(fromId,toId,cb){
     const svg=document.getElementById('chainSvg');
     const from=hexPos(fromId),to=hexPos(toId);
-    const dot=mk('circle',{r:'5',fill:'#d4a017',opacity:'0.95'});
+    const dot=mk('circle',{r:'5',fill:'#c41e3a',opacity:'0.95'});
     svg.appendChild(dot);
     const dur=700;let start=null;
     function step(ts){
@@ -841,7 +1099,7 @@ em { color:var(--blade); font-style:normal; }
         const{x,y}=hexPos(5);
         let n=0;
         const iv=setInterval(()=>{
-          const ring=mk('circle',{cx:x,cy:y,r:NR+6,fill:'none',stroke:'#d4a017','stroke-width':'2',opacity:'0.8'});
+          const ring=mk('circle',{cx:x,cy:y,r:NR+6,fill:'none',stroke:'#c41e3a','stroke-width':'2',opacity:'0.8'});
           svg.appendChild(ring);
           let op=0.8,r=NR+6;
           const r2=setInterval(()=>{
@@ -890,8 +1148,13 @@ setInterval(()=>{
 },100);
 
 /* ── HOLD DEMO ── */
-function startHold(e){if(e)e.preventDefault();document.getElementById('holdDemo').classList.add('holding');}
-function stopHold(){document.getElementById('holdDemo').classList.remove('holding');}
+function startHold(e){
+  if(e)e.preventDefault();
+  document.getElementById('holdDemoWrap').classList.add('revealed');
+}
+function stopHold(){
+  document.getElementById('holdDemoWrap').classList.remove('revealed');
+}
 </script>
 </body>
 </html>

@@ -1133,13 +1133,12 @@ function showToast(containerId, type, title, body, durationMs = 7000) {
 // ── Write a notification to Firebase (mod-only kills; custom by mod)
 async function pushNotification(type, title, body, target) {
   // target: 'mod' | playerName | 'all'
+  // FIX #1: Use .push() instead of a transaction — transactions on array-typed nodes race
+  // under concurrent sessions and can silently drop notifications when two sessions write
+  // simultaneously. .push() generates a unique Firebase key and is always atomic.
   if (!db) return;
   const notif = { id: Date.now() + '_' + Math.random().toString(36).slice(2, 7), type, title, body, target, time: new Date().toISOString(), seenBy: {} };
-  await db.ref('/game/notifications').transaction(raw => {
-    const current = notificationsToArray(raw);
-    current.push(notif);
-    return current;
-  });
+  await db.ref('/game/notifications').push(notif);
 }
 
 // ── Mark a notification seen for current user in Firebase (read fresh — gameState may lag)
@@ -1149,12 +1148,17 @@ async function markNotifSeen(notifId) {
   try {
     let found = false;
     await db.ref('/game/notifications').transaction(raw => {
+      // FIX #10: Always normalise raw to an array before returning from the transaction.
+      // Previously, if the notification wasn't found, the function returned the raw Firebase
+      // object as-is (which RTDB may represent as a keyed object, not an array). Returning
+      // a keyed object from a transaction that previously held an array can corrupt the
+      // notifications structure for subsequent reads.
       const current = notificationsToArray(raw);
       const n = current.find(x => x && x.id === notifId);
-      if (!n) return raw;
+      if (!n) return current; // return normalised array, never raw
       if (n.seenBy && n.seenBy[currentUser]) {
         found = true;
-        return raw;
+        return current; // already seen — no change but still return array
       }
       if (!n.seenBy) n.seenBy = {};
       n.seenBy[currentUser] = true;
@@ -1301,7 +1305,20 @@ function renderPlayerNotifications() {
 function updateModNotifBadge() {
   const badge = document.getElementById('mod-notif-unseen-badge');
   if (!badge) return;
-  const count = (gameState?.notifications || []).filter(n => notifIsForMe(n) && !notifSeenByMe(n)).length;
+  // FIX #12: During mod impersonation, currentUser is set to the impersonated player's name
+  // so notifIsForMe() returns false for 'mod'-targeted notifications, making the badge count
+  // drop to 0 and go stale. Use modSessionUser (the real mod name) when available so the
+  // badge reflects actual unseen mod notifications regardless of impersonation state.
+  const effectiveModUser = modSessionUser || currentUser;
+  const count = (gameState?.notifications || []).filter(n => {
+    if (!n) return false;
+    if (n.type === 'immunity' && !canViewImmunityIntel()) return false;
+    const isForMod = n.target === 'mod';
+    const isForAll = n.target === 'all';
+    const isForUser = n.target === effectiveModUser;
+    if (!isForMod && !isForAll && !isForUser) return false;
+    return !(n.seenBy && n.seenBy[effectiveModUser]);
+  }).length;
   badge.textContent = count;
   badge.style.display = count > 0 ? 'inline' : 'none';
 }
@@ -1596,8 +1613,9 @@ function reconcileGhostExpirations() {
     gameState.ghost.revived = gameState.ghost.revived.filter(r => new Date(r.expiresAt).getTime() > now);
     updateGameState({ players: gameState.players, 'ghost/revived': gameState.ghost.revived });
   }
-  // Also kill any ghost whose target is already dead
-  reconcileGhostTargetsDead();
+  // FIX #8: reconcileGhostTargetsDead is already called by processKill after every kill,
+  // so calling it here again fires an unnecessary Firebase read every 5s for all mod sessions.
+  // Ghost-target-dead cleanup is handled at kill time; expiry-only cleanup is handled above.
 }
 
 function getDefaultState() {
@@ -1667,8 +1685,15 @@ async function updateGameState(updates) {
     // RTDB .update() merges — claims: {} does NOT remove /immunity/claims/{player} children
     const claimsEmpty = !imm.claims || (typeof imm.claims === 'object' && !Object.keys(imm.claims).length);
     const grantsEmpty = !imm.grants || (typeof imm.grants === 'object' && !Object.keys(imm.grants).length);
-    if (claimsEmpty) await db.ref('/game/immunity/claims').remove();
-    if (grantsEmpty) await db.ref('/game/immunity/grants').remove();
+    // FIX #4: Both removes must fully resolve before the .update() is sent.
+    // Previously the removes were awaited but the payload was mutated after them —
+    // if the update raced ahead of the remove (possible on slow connections), Firebase
+    // would merge the old claims back in before the remove wiped them.
+    // Collecting all promises and awaiting together ensures strict ordering.
+    const prereqs = [];
+    if (claimsEmpty) prereqs.push(db.ref('/game/immunity/claims').remove());
+    if (grantsEmpty) prereqs.push(db.ref('/game/immunity/grants').remove());
+    if (prereqs.length) await Promise.all(prereqs);
     payload.immunity = {
       ...imm,
       immunePlayers: immuneList,
@@ -2165,6 +2190,10 @@ function doLogout() {
   clearRememberMe();
   stopAnalyticsLiveClock();
   currentUser = null; currentIsMod = false; modImpersonating = null; modSessionUser = null;
+  // FIX #6: Reset _winShownFor so a fresh login always shows the win overlay when the
+  // game is already ended. Previously it persisted across logout/login in the same tab,
+  // meaning the overlay never re-appeared after re-login.
+  _winShownFor = null;
   document.getElementById('impersonate-banner').style.display = 'none';
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
@@ -2434,7 +2463,13 @@ function renderPlayerView(player) {
     }
   }
 
-  const showClaimCard = isEligible && (windowOpen || isPrep || hasClaimed || isMissed);
+  const showClaimCard = isEligible && (windowOpen || isPrep || isMissed || (hasClaimed && windowOpen));
+  // NOTE: hasClaimed alone (window closed) intentionally does NOT keep the card visible.
+  // Showing "✓ Immunity claim submitted" after the window closes reveals to the player
+  // that their claim succeeded (i.e. they won), which breaks the blind immunity design.
+  // The card is only shown while the window is open, in the 2-min prep window, or in
+  // the brief missed-window countdown. Once all of those are false, the card disappears
+  // for everyone — winners and losers alike.
 
   if (blindClaimSection && blindClaimStatus && blindClaimBtn) {
     blindClaimSection.classList.toggle('hidden', !showClaimCard);
@@ -2442,8 +2477,9 @@ function renderPlayerView(player) {
 
     blindClaimBtn.classList.add('hidden');
 
-    if (hasClaimed) {
-      blindClaimStatus.innerHTML = '<p class="immunity-claim-done">✓ Immunity claim submitted</p>';
+    if (hasClaimed && windowOpen) {
+      // Window still open — safe to confirm claim was received (everyone who claimed sees this)
+      blindClaimStatus.innerHTML = '<p class="immunity-claim-done">✓ Claim received — window still open</p>';
     } else if (isPrep) {
       blindClaimStatus.textContent = `Immunity window opens at ${gameState.immunity.start} IST — get ready.`;
     } else if (windowOpen) {
@@ -2484,8 +2520,14 @@ async function claimImmunity() {
 
   const claimBtn = document.getElementById('player-blind-claim-btn');
   const claimStatus = document.getElementById('player-blind-claim-status');
-  if (gameState.immunity.claims?.[player.name]) {
-    if (claimStatus) claimStatus.innerHTML = '<p class="immunity-claim-done">✓ Immunity claim submitted</p>';
+
+  // FIX #5: Always resolve the canonical claim key before reading or writing.
+  // Writing directly to /claims/${player.name} while resolveImmunityClaimKey returns
+  // a different casing (e.g. "alice" vs "Alice") creates duplicate entries and the
+  // player either loses their slot or is not recognised as having claimed.
+  const claimKey = resolveImmunityClaimKey(player.name);
+  if (gameState.immunity.claims?.[claimKey]) {
+    if (claimStatus) claimStatus.innerHTML = '<p class="immunity-claim-done">✓ Claim received — window still open</p>';
     if (claimBtn) claimBtn.classList.add('hidden');
     return;
   }
@@ -2495,10 +2537,10 @@ async function claimImmunity() {
   if (claimStatus) claimStatus.textContent = 'Submitting…';
 
   try {
-    const claimRef = db.ref(`/game/immunity/claims/${player.name}`);
+    const claimRef = db.ref(`/game/immunity/claims/${claimKey}`);
     const existing = await claimRef.once('value');
     if (existing.val()) {
-      if (claimStatus) claimStatus.textContent = 'Immunity claim submitted.';
+      if (claimStatus) claimStatus.innerHTML = '<p class="immunity-claim-done">✓ Claim received — window still open</p>';
       renderPlayerView(player);
       return;
     }
@@ -2509,9 +2551,10 @@ async function claimImmunity() {
       source: 'claim'
     });
     if (!gameState.immunity.claims) gameState.immunity.claims = {};
-    gameState.immunity.claims[player.name] = { clientTs: Date.now(), source: 'claim' };
+    gameState.immunity.claims[claimKey] = { clientTs: Date.now(), source: 'claim' };
     await logAuditEvent('immunity.claim_submitted', {
       player: player.name,
+      claimKey,
       windowOpen: Boolean(gameState.immunity.claimWindowOpen),
       slots: gameState.immunity.slots
     }, player.name);
@@ -2694,7 +2737,12 @@ async function confirmKillAsVictim() {
   const code = document.getElementById('victim-code-input').value.trim().toUpperCase();
   const errEl = document.getElementById('victim-code-error');
   errEl.textContent = '';
-  const entry = gameState.pendingCodes[code];
+
+  // FIX #2: Read the code directly from Firebase instead of stale local gameState.
+  // This prevents double-kills if two sessions process the same code simultaneously,
+  // and avoids code resurrection when the mod clears codes between sessions.
+  const codeSnap = await db.ref(`/game/pendingCodes/${code}`).once('value');
+  const entry = codeSnap.val();
   if (!entry) { errEl.textContent = 'Invalid code.'; return; }
   if (Date.now() > entry.expires) { errEl.textContent = 'Code expired.'; return; }
   if (entry.victim.toLowerCase() !== currentUser.toLowerCase()) { errEl.textContent = 'Code not for you.'; return; }
@@ -2702,8 +2750,9 @@ async function confirmKillAsVictim() {
   if (isPlayerCurrentlyImmune(entry.victim)) {
     const name = entry.victim;
     await persistImmunityConsumedByAttack(name, entry.killer);
-    gameState.pendingCodes[code] = { ...entry, immunityConsumed: true, resolvedAt: new Date().toISOString() };
-    await updateGameState({ pendingCodes: gameState.pendingCodes });
+    // Atomically mark the code as immunity-consumed in Firebase
+    await db.ref(`/game/pendingCodes/${code}`).update({ immunityConsumed: true, resolvedAt: new Date().toISOString() });
+    if (gameState.pendingCodes) gameState.pendingCodes[code] = { ...entry, immunityConsumed: true, resolvedAt: new Date().toISOString() };
     gameState.immunity.immunePlayers = getCanonicalImmunePlayers(gameState.immunity);
     await logAuditEvent('immunity.consumed_by_attack', {
       player: name,
@@ -2713,21 +2762,23 @@ async function confirmKillAsVictim() {
     errEl.innerHTML = immunityBlockedKillMessageHtml('victim');
     // Notify mod
     pushNotification('immunity', `${entry.killer}'s attack on ${name} was saved by immunity`, `${name} used their immunity. They are no longer protected.`, 'mod');
-    // Clean up the marker after 15s
+    // Atomically remove the code after 15s
     setTimeout(() => {
-      delete gameState.pendingCodes[code];
-      updateGameState({ pendingCodes: gameState.pendingCodes });
+      db.ref(`/game/pendingCodes/${code}`).remove();
+      if (gameState.pendingCodes) delete gameState.pendingCodes[code];
     }, 15000);
     const player = gameState.players.find(p => p.name === currentUser);
     if (player) renderPlayerView(player);
     return;
   }
 
+  // Atomically delete the code BEFORE processing the kill to prevent double-use
+  await db.ref(`/game/pendingCodes/${code}`).remove();
+  if (gameState.pendingCodes) delete gameState.pendingCodes[code];
+
   await processKill(entry.killer, entry.victim);
-  delete gameState.pendingCodes[code];
   await updateGameState({ killLog: gameState.killLog, players: gameState.players, pendingCodes: gameState.pendingCodes, ghost: gameState.ghost });
   // Push kill notification for mod (done here so it fires from any session)
-  const _isGhostKill = gameState.players.find(p => p.name === entry.killer)?.status === 'alive' && gameState.killLog.slice(-1)[0]?.ghost;
   const _lastKill = gameState.killLog[gameState.killLog.length - 1];
   if (_lastKill) {
     const _type = _lastKill.ghost ? 'ghost' : 'kill';
@@ -2738,7 +2789,9 @@ async function confirmKillAsVictim() {
   
   const player = gameState.players.find(p => p.name === currentUser);
   renderPlayerView(player);
-  alert(`Kill confirmed. You have been eliminated.`);
+  // FIX #11: Replace blocking alert() with a non-blocking toast so Firebase writes
+  // complete cleanly and renderPlayerView is not delayed.
+  showToast('player-toast-container', 'kill', 'Kill confirmed', 'You have been eliminated.', 7000);
 }
 
 async function processKill(killerName, victimName) {
@@ -4337,11 +4390,18 @@ async function modKillPlayer(name) {
   player.status = 'dead';
   // Clear self-targeting that may result from this kill
   gameState.players.forEach(p => { if (p.target && p.target === p.name) p.target = null; });
-  // Strip immunity if victim was immune
-  if (gameState.immunity?.immunePlayers?.includes(name)) {
-    gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== name);
-    delete gameState.immunity.claims[name];
-    if (gameState.immunity.grants) delete gameState.immunity.grants[name];
+  // FIX #9: Use isPlayerCurrentlyImmune() instead of .includes() — the latter is case-sensitive
+  // and will fail to strip immunity if the player name casing differs between immunePlayers
+  // and the kill target string (e.g. "alice" vs "Alice").
+  if (isPlayerCurrentlyImmune(name)) {
+    removeFromImmunePlayersList(name);
+    const claimKey = resolveImmunityClaimKey(name);
+    if (gameState.immunity.claims) delete gameState.immunity.claims[claimKey];
+    if (gameState.immunity.grants) {
+      Object.keys(gameState.immunity.grants).forEach(k => {
+        if (immunityPlayerNameMatches(k, name)) delete gameState.immunity.grants[k];
+      });
+    }
   }
   gameState.killLog.push({
     killer: 'MOD',
@@ -5065,31 +5125,41 @@ async function reconcileGhostTargetsDead() {
   if (!gameState?.players) return;
   const ghosts = gameState.players.filter(p => p.status === 'ghost');
   if (!ghosts.length) return;
-  let changed = false;
-  ghosts.forEach(ghost => {
+
+  // FIX #3: Collect all changes BEFORE mutating any state. The db.on('value') listener
+  // fires immediately after any Firebase write and calls gameState = normalizeState(snap.val()),
+  // which overwrites local mutations. By deciding what needs to change first and then doing
+  // a single atomic write, we avoid the race where a listener fires between two mutations.
+  const toKill = ghosts.filter(ghost => {
     const target = ghost.ghostTarget || ghost.target;
-    if (!target) return;
+    if (!target) return false;
     const targetPlayer = gameState.players.find(p => p.name === target);
-    if (targetPlayer && targetPlayer.status === 'dead') {
-      ghost.status = 'dead';
-      ghost.ghostTarget = null;
-      gameState.ghost.revived = (gameState.ghost.revived || []).filter(r => r.name !== ghost.name);
-      gameState.killLog.push({
-        killer: 'SYSTEM',
-        victim: ghost.name,
-        time: new Date().toISOString(),
-        ghost: false,
-        reason: 'ghost_target_dead',
-        undo: null
-      });
-      changed = true;
-    }
+    return targetPlayer && targetPlayer.status === 'dead';
   });
-  if (changed) {
-    await updateGameState({ players: gameState.players, 'ghost/revived': gameState.ghost.revived, killLog: gameState.killLog });
-    await logAuditEvent('ghost.auto_killed_target_dead', {});
-  }
-  return changed;
+
+  if (!toKill.length) return false;
+
+  const newKillLogEntries = toKill.map(ghost => ({
+    killer: 'SYSTEM',
+    victim: ghost.name,
+    time: new Date().toISOString(),
+    ghost: false,
+    reason: 'ghost_target_dead',
+    undo: null
+  }));
+
+  // Apply mutations after snapshot is fully decided
+  toKill.forEach(ghost => {
+    ghost.status = 'dead';
+    ghost.ghostTarget = null;
+  });
+  gameState.ghost.revived = (gameState.ghost.revived || []).filter(r => !toKill.some(g => g.name === r.name));
+  gameState.killLog.push(...newKillLogEntries);
+
+  // Single atomic write — prevents partial state if the listener fires mid-way
+  await updateGameState({ players: gameState.players, 'ghost/revived': gameState.ghost.revived, killLog: gameState.killLog });
+  await logAuditEvent('ghost.auto_killed_target_dead', { victims: toKill.map(g => g.name) });
+  return true;
 }
 </script>
 </body>

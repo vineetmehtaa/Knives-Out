@@ -68,15 +68,6 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
 .logo { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; font-style: italic; color: var(--cream); text-align: center; letter-spacing: 2px; margin-bottom: 2px; }
 .logo span { color: var(--blade); }
 .logo-sub { text-align: center; font-size: 9px; letter-spacing: 3px; color: var(--cream3); text-transform: uppercase; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--seam); }
-.login-note {
-  margin: -6px 0 16px;
-  padding: 10px 12px;
-  border: 1px solid var(--seam);
-  background: rgba(255,255,255,0.02);
-  font-size: 10px;
-  color: var(--cream3);
-  line-height: 1.5;
-}
 .mod-toggle {
   margin: 2px 0 12px;
   display: flex;
@@ -111,6 +102,7 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
 .tab-btn { flex: 1; padding: 12px 8px; background: transparent; border: 1px solid var(--seam); border-bottom: none; color: var(--cream3); font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
 .tab-btn.active { background: var(--blade); color: var(--ink); font-weight: 700; }
 .tab-btn:first-child { border-left: 1px solid var(--seam); }
+.tab-btn[disabled] { opacity: .35; cursor: not-allowed; pointer-events: none; }
 
 .tab-content { display: none; }
 .tab-content.active { display: block; }
@@ -325,6 +317,108 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .chain-item:last-child { border-bottom: none; }
 
 .password-cell { font-family: monospace; font-size: 10px; background: var(--ink3); padding: 4px 6px; display: inline-block; word-break: break-all; border-radius: 2px; border: 1px solid var(--ink4); }
+.sensitive-hidden { color: var(--cream3); letter-spacing: 2px; font-size: 10px; user-select: none; }
+.mod-players-sensitive-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+.mod-player-name-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mod-player-name { word-break: break-word; line-height: 1.3; }
+.mod-player-chevron { color: var(--cream3); font-size: 11px; flex-shrink: 0; letter-spacing: 0; }
+#mod-players-table { min-width: 0; border-collapse: separate; border-spacing: 0; }
+#mod-players-table.mod-players-table-mode { min-width: 560px; border-collapse: collapse; border-spacing: 0; }
+#mod-players-table:not(.mod-players-table-mode) thead { display: none; }
+#mod-players-table:not(.mod-players-table-mode) tbody,
+#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row { display: block; }
+#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row {
+  margin-bottom: 10px;
+  border: 1px solid var(--seam);
+  background: var(--ink2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row td {
+  display: block;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--seam);
+}
+#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row td:last-child { border-bottom: none; }
+#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row td.mod-player-name-cell {
+  padding: 0;
+  border-bottom: 1px solid var(--seam);
+  background: var(--ink3);
+}
+#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row td.mod-player-name-cell .mod-player-name-toggle { padding: 14px; }
+#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row:not(.mod-player-expanded) td.mod-player-detail { display: none; }
+#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row.mod-player-expanded td.mod-player-detail { display: block; }
+#mod-players-table:not(.mod-players-table-mode) td.mod-player-detail::before {
+  content: attr(data-label);
+  display: block;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cream3);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+#mod-players-table.mod-players-table-mode tr.mod-player-row { display: table-row; margin: 0; border: none; background: transparent; border-radius: 0; overflow: visible; }
+#mod-players-table.mod-players-table-mode tr.mod-player-row td { display: table-cell; padding: 10px; border-bottom: 1px solid #161610; }
+#mod-players-table.mod-players-table-mode tr.mod-player-row td.mod-player-name-cell { background: transparent; padding: 10px; }
+#mod-players-table.mod-players-table-mode tr.mod-player-row td.mod-player-name-cell .mod-player-name-toggle { padding: 0; }
+#mod-players-table.mod-players-table-mode td.mod-player-detail::before { display: none; }
+#mod-players-table .mod-player-actions .flex-btn-group { margin: 0; }
+#mod-players-table .mod-player-actions .btn { min-width: 88px; }
+@media (max-width: 599px) {
+  #mod-tab-players .table-responsive { overflow-x: visible; margin-bottom: 0; }
+  #mod-players-table.mod-players-table-mode { min-width: 0; }
+  #mod-players-table.mod-players-table-mode thead { display: none; }
+  #mod-players-table.mod-players-table-mode tbody,
+  #mod-players-table.mod-players-table-mode tr.mod-player-row { display: block; }
+  #mod-players-table.mod-players-table-mode tr.mod-player-row {
+    margin-bottom: 10px;
+    border: 1px solid var(--seam);
+    background: var(--ink2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  #mod-players-table.mod-players-table-mode tr.mod-player-row td { display: block; padding: 10px 14px; border-bottom: 1px solid var(--seam); }
+  #mod-players-table.mod-players-table-mode tr.mod-player-row td:last-child { border-bottom: none; }
+  #mod-players-table.mod-players-table-mode tr.mod-player-row td.mod-player-name-cell { padding: 0; background: var(--ink3); }
+  #mod-players-table.mod-players-table-mode tr.mod-player-row td.mod-player-name-cell .mod-player-name-toggle { padding: 14px; }
+  #mod-players-table.mod-players-table-mode td.mod-player-detail::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cream3);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  #mod-players-table .mod-player-actions .flex-btn-group .btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: calc(50% - 4px);
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  #mod-players-search { font-size: 16px; margin-bottom: 12px !important; }
+  #mod-tab-players .mod-toggle { font-size: 9px; padding: 10px 12px; width: 100%; }
+  #mod-tab-players .mod-players-sensitive-toolbar { margin-bottom: 12px; }
+  #mod-tab-players .text-dim.mb16 { font-size: 10px; line-height: 1.5; margin-bottom: 12px !important; }
+}
 
 .player-chip { padding: 14px 10px; background: var(--ink2); border: 1px solid var(--seam); text-align: center; font-size: 11px; border-radius: 2px; transition: transform 0.2s; }
 .player-chip:hover { transform: translateY(-2px); }
@@ -407,9 +501,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="logo">KNIVES<span>OUT</span></div>
       <div class="logo-sub">Murder Mystery v3.0</div>
 
-      <div class="tabs-toggle">
-        <button class="tab-btn active" onclick="switchAuthTab('login', this)">LOGIN</button>
-        <button class="tab-btn" onclick="switchAuthTab('signup', this)">SIGN UP</button>
+      <div class="tabs-toggle" id="auth-tabs-toggle">
+        <button class="tab-btn active" id="auth-tab-login" onclick="switchAuthTab('login', this)">LOGIN</button>
+        <button class="tab-btn" id="auth-tab-signup" onclick="switchAuthTab('signup', this)">SIGN UP</button>
       </div>
 
       <div class="tab-content active" id="auth-login" style="display:block">
@@ -421,7 +515,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <input type="checkbox" id="login-remember-me">
           Remember me on this device
         </label>
-        <div class="login-note">Players use account password. Moderators can login with moderator password or personal account password.</div>
         <div class="error-msg" id="login-error"></div>
         <button class="btn btn-blade btn-full" onclick="doLogin()">ENTER GAME</button>
       </div>
@@ -441,7 +534,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
         <div class="error-msg" id="signup-error"></div>
         <button class="btn btn-blade btn-full" onclick="doSignup()">CREATE ACCOUNT</button>
-        <div class="text-dim mt16" style="text-align: center; font-size: 10px;">Moderator creates initial setup.<br>Players sign up here.</div>
       </div>
     </div>
     <p class="login-crosslink">
@@ -576,10 +668,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="card">
       <div class="card-title">SUSPECTS</div>
       <div class="status-grid" id="status-player-grid"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">CASE LOG</div>
-      <div id="status-kill-log-list"></div>
     </div>
   </div>
 </div>
@@ -743,7 +831,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="tab-content" id="mod-tab-players">
       <div class="card">
         <div class="card-title">ALL PLAYERS & PASSWORDS</div>
-        <div class="text-dim mb16">✓ You can view all player passwords here. Share securely.</div>
+        <div class="text-dim mb16">Tap a player name to reveal or hide their details. Names are sorted A–Z.</div>
+        <div class="mod-players-sensitive-toolbar">
+          <label class="mod-toggle" style="margin:0;">
+            <input type="checkbox" id="mod-players-global-sensitive" onchange="toggleModPlayersGlobalSensitive(this.checked)">
+            Show all sensitive information
+          </label>
+        </div>
+        <input type="text" id="mod-players-search" placeholder="Search by name or status…" autocapitalize="off" autocorrect="off" spellcheck="false" oninput="renderModPlayers()" style="margin-bottom:16px;">
         <div class="table-responsive">
           <table id="mod-players-table">
             <thead>
@@ -965,6 +1060,8 @@ let _startGameDraftMode = 'random';
 let immunityWindowSyncInFlight = false;
 let ghostTimerInterval = null;
 let modGhostListTimerInterval = null;
+let modPlayersShowAllSensitive = false;
+const modPlayersRowSensitive = new Set();
 
 function getGhostTimerHours(state) {
   const h = parseFloat(state?.ghost?.killHours);
@@ -996,14 +1093,85 @@ function isoToDatetimeLocalValue(iso) {
 function getGhostRevivedEntry(name) {
   return (gameState?.ghost?.revived || []).find(r => r.name === name);
 }
+
+function isActiveGhostName(name) {
+  const player = gameState?.players?.find(p => p.name === name);
+  return player?.status === 'ghost';
+}
+
+function getDeadNonModCount() {
+  return (gameState?.players || []).filter(p => p.status === 'dead' && !isModUser(gameState, p.name)).length;
+}
+
+function isGhostVoteUnlocked() {
+  if (!gameState?.settings?.ghostEnabled) return false;
+  const threshold = Math.max(1, parseInt(gameState.ghost?.deathThreshold, 10) || 3);
+  return getDeadNonModCount() >= threshold;
+}
+
+function nameInList(list, name) {
+  const lower = String(name || '').trim().toLowerCase();
+  return (list || []).some(n => String(n || '').trim().toLowerCase() === lower);
+}
+
+function upsertGhostRevivedEntry(name, expiresAt) {
+  if (!gameState.ghost.revived) gameState.ghost.revived = [];
+  gameState.ghost.revived = gameState.ghost.revived.filter(r => r.name !== name);
+  gameState.ghost.revived.push({ name, expiresAt });
+}
+
+function removeGhostRevivedEntry(name) {
+  if (!gameState?.ghost?.revived) return;
+  gameState.ghost.revived = gameState.ghost.revived.filter(r => r.name !== name);
+}
+
+function clearGhostHuntState(player) {
+  if (!player) return;
+  player.ghostTarget = null;
+}
+
+function eliminateGhostPlayer(player, { toStatus = 'dead' } = {}) {
+  if (!player) return;
+  player.status = toStatus;
+  clearGhostHuntState(player);
+  removeGhostRevivedEntry(player.name);
+}
+
+function isGhostPhase2Voter(player) {
+  if (!player || isModUser(gameState, player.name)) return false;
+  if ((gameState.ghost?.phase || 0) !== 2) return false;
+  const snap = getGhostPoolSnapshot();
+  if (snap.phase2DeadVoters.length) return nameInList(snap.phase2DeadVoters, player.name);
+  return player.status === 'dead' || player.status === 'ghost';
+}
 let missedTimerInterval = null;
 const USERNAME_REGEX = /^[A-Za-z0-9_-]{3,24}$/;
 const MISSED_IMMUNITY_WINDOW_MS = (5 * 60 * 1000) + 990;
 const IMMUNITY_DURATION_MS = ((23 * 60) + 30) * 60 * 1000; // fallback: ~23h30m after window close if start time unset
 
 // Defined early so onclick handlers on login page can call it before rest of script loads
+function isGameInProgress() {
+  return Boolean(gameState?.gameStarted && !gameState?.gameEnded);
+}
+
+function updateSignupAvailability() {
+  const inProgress = isGameInProgress();
+  const tabsToggle = document.getElementById('auth-tabs-toggle');
+  const signupTab = document.getElementById('auth-tab-signup');
+  if (tabsToggle) tabsToggle.style.display = inProgress ? 'none' : '';
+  if (signupTab) {
+    signupTab.style.display = inProgress ? 'none' : '';
+    signupTab.disabled = inProgress;
+  }
+  if (inProgress) {
+    const loginTab = document.getElementById('auth-tab-login');
+    switchAuthTab('login', loginTab);
+  }
+}
+
 function switchAuthTab(tab, trigger) {
-  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  if (tab === 'signup' && isGameInProgress()) return;
+  document.querySelectorAll('#auth-tabs-toggle .tab-btn').forEach(t => t.classList.remove('active'));
   if (trigger) trigger.classList.add('active');
   document.getElementById('auth-login').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('auth-signup').style.display = tab === 'signup' ? 'block' : 'none';
@@ -1034,12 +1202,11 @@ function initFirebase() {
     document.getElementById('firebase-init').style.display = 'none';
     setupGame();
 
-    // Routine checks every 5 seconds for ghost expirations and immunity clock
+    // Ghost expiry is idempotent — any connected session may reconcile so timers work without a mod tab open
     setInterval(() => {
        if (gameState) {
+           reconcileGhostExpirations();
            if (currentIsMod) {
-               // Mod session is the sole authority for expiry reconciliation — avoids concurrent writes from all sessions
-               reconcileGhostExpirations();
                reconcileImmunityExpiry();
            }
            syncScheduledImmunityWindow();
@@ -1352,6 +1519,7 @@ function setupGame() {
     gameState = normalizeState(snap.val());
     reconcileGhostExpirations();
     syncScheduledImmunityWindow();
+    if (currentPage === 'login' && !currentUser) updateSignupAvailability();
 
     // On first data arrival, attempt auto-login via Remember Me
     if (!_autoLoginAttempted) {
@@ -1546,7 +1714,14 @@ function normalizeState(raw) {
     ...(merged.ghost || {}),
     phase: merged.ghost?.phase || 0,
     pendingGhost: merged.ghost?.pendingGhost || null,
-    revived: Array.isArray(merged.ghost?.revived) ? merged.ghost.revived : [],
+    revived: (() => {
+      const arr = Array.isArray(merged.ghost?.revived) ? merged.ghost.revived : [];
+      const byName = new Map();
+      arr.forEach(entry => {
+        if (entry?.name) byName.set(entry.name, entry);
+      });
+      return [...byName.values()];
+    })(),
     selectionMode: merged.ghost?.selectionMode || 'all',
     selectedAlive: Array.isArray(merged.ghost?.selectedAlive) ? merged.ghost.selectedAlive : [],
     selectedDead: Array.isArray(merged.ghost?.selectedDead) ? merged.ghost.selectedDead : [],
@@ -1598,24 +1773,25 @@ function reconcileImmunityExpiry() {
 function reconcileGhostExpirations() {
   if (!gameState?.ghost?.revived?.length) return;
   const now = Date.now();
-  const expired = gameState.ghost.revived.filter(r => new Date(r.expiresAt).getTime() <= now);
-  if (expired.length === 0) return;
+  const revivedBefore = gameState.ghost.revived.length;
+  const expiredNames = new Set(
+    gameState.ghost.revived
+      .filter(r => new Date(r.expiresAt).getTime() <= now)
+      .map(r => r.name)
+  );
+  if (expiredNames.size === 0) return;
   let changed = false;
-  expired.forEach(entry => {
-    const player = gameState.players.find(p => p.name === entry.name);
+  expiredNames.forEach(name => {
+    const player = gameState.players.find(p => p.name === name);
     if (player && player.status === 'ghost') {
-      player.status = 'dead';
-      player.ghostTarget = null;
+      eliminateGhostPlayer(player, { toStatus: 'dead' });
       changed = true;
     }
   });
-  if (changed) {
-    gameState.ghost.revived = gameState.ghost.revived.filter(r => new Date(r.expiresAt).getTime() > now);
+  gameState.ghost.revived = gameState.ghost.revived.filter(r => new Date(r.expiresAt).getTime() > now);
+  if (changed || gameState.ghost.revived.length !== revivedBefore) {
     updateGameState({ players: gameState.players, 'ghost/revived': gameState.ghost.revived });
   }
-  // FIX #8: reconcileGhostTargetsDead is already called by processKill after every kill,
-  // so calling it here again fires an unnecessary Firebase read every 5s for all mod sessions.
-  // Ghost-target-dead cleanup is handled at kill time; expiry-only cleanup is handled above.
 }
 
 function getDefaultState() {
@@ -2162,6 +2338,11 @@ async function doSignup() {
 
   const state = await getGameState();
   gameState = normalizeState(state);
+  if (isGameInProgress()) {
+    errEl.textContent = 'Sign up is closed while the game is in progress.';
+    updateSignupAvailability();
+    return;
+  }
   if (findPlayerByName(state, username)) { errEl.textContent = 'Username exists.'; return; }
   if (isModUser(state, username)) { errEl.textContent = 'Username exists as moderator.'; return; }
 
@@ -2219,6 +2400,7 @@ function showPage(id) {
     loginPage.style.display = 'none';
   } else {
     document.getElementById('page-login').style.display = '';
+    updateSignupAvailability();
   }
   currentPage = id;
   window.scrollTo(0, 0);
@@ -2394,13 +2576,21 @@ function renderPlayerView(player) {
     badge.className = 'badge badge-ghost';
     targetSection.style.display = 'none';
     ghostSection.classList.remove('hidden');
-    const ghostEntry = gameState.ghost.revived.find(r => r.name === player.name);
-    if (ghostEntry) updateGhostTimer(ghostEntry.expiresAt);
-    else updateGhostTimer(new Date(Date.now() + getGhostTimerMs(gameState)).toISOString());
+    const ghostEntry = getGhostRevivedEntry(player.name);
+    const timerEl = document.getElementById('ghost-timer-display');
+    if (ghostEntry) {
+      updateGhostTimer(ghostEntry.expiresAt);
+    } else if (timerEl) {
+      if (ghostTimerInterval) clearInterval(ghostTimerInterval);
+      timerEl.textContent = 'NO TIMER — contact mod';
+    }
     const killTitle = document.querySelector('#player-kill-section .card-title');
     if (killTitle) {
       const hunt = player.ghostTarget || player.target;
       killTitle.textContent = hunt ? `⚔ HUNT: ${hunt}` : '⚔ CONFIRM A KILL (GHOST)';
+    }
+    if (gameState.ghost.phase === 2 && isGhostPhase2Voter(player)) {
+      renderVotingPanel(player);
     }
     if (blindClaimSection) blindClaimSection.classList.add('hidden');
     return;
@@ -2589,22 +2779,25 @@ function renderVotingPanel(player) {
   }
 
   const snap = getGhostPoolSnapshot();
-  const phase1AliveVoters = new Set(snap.phase1AliveVoters);
-  const phase1DeadCandidates = new Set(snap.phase1DeadCandidates);
-  const phase2DeadVoters = new Set(snap.phase2DeadVoters);
-  const phase2AliveTargets = new Set(snap.phase2AliveTargets);
+  const phase1AliveVoters = toNameSet(snap.phase1AliveVoters);
+  const phase1DeadCandidates = toNameSet(snap.phase1DeadCandidates);
+  const phase2DeadVoters = toNameSet(snap.phase2DeadVoters);
+  const phase2AliveTargets = toNameSet(snap.phase2AliveTargets);
+  const playerKey = player.name.trim().toLowerCase();
 
-  if (phase === 1 && (snap.phase1AliveVoters.length ? phase1AliveVoters.has(player.name) : player.status === 'alive')) {
+  if (phase === 1 && (snap.phase1AliveVoters.length ? phase1AliveVoters.has(playerKey) : player.status === 'alive')) {
     candidates = gameState.players.filter(p =>
       !isModUser(gameState, p.name) &&
-      (snap.phase1DeadCandidates.length ? phase1DeadCandidates.has(p.name) : (p.status === 'dead' || p.status === 'ghost'))
+      (snap.phase1DeadCandidates.length
+        ? phase1DeadCandidates.has(p.name.trim().toLowerCase())
+        : (p.status === 'dead' && !isActiveGhostName(p.name)))
     );
     title = '👻 VOTE TO REVIVE';
-    instruction = 'Vote for a dead/ghost player to bring them back as a ghost.';
-  } else if (phase === 2 && (snap.phase2DeadVoters.length ? phase2DeadVoters.has(player.name) : player.status === 'dead')) {
+    instruction = 'Vote for a dead player to bring them back as a ghost.';
+  } else if (phase === 2 && (snap.phase2DeadVoters.length ? phase2DeadVoters.has(playerKey) : (player.status === 'dead' || player.status === 'ghost'))) {
     candidates = gameState.players.filter(p =>
       !isModUser(gameState, p.name) &&
-      (snap.phase2AliveTargets.length ? phase2AliveTargets.has(p.name) : p.status === 'alive')
+      (snap.phase2AliveTargets.length ? phase2AliveTargets.has(p.name.trim().toLowerCase()) : p.status === 'alive')
     );
     title = `🎯 VOTE A TARGET FOR GHOST`;
     instruction = `Vote for the alive player that the ghost must assassinate.`;
@@ -2636,13 +2829,20 @@ async function castVote(targetName) {
   const phase = gameState.ghost.phase || 0;
   const snap = getGhostPoolSnapshot();
   const playerAllowed = phase === 1
-    ? (snap.phase1AliveVoters.length ? snap.phase1AliveVoters.includes(player.name) : player.status === 'alive')
-    : (phase === 2 ? (snap.phase2DeadVoters.length ? snap.phase2DeadVoters.includes(player.name) : player.status === 'dead') : false);
+    ? (snap.phase1AliveVoters.length ? nameInList(snap.phase1AliveVoters, player.name) : player.status === 'alive')
+    : (phase === 2 ? (snap.phase2DeadVoters.length ? nameInList(snap.phase2DeadVoters, player.name) : (player.status === 'dead' || player.status === 'ghost')) : false);
   if (!playerAllowed) return;
 
+  const targetPlayer = gameState.players.find(p => p.name.toLowerCase() === String(targetName).toLowerCase());
   const targetAllowed = phase === 1
-    ? (snap.phase1DeadCandidates.length ? snap.phase1DeadCandidates.includes(targetName) : true)
-    : (phase === 2 ? (snap.phase2AliveTargets.length ? snap.phase2AliveTargets.includes(targetName) : true) : false);
+    ? (snap.phase1DeadCandidates.length
+      ? nameInList(snap.phase1DeadCandidates, targetName)
+      : (targetPlayer && targetPlayer.status === 'dead' && !isModUser(gameState, targetName) && !isActiveGhostName(targetName)))
+    : (phase === 2
+      ? (snap.phase2AliveTargets.length
+        ? nameInList(snap.phase2AliveTargets, targetName)
+        : (targetPlayer?.status === 'alive' && !isModUser(gameState, targetName)))
+      : false);
   if (!targetAllowed) return;
 
   player.votes = targetName;
@@ -2715,6 +2915,8 @@ async function generateKillCode() {
   if (!player || player.status === 'dead') return;
   const target = player.status === 'ghost' ? (player.ghostTarget || player.target) : player.target;
   if (!target) return;
+  const targetPlayer = gameState.players.find(p => p.name === target);
+  if (!targetPlayer || targetPlayer.status !== 'alive') return;
   
   Object.keys(gameState.pendingCodes).forEach(code => {
     if (!gameState.pendingCodes[code] || Date.now() > gameState.pendingCodes[code].expires) delete gameState.pendingCodes[code];
@@ -2800,13 +3002,16 @@ async function processKill(killerName, victimName) {
   if (!killer || !victim) return;
   const isGhostKill = killer.status === 'ghost';
   
+  const killerPrevStatus = killer.status;
   const killerPrevTarget = killer.target || null;
   const killerPrevGhostTarget = killer.ghostTarget || null;
+  const killerPrevRevivedExpiry = isGhostKill ? (getGhostRevivedEntry(killerName)?.expiresAt || null) : null;
   const victimPrevStatus = victim.status;
   const victimPrevTarget = victim.target || null;
   const victimPrevGhostTarget = victim.ghostTarget || null;
   
   let previousAssassinName = null;
+  let chainBypassPrevTarget = null;
 
   killer.kills = (killer.kills || 0) + 1;
   killer.lastKill = victimName;
@@ -2816,13 +3021,14 @@ async function processKill(killerName, victimName) {
     if (previousAssassin) {
       previousAssassin.target = killer.name;
       previousAssassinName = previousAssassin.name;
+      chainBypassPrevTarget = victimName;
     }
     
     killer.status = 'alive';
     killer.target = victim.target;
-    killer.ghostTarget = null;
+    clearGhostHuntState(killer);
+    removeGhostRevivedEntry(killer.name);
     victim.status = 'dead';
-    gameState.ghost.revived = gameState.ghost.revived.filter(r => r.name !== killer.name);
   } else {
     killer.target = victim.target;
     victim.status = 'dead';
@@ -2850,7 +3056,7 @@ async function processKill(killerName, victimName) {
     victim: victimName,
     time: new Date().toISOString(),
     ghost: isGhostKill,
-    undo: { killerPrevTarget, killerPrevGhostTarget, victimPrevStatus, victimPrevTarget, victimPrevGhostTarget, chainBypassKiller: previousAssassinName }
+    undo: { killerPrevStatus, killerPrevTarget, killerPrevGhostTarget, killerPrevRevivedExpiry, victimPrevStatus, victimPrevTarget, victimPrevGhostTarget, chainBypassKiller: previousAssassinName, chainBypassPrevTarget }
   });
   // Auto-kill ghosts whose target just died
   await reconcileGhostTargetsDead();
@@ -2859,20 +3065,19 @@ async function processKill(killerName, victimName) {
 function renderStatusPage() {
   const statsEl = document.getElementById('status-stats');
   const gridEl = document.getElementById('status-player-grid');
-  const logEl = document.getElementById('status-kill-log-list');
   document.getElementById('status-game-name-display').textContent = gameState.gameName;
   
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
   
-  const alive = realPlayers.filter(p => p.status === 'alive' || p.status === 'ghost').length;
+  const aliveOnly = realPlayers.filter(p => p.status === 'alive').length;
   const dead = realPlayers.filter(p => p.status === 'dead').length;
   const total = realPlayers.length;
   const ghosts = realPlayers.filter(p => p.status === 'ghost').length;
   statsEl.innerHTML = `
-    <div class="stat-box"><div class="stat-num green">${alive}</div><div class="stat-label">Alive</div></div>
+    <div class="stat-box"><div class="stat-num green">${aliveOnly}</div><div class="stat-label">Alive</div></div>
     <div class="stat-box"><div class="stat-num red">${dead}</div><div class="stat-label">Dead</div></div>
-    <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
     <div class="stat-box"><div class="stat-num purple">${ghosts}</div><div class="stat-label">Ghosts</div></div>
+    <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
   `;
   gridEl.innerHTML = realPlayers.map(p => {
     // Only Mods can see the immune badge on the public board
@@ -2881,13 +3086,6 @@ function renderStatusPage() {
     const statusLabel = p.status === 'dead' ? 'DEAD' : (isImmune ? 'IMMUNE' : (p.status === 'ghost' ? 'GHOST' : 'ALIVE'));
     return `<div class="player-chip ${cls}"><div class="chip-name">${p.name}</div><div class="chip-status">${statusLabel}</div>${p.kills ? `<div class="text-dim" style="font-size: 10px; margin-top: 4px;">${p.kills} kill(s)</div>` : ''}</div>`;
   }).join('');
-  logEl.innerHTML = gameState.killLog.length === 0
-    ? '<div class="text-dim" style="padding: 16px;">No kills yet.</div>'
-    : [...gameState.killLog].reverse().map(k => `
-      <div class="kill-entry">
-        <div class="kill-time">${formatTime(k.time)}</div>
-        <div class="kill-action"><span style="color: var(--cream); font-weight: 700;">${k.killer}</span><span class="text-dim"> eliminated </span><span class="text-red font-weight-bold">${k.victim}</span>${k.ghost ? ' <span class="badge badge-ghost">GHOST</span>' : ''}</div>
-      </div>`).join('');
 }
 
 function getActiveModTab() {
@@ -3006,21 +3204,118 @@ function renderModDashboard() {
     `).join('');
 }
 
+function isModPlayerSensitiveVisible(playerName) {
+  return modPlayersShowAllSensitive || modPlayersRowSensitive.has(playerName);
+}
+
+function syncModPlayersGlobalSensitiveCheckbox() {
+  const globalEl = document.getElementById('mod-players-global-sensitive');
+  if (!globalEl) return;
+  const realPlayers = getModPlayersSorted();
+  globalEl.checked = modPlayersShowAllSensitive ||
+    (realPlayers.length > 0 && realPlayers.every(p => modPlayersRowSensitive.has(p.name)));
+}
+
+function toggleModPlayersGlobalSensitive(checked) {
+  modPlayersShowAllSensitive = checked;
+  const realPlayers = getModPlayersSorted();
+  if (checked) {
+    realPlayers.forEach(p => modPlayersRowSensitive.add(p.name));
+  } else {
+    modPlayersRowSensitive.clear();
+  }
+  renderModPlayers();
+}
+
+function toggleModPlayerRowSensitive(playerName, checked) {
+  if (checked) modPlayersRowSensitive.add(playerName);
+  else {
+    modPlayersRowSensitive.delete(playerName);
+    modPlayersShowAllSensitive = false;
+  }
+  syncModPlayersGlobalSensitiveCheckbox();
+  renderModPlayers();
+}
+
+function toggleModPlayerRowSensitiveClick(playerName) {
+  toggleModPlayerRowSensitive(playerName, !isModPlayerSensitiveVisible(playerName));
+}
+
+function getModPlayersSorted() {
+  return (gameState?.players || [])
+    .filter(p => !isModUser(gameState, p.name))
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+}
+
+function getModPlayerDisplayStatus(p) {
+  const isImmune = gameState?.settings?.immunityEnabled && (gameState?.immunity?.immunePlayers || []).includes(p.name);
+  if (p.status === 'dead') return 'dead';
+  if (p.status === 'ghost') return 'ghost';
+  return isImmune ? 'immune' : 'alive';
+}
+
+function getModPlayerDisplayTarget(p) {
+  return p.status === 'ghost' ? (p.ghostTarget || '') : (p.target || '');
+}
+
+/** Searchable fields: player name and status only. */
+function getModPlayerSearchColumns(p) {
+  const displayStatus = getModPlayerDisplayStatus(p);
+  return [
+    p.name || '',
+    displayStatus
+  ].map(v => String(v).toLowerCase());
+}
+
+function modPlayerMatchesSearch(p, query) {
+  if (!query) return true;
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return true;
+  const columns = getModPlayerSearchColumns(p);
+  return terms.every(term => columns.some(col => col.includes(term)));
+}
+
 function renderModPlayers() {
   const tbody = document.getElementById('mod-players-tbody');
-  const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
+  const table = document.getElementById('mod-players-table');
+  const query = (document.getElementById('mod-players-search')?.value || '').trim();
+  const realPlayers = getModPlayersSorted();
+  const filtered = query ? realPlayers.filter(p => modPlayerMatchesSearch(p, query)) : realPlayers;
+  const tableMode = modPlayersShowAllSensitive;
+
+  if (table) table.classList.toggle('mod-players-table-mode', tableMode);
+
+  syncModPlayersGlobalSensitiveCheckbox();
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-dim" style="padding:16px;text-align:center;">${query ? 'No players match your search.' : 'No players yet.'}</td></tr>`;
+    return;
+  }
   
-  tbody.innerHTML = realPlayers.map(p => {
-    const isImmune = gameState.settings.immunityEnabled && gameState.immunity.immunePlayers.includes(p.name);
-    const rowClass = p.status === 'dead' ? 'dead-row' : (isImmune ? 'immune-row' : (p.status === 'ghost' ? 'ghost-row' : ''));
+  tbody.innerHTML = filtered.map(p => {
+    const showSensitive = isModPlayerSensitiveVisible(p.name);
+    const displayStatus = getModPlayerDisplayStatus(p);
+    const isImmune = displayStatus === 'immune';
+    const rowClass = showSensitive
+      ? (p.status === 'dead' ? 'dead-row' : (isImmune ? 'immune-row' : (p.status === 'ghost' ? 'ghost-row' : '')))
+      : '';
     const statusBadge = p.status === 'dead' ? '<span class="badge badge-dead">DEAD</span>' : (isImmune ? '<span class="badge badge-immune">IMMUNE</span>' : (p.status === 'ghost' ? '<span class="badge badge-ghost">GHOST</span>' : '<span class="badge badge-alive">ALIVE</span>'));
-    return `<tr class="${rowClass}">
-      <td style="font-weight: 700;">${p.name}</td>
-      <td><span class="password-cell">${p.password}</span></td>
-      <td>${statusBadge}</td>
-      <td class="text-gold" style="font-weight: 700;">${p.status === 'ghost' ? (p.ghostTarget || '—') : (p.target || '—')}</td>
-      <td>${p.kills || 0}</td>
-      <td><div class="flex-btn-group">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${escapeJsString(p.name)}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${escapeJsString(p.name)}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${escapeJsString(p.name)}')">TARGET</button><button class="btn btn-outline btn-sm" style="color:var(--blade);border-color:var(--blade2);" onclick="enterPlayerAsImpersonator('${escapeJsString(p.name)}')">👁 VIEW</button></div></td>
+    const targetDisplay = getModPlayerDisplayTarget(p) || '—';
+    const actionsHtml = `<div class="flex-btn-group">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${escapeJsString(p.name)}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${escapeJsString(p.name)}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${escapeJsString(p.name)}')">TARGET</button><button class="btn btn-outline btn-sm" style="color:var(--blade);border-color:var(--blade2);" onclick="enterPlayerAsImpersonator('${escapeJsString(p.name)}')">👁 VIEW</button></div>`;
+    const detailCells = showSensitive ? `
+      <td data-label="Password" class="mod-player-detail mod-player-sensitive-col"><span class="password-cell">${p.password}</span></td>
+      <td data-label="Status" class="mod-player-detail mod-player-sensitive-col">${statusBadge}</td>
+      <td data-label="Target" class="mod-player-detail mod-player-sensitive-col text-gold" style="font-weight: 700;">${targetDisplay}</td>
+      <td data-label="Kills" class="mod-player-detail mod-player-sensitive-col">${p.kills || 0}</td>
+      <td data-label="Actions" class="mod-player-detail mod-player-actions">${actionsHtml}</td>` : '';
+    return `<tr class="mod-player-row ${rowClass}${showSensitive ? ' mod-player-expanded' : ''}">
+      <td class="mod-player-name-cell">
+        <button type="button" class="mod-player-name-toggle" onclick="toggleModPlayerRowSensitiveClick('${escapeJsString(p.name)}')" aria-expanded="${showSensitive}" title="Show or hide player details">
+          <span class="mod-player-name">${p.name}</span>
+          <span class="mod-player-chevron" aria-hidden="true">${showSensitive ? '▾' : '▸'}</span>
+        </button>
+      </td>${detailCells}
     </tr>`;
   }).join('');
 }
@@ -3031,12 +3326,16 @@ function renderModKillLog() {
     el.innerHTML = '<div class="text-dim" style="padding: 16px;">No kills yet.</div>';
     return;
   }
-  // Build reversed list with original indices preserved
   const indexed = gameState.killLog.map((k, i) => ({ k, i })).reverse();
   el.innerHTML = indexed.map(({ k, i }) => {
     const isSystem = k.killer === 'SYSTEM';
-    const canUndo = !isSystem; // SYSTEM auto-kills from ghost target-dead cannot be undone independently
+    const blockReason = isSystem ? null : getKillUndoBlockReason(i);
     const reasonLabel = k.reason === 'ghost_target_dead' ? ' <span class="badge badge-ghost" style="font-size:8px;">TARGET DEAD</span>' : '';
+    const undoControl = isSystem
+      ? '<span class="text-dim btn-sm" style="margin-left:auto;font-size:9px;letter-spacing:1px;">AUTO</span>'
+      : blockReason
+        ? `<span class="text-dim btn-sm" style="margin-left:auto;flex-shrink:0;font-size:9px;letter-spacing:0.5px;max-width:140px;text-align:right;line-height:1.3;" title="${String(blockReason).replace(/"/g, '&quot;')}">—</span>`
+        : `<button class="btn btn-blood btn-sm" style="margin-left:auto;flex-shrink:0;" onclick="modUndoKill(${i})">UNDO</button>`;
     return `
       <div class="kill-entry">
         <div class="kill-time">${formatTime(k.time)}</div>
@@ -3047,7 +3346,7 @@ function renderModKillLog() {
           ${k.ghost ? ' <span class="badge badge-ghost">GHOST KILL</span>' : ''}
           ${reasonLabel}
         </div>
-        ${canUndo ? `<button class="btn btn-blood btn-sm" style="margin-left:auto;flex-shrink:0;" onclick="modUndoKill(${i})">UNDO</button>` : `<span class="text-dim btn-sm" style="margin-left:auto;font-size:9px;letter-spacing:1px;">AUTO</span>`}
+        ${undoControl}
       </div>`;
   }).join('');
 }
@@ -3188,16 +3487,25 @@ function renderModGhost() {
   let html = '';
   
   if (phase === 0) {
-    const deadPlayers = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name));
+    const deadPlayers = gameState.players.filter(p => p.status === 'dead' && !isModUser(gameState, p.name));
+    const activeGhosts = gameState.players.filter(p => p.status === 'ghost' && !isModUser(gameState, p.name));
     const alivePlayers = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
     const selectedAlive = new Set(gameState.ghost.selectedAlive || []);
     const selectedDead = new Set(gameState.ghost.selectedDead || []);
     const useSelected = gameState.ghost.selectionMode === 'selected';
+    const threshold = Math.max(1, parseInt(gameState.ghost.deathThreshold, 10) || 3);
+    const deadCount = getDeadNonModCount();
+    const unlocked = isGhostVoteUnlocked();
     html += `
       <div class="flex-between mb16">
         <div class="card-title" style="margin-bottom: 0;">GHOST VOTING STAGES</div>
       </div>
-      <p class="text-dim mb16">Phase 0: System Idle. Start voting to allow Alive players to revive a Dead player.</p>
+      <p class="text-dim mb16">Phase 0: System idle. Start voting after enough players are dead.</p>
+      <div class="alert ${unlocked ? 'alert-gold' : 'alert-purple'} mb16" style="font-size:10px;line-height:1.6;">
+        Death threshold: <strong>${threshold}</strong> · Dead now: <strong>${deadCount}</strong>
+        ${unlocked ? ' · ✓ Ghost vote unlocked' : ` · Need ${Math.max(0, threshold - deadCount)} more death(s)`}
+        ${activeGhosts.length ? `<br>Active ghosts (${activeGhosts.map(p => p.name).join(', ')}) cannot be chosen for a new revival.` : ''}
+      </div>
       <div class="card-title mt16">VOTING POOL MODE</div>
       <div class="settings-row mb16">
         <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 0; text-transform: none; color: var(--cream2); cursor: pointer;">
@@ -3220,9 +3528,9 @@ function renderModGhost() {
           </div>
         </div>
         <div>
-          <div class="card-title" style="margin-bottom: 8px;">DEAD/GHOST GROUP</div>
+          <div class="card-title" style="margin-bottom: 8px;">DEAD GROUP</div>
           <div style="max-height: 160px; overflow-y: auto; border: 1px solid var(--seam); padding: 8px;">
-            ${deadPlayers.length === 0 ? '<div class="text-dim">No dead/ghost players.</div>' : deadPlayers.map(p => `
+            ${deadPlayers.length === 0 ? '<div class="text-dim">No dead players.</div>' : deadPlayers.map(p => `
               <label style="display:flex;align-items:center;gap:8px;margin:6px 0;text-transform:none;letter-spacing:0;font-size:11px;color:var(--cream2);">
                 <input type="checkbox" class="ghost-select-dead" value="${p.name}" ${selectedDead.has(p.name) ? 'checked' : ''} style="width:auto;margin:0;">
                 ${p.name}
@@ -3234,8 +3542,10 @@ function renderModGhost() {
       <div class="flex-btn-group mb16">
         <button class="btn btn-outline btn-sm" onclick="saveGhostSelectionConfig()">SAVE GHOST POOL CONFIG</button>
       </div>
-      ${deadPlayers.length > 0 
-        ? `<button class="btn btn-alive btn-full" onclick="startGhostPhase1()">START STAGE 1 (ALIVE VOTING)</button>` 
+      ${deadPlayers.length > 0 && unlocked
+        ? `<button class="btn btn-alive btn-full" onclick="startGhostPhase1()">START STAGE 1 (ALIVE VOTING)</button>`
+        : deadPlayers.length > 0
+        ? `<div class="alert alert-purple">Need ${Math.max(0, threshold - deadCount)} more death(s) before ghost voting unlocks.</div>`
         : `<div class="alert alert-purple">No dead players available to revive.</div>`}
     `;
   } 
@@ -3362,8 +3672,16 @@ function renderModGhost() {
 // GHOST VOTING LOGIC - MODERATOR
 async function startGhostPhase1() {
   if (!gameState.settings.ghostEnabled) return alert('Ghost voting is disabled in settings.');
+  if (!gameState.gameStarted || gameState.gameEnded) return alert('Game must be in progress.');
+  if (gameState.gamePaused) return alert('Cannot start ghost voting while the game is paused.');
+  if ((gameState.ghost.phase || 0) !== 0) return alert('Ghost voting is already in progress.');
+  const threshold = Math.max(1, parseInt(gameState.ghost.deathThreshold, 10) || 3);
+  const deadCount = getDeadNonModCount();
+  if (deadCount < threshold) {
+    return alert(`Ghost vote locked — need ${threshold} dead player(s), currently ${deadCount}.`);
+  }
   const aliveAll = gameState.players.filter(p => p.status === 'alive' && !isModUser(gameState, p.name)).map(p => p.name);
-  const deadAll = gameState.players.filter(p => (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name)).map(p => p.name);
+  const deadAll = gameState.players.filter(p => p.status === 'dead' && !isModUser(gameState, p.name)).map(p => p.name);
   const mode = gameState.ghost.selectionMode === 'selected' ? 'selected' : 'all';
   const selectedAliveSet = toNameSet(gameState.ghost.selectedAlive);
   const selectedDeadSet = toNameSet(gameState.ghost.selectedDead);
@@ -3398,8 +3716,11 @@ async function proceedPhase1() {
   voters.forEach(p => { if (p.votes) voteCounts[p.votes] = (voteCounts[p.votes] || 0) + 1; });
   const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
 
-  // Build candidate list from dead pool
-  const deadCandidates = snap.phase1DeadCandidates || [];
+  // Build candidate list from dead pool (exclude active ghosts)
+  const deadCandidates = (snap.phase1DeadCandidates || []).filter(n => {
+    const p = gameState.players.find(x => x.name.toLowerCase() === String(n).toLowerCase());
+    return p && p.status === 'dead';
+  });
   const votesByPlayer = voters.filter(p => p.votes).map(p => ({ voter: p.name, target: p.votes }));
 
   // Detect tie
@@ -3419,9 +3740,9 @@ async function proceedPhase1() {
   if (!chosen) return; // mod cancelled
 
   const chosenTrimmed = chosen.trim();
-  const isValid = gameState.players.find(p => p.name.toLowerCase() === chosenTrimmed.toLowerCase() && (p.status === 'dead' || p.status === 'ghost') && !isModUser(gameState, p.name));
+  const isValid = gameState.players.find(p => p.name.toLowerCase() === chosenTrimmed.toLowerCase() && p.status === 'dead' && !isModUser(gameState, p.name) && !isActiveGhostName(p.name));
   if (!isValid) {
-    alert(`"${chosenTrimmed}" is not a valid dead/ghost player. Check the name and try again.`);
+    alert(`"${chosenTrimmed}" is not a valid dead player (active ghosts cannot be revived again). Check the name and try again.`);
     return;
   }
   const winnerName = isValid.name;
@@ -3473,17 +3794,19 @@ async function confirmGhost() {
 
   const player = gameState.players.find(p => p.name === gameState.ghost.pendingGhost);
   if (!player) { alert('Error: Could not find the pending ghost player.'); return; }
+  if (isActiveGhostName(player.name)) {
+    alert(`${player.name} is already an active ghost. Cancel voting and pick a dead player.`);
+    return;
+  }
 
   player.status = 'ghost';
   player.ghostTarget = targetName;
   const expiresAt = new Date(Date.now() + getGhostTimerMs(gameState)).toISOString();
-  if (!gameState.ghost.revived) gameState.ghost.revived = [];
-  gameState.ghost.revived.push({ name: player.name, expiresAt });
+  upsertGhostRevivedEntry(player.name, expiresAt);
 
   gameState.players.forEach(p => p.votes = null);
   gameState.ghost.phase = 0;
   gameState.ghost.pendingGhost = null;
-  gameState.ghost.votedPlayers = [];
   gameState.ghost.votingPoolSnapshot = null;
 
   await updateGameState({ players: gameState.players, ghost: gameState.ghost });
@@ -4357,11 +4680,7 @@ async function modResetGhostTimer(name) {
 async function modEliminateGhost(name) {
   if (!confirm(`Kill ghost ${name}?`)) return;
   const player = gameState.players.find(p => p.name === name);
-  if (player) {
-    player.status = 'dead';
-    player.ghostTarget = null;
-  }
-  gameState.ghost.revived = gameState.ghost.revived.filter(r => r.name !== name);
+  if (player) eliminateGhostPlayer(player, { toStatus: 'dead' });
   await updateGameState({ players: gameState.players, ghost: gameState.ghost });
   await logAuditEvent('ghost.eliminated_by_mod', { ghostName: name });
   renderModView();
@@ -4371,8 +4690,12 @@ async function modRevivePlayer(name) {
   const player = gameState.players.find(p => p.name === name);
   if (!player) return;
   const previousStatus = player.status;
+  if (previousStatus === 'ghost') {
+    eliminateGhostPlayer(player, { toStatus: 'dead' });
+  }
   player.status = 'alive';
-  await updateGameState({ players: gameState.players });
+  clearGhostHuntState(player);
+  await updateGameState({ players: gameState.players, ghost: gameState.ghost });
   await logAuditEvent('player.revived_by_mod', { player: name, previousStatus, nextStatus: 'alive' });
   renderModView();
 }
@@ -4387,7 +4710,11 @@ async function modKillPlayer(name) {
   const victimPrevTarget = player.target || null;
   const victimPrevGhostTarget = player.ghostTarget || null;
   if (killer) killer.target = player.target;
-  player.status = 'dead';
+  if (player.status === 'ghost') {
+    eliminateGhostPlayer(player, { toStatus: 'dead' });
+  } else {
+    player.status = 'dead';
+  }
   // Clear self-targeting that may result from this kill
   gameState.players.forEach(p => { if (p.target && p.target === p.name) p.target = null; });
   // FIX #9: Use isPlayerCurrentlyImmune() instead of .includes() — the latter is case-sensitive
@@ -4410,13 +4737,14 @@ async function modKillPlayer(name) {
     ghost: false,
     undo: {
       chainBypassKiller: killer ? killer.name : null,
+      chainBypassPrevTarget: killerPrevTarget,
       killerPrevTarget,
       victimPrevStatus,
       victimPrevTarget,
       victimPrevGhostTarget
     }
   });
-  await updateGameState({ players: gameState.players, killLog: gameState.killLog });
+  await updateGameState({ players: gameState.players, killLog: gameState.killLog, ghost: gameState.ghost });
   await logAuditEvent('player.killed_by_mod', {
     victim: name,
     killer: killer ? killer.name : null
@@ -4454,40 +4782,174 @@ async function modEditTarget(name) {
   renderModView();
 }
 
-async function modUndoKill(index) {
-  if (!confirm('Undo kill?')) return;
+function getLatestUndoableKillIndex() {
+  for (let i = gameState.killLog.length - 1; i >= 0; i--) {
+    if (gameState.killLog[i].killer !== 'SYSTEM') return i;
+  }
+  return -1;
+}
+
+function getSystemCascadeEntriesForKill(killIndex) {
+  const kill = gameState.killLog[killIndex];
+  if (!kill) return [];
+  return gameState.killLog
+    .map((k, i) => ({ k, i }))
+    .filter(({ k, i }) =>
+      i > killIndex &&
+      k.killer === 'SYSTEM' &&
+      k.reason === 'ghost_target_dead' &&
+      k.causedByVictim === kill.victim
+    );
+}
+
+function applyPlayerUndoSnapshot(player, undo) {
+  if (!player || !undo) return;
+  player.status = undo.victimPrevStatus || player.status;
+  player.target = undo.victimPrevTarget ?? player.target;
+  player.ghostTarget = undo.victimPrevGhostTarget ?? player.ghostTarget;
+  if (player.status === 'ghost') {
+    const expiresAt = undo.victimPrevRevivedExpiry || new Date(Date.now() + getGhostTimerMs(gameState)).toISOString();
+    upsertGhostRevivedEntry(player.name, expiresAt);
+  } else {
+    removeGhostRevivedEntry(player.name);
+    clearGhostHuntState(player);
+  }
+}
+
+function getKillUndoBlockReason(index) {
   const kill = gameState.killLog[index];
-  if (!kill) { alert('Kill entry not found.'); return; }
+  if (!kill) return 'Kill entry not found.';
   if (kill.killer === 'SYSTEM' || !kill.undo) {
-    alert('This kill was auto-generated by the system and cannot be individually undone. Use REVIVE on the player instead.');
-    return;
+    return 'Auto-generated kills cannot be undone directly.';
+  }
+  if (gameState.gameEnded) return 'Cannot undo kills after the game has ended.';
+  const latestUndoable = getLatestUndoableKillIndex();
+  if (latestUndoable !== index) {
+    return 'Only the most recent player/mod kill can be undone.';
+  }
+  const cascade = getSystemCascadeEntriesForKill(index);
+  const cascadeIndices = new Set(cascade.map(entry => entry.i));
+  for (let i = index + 1; i < gameState.killLog.length; i++) {
+    if (!cascadeIndices.has(i)) {
+      return 'Undo newer kills before this one.';
+    }
   }
   const victim = gameState.players.find(p => p.name === kill.victim);
-  const undo = kill.undo;
-  if (victim) {
-    victim.status = undo.victimPrevStatus || 'alive';
-    victim.target = undo.victimPrevTarget ?? victim.target;
-    victim.ghostTarget = undo.victimPrevGhostTarget ?? victim.ghostTarget;
+  if (!victim) return `${kill.victim} is no longer in the game.`;
+  if (victim.status !== 'dead') {
+    return `${kill.victim} is not dead — undo is not possible.`;
   }
+  if (kill.killer !== 'MOD') {
+    const killer = gameState.players.find(p => p.name === kill.killer);
+    if (!killer) return `Killer ${kill.killer} is no longer in the game.`;
+    if (killer.status === 'dead') {
+      return `${kill.killer} is dead — this kill cannot be undone.`;
+    }
+    if (kill.ghost && killer.status !== 'alive') {
+      return `${kill.killer} must be alive to undo this ghost kill.`;
+    }
+  }
+  const undo = kill.undo;
+  if (undo.chainBypassKiller) {
+    const chainPlayer = gameState.players.find(p => p.name === undo.chainBypassKiller);
+    if (!chainPlayer) return `Chain player ${undo.chainBypassKiller} is no longer in the game.`;
+    if (chainPlayer.status === 'dead') {
+      return `${undo.chainBypassKiller} is dead — undo would corrupt the target chain.`;
+    }
+  }
+  for (const { k } of cascade) {
+    const ghost = gameState.players.find(p => p.name === k.victim);
+    if (!ghost) return `Auto-killed ghost ${k.victim} is no longer in the game.`;
+    if (ghost.status !== 'dead') {
+      return `${k.victim} is not dead — linked auto-kill cannot be reversed.`;
+    }
+    if (!k.undo) return `Missing undo data for auto-kill of ${k.victim}.`;
+  }
+  return null;
+}
+
+function applyMainKillUndo(kill) {
+  const undo = kill.undo;
+  const victim = gameState.players.find(p => p.name === kill.victim);
+  if (victim) applyPlayerUndoSnapshot(victim, undo);
+
   if (kill.killer && kill.killer !== 'MOD') {
     const killer = gameState.players.find(p => p.name === kill.killer);
     if (killer) {
-      if (kill.ghost) killer.ghostTarget = undo.killerPrevGhostTarget ?? killer.ghostTarget;
-      else killer.target = undo.killerPrevTarget ?? killer.target;
+      if (kill.ghost) {
+        killer.status = undo.killerPrevStatus || 'ghost';
+        killer.target = undo.killerPrevTarget ?? killer.target;
+        killer.ghostTarget = undo.killerPrevGhostTarget ?? null;
+        if (killer.status === 'ghost') {
+          const expiresAt = undo.killerPrevRevivedExpiry || new Date(Date.now() + getGhostTimerMs(gameState)).toISOString();
+          upsertGhostRevivedEntry(killer.name, expiresAt);
+        } else {
+          removeGhostRevivedEntry(killer.name);
+          clearGhostHuntState(killer);
+        }
+      } else {
+        killer.target = undo.killerPrevTarget ?? killer.target;
+      }
       killer.kills = Math.max(0, (killer.kills || 0) - 1);
       if (killer.lastKill === kill.victim) killer.lastKill = null;
     }
   }
+
   if (undo.chainBypassKiller) {
-    const chainBypassKiller = gameState.players.find(p => p.name === undo.chainBypassKiller);
-    if (chainBypassKiller) chainBypassKiller.target = undo.killerPrevTarget ?? chainBypassKiller.target;
+    const chainPlayer = gameState.players.find(p => p.name === undo.chainBypassKiller);
+    if (chainPlayer) {
+      chainPlayer.target = undo.chainBypassPrevTarget ?? undo.killerPrevTarget ?? kill.victim;
+    }
   }
-  gameState.killLog.splice(index, 1);
-  await updateGameState({ players: gameState.players, killLog: gameState.killLog });
+}
+
+async function modUndoKill(index) {
+  const blockReason = getKillUndoBlockReason(index);
+  if (blockReason) {
+    alert(blockReason);
+    return;
+  }
+  const kill = gameState.killLog[index];
+  const cascade = getSystemCascadeEntriesForKill(index);
+  const cascadeSummary = cascade.map(({ k }) => ({
+    killer: k.killer,
+    victim: k.victim,
+    time: k.time,
+    reason: k.reason || null
+  }));
+  const confirmMsg = cascade.length
+    ? `Undo this kill and ${cascade.length} linked auto-kill(s)?\n\nThey will be removed from the case log. A record will remain in the audit trail.`
+    : 'Undo this kill?\n\nIt will be removed from the case log. A record will remain in the audit trail.';
+  if (!confirm(confirmMsg)) return;
+
+  const removedEntries = [
+    {
+      killer: kill.killer,
+      victim: kill.victim,
+      time: kill.time,
+      ghost: Boolean(kill.ghost),
+      reason: kill.reason || null
+    },
+    ...cascadeSummary
+  ];
+
+  cascade.forEach(({ k }) => {
+    const ghost = gameState.players.find(p => p.name === k.victim);
+    if (ghost && k.undo) applyPlayerUndoSnapshot(ghost, k.undo);
+  });
+  applyMainKillUndo(kill);
+
+  const removeIndices = new Set([index, ...cascade.map(entry => entry.i)]);
+  gameState.killLog = gameState.killLog.filter((_, i) => !removeIndices.has(i));
+
+  await updateGameState({ players: gameState.players, killLog: gameState.killLog, ghost: gameState.ghost });
   await logAuditEvent('kill.undo_by_mod', {
     killer: kill.killer,
     victim: kill.victim,
-    originalTime: kill.time
+    ghost: Boolean(kill.ghost),
+    originalTime: kill.time,
+    removedFromCaseLog: removedEntries,
+    cascadeAutoKillsUndone: cascadeSummary
   });
   renderModView();
 }
@@ -5130,35 +5592,39 @@ async function reconcileGhostTargetsDead() {
   // fires immediately after any Firebase write and calls gameState = normalizeState(snap.val()),
   // which overwrites local mutations. By deciding what needs to change first and then doing
   // a single atomic write, we avoid the race where a listener fires between two mutations.
-  const toKill = ghosts.filter(ghost => {
+  const toKill = [];
+  ghosts.forEach(ghost => {
     const target = ghost.ghostTarget || ghost.target;
-    if (!target) return false;
+    if (!target) return;
     const targetPlayer = gameState.players.find(p => p.name === target);
-    return targetPlayer && targetPlayer.status === 'dead';
+    if (targetPlayer && targetPlayer.status === 'dead') {
+      toKill.push({ ghost, causedByVictim: target });
+    }
   });
 
   if (!toKill.length) return false;
 
-  const newKillLogEntries = toKill.map(ghost => ({
+  const newKillLogEntries = toKill.map(({ ghost, causedByVictim }) => ({
     killer: 'SYSTEM',
     victim: ghost.name,
     time: new Date().toISOString(),
     ghost: false,
     reason: 'ghost_target_dead',
-    undo: null
+    causedByVictim,
+    undo: {
+      victimPrevStatus: ghost.status,
+      victimPrevTarget: ghost.target || null,
+      victimPrevGhostTarget: ghost.ghostTarget || null,
+      victimPrevRevivedExpiry: getGhostRevivedEntry(ghost.name)?.expiresAt || null
+    }
   }));
 
-  // Apply mutations after snapshot is fully decided
-  toKill.forEach(ghost => {
-    ghost.status = 'dead';
-    ghost.ghostTarget = null;
-  });
-  gameState.ghost.revived = (gameState.ghost.revived || []).filter(r => !toKill.some(g => g.name === r.name));
+  toKill.forEach(({ ghost }) => eliminateGhostPlayer(ghost, { toStatus: 'dead' }));
   gameState.killLog.push(...newKillLogEntries);
 
   // Single atomic write — prevents partial state if the listener fires mid-way
   await updateGameState({ players: gameState.players, 'ghost/revived': gameState.ghost.revived, killLog: gameState.killLog });
-  await logAuditEvent('ghost.auto_killed_target_dead', { victims: toKill.map(g => g.name) });
+  await logAuditEvent('ghost.auto_killed_target_dead', { victims: toKill.map(({ ghost }) => ghost.name) });
   return true;
 }
 </script>

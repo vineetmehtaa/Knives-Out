@@ -7,6 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+(function () {
+  try {
+    if (localStorage.getItem('ko_signup_closed') === '1') {
+      document.documentElement.classList.add('ko-signup-precache-closed');
+    }
+  } catch (e) {}
+})();
+</script>
 <style>
 :root {
   --ink: #060405; --ink2: #0e0809; --ink3: #160d10; --ink4: #1f1216;
@@ -94,11 +103,15 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
   transition: max-height .25s ease, opacity .2s ease;
 }
 .mod-auth-wrap.visible {
-  max-height: 120px;
+  max-height: 160px;
   opacity: 1;
+  margin-bottom: 12px;
 }
 
 .tabs-toggle { display: flex; gap: 0; margin-bottom: 24px; }
+#auth-tabs-toggle { display: none; }
+#auth-tabs-toggle.auth-tabs-ready:not(.signup-closed) { display: flex; }
+html.ko-signup-precache-closed #auth-tabs-toggle { display: none !important; }
 .tab-btn { flex: 1; padding: 12px 8px; background: transparent; border: 1px solid var(--seam); border-bottom: none; color: var(--cream3); font-family: monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
 .tab-btn.active { background: var(--blade); color: var(--ink); font-weight: 700; }
 .tab-btn:first-child { border-left: 1px solid var(--seam); }
@@ -106,6 +119,12 @@ body::after { content: ''; position: fixed; inset: 0; background: repeating-line
 
 .tab-content { display: none; }
 .tab-content.active { display: block; }
+#page-login .tab-content { display: none; }
+#page-login .tab-content.active { display: block; }
+#page-mod .tab-content { display: none; }
+#page-mod .tab-content.active { display: block; }
+#page-player .player-tab-content { display: none; }
+#page-player .player-tab-content.active { display: block; }
 
 label { display: block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); margin-bottom: 6px; margin-top: 6px; }
 input[type=text], input[type=password], input[type=time], input[type=number], select, textarea { width: 100%; background: var(--ink3); border: 1px solid var(--seam); color: var(--cream); font-family: monospace; font-size: 13px; padding: 12px; outline: none; transition: border-color .2s; margin-bottom: 16px; box-sizing: border-box; -webkit-appearance: none; appearance: none; border-radius: 0; }
@@ -318,106 +337,57 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 .password-cell { font-family: monospace; font-size: 10px; background: var(--ink3); padding: 4px 6px; display: inline-block; word-break: break-all; border-radius: 2px; border: 1px solid var(--ink4); }
 .sensitive-hidden { color: var(--cream3); letter-spacing: 2px; font-size: 10px; user-select: none; }
-.mod-players-sensitive-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
-.mod-player-name-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-weight: 700;
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.mod-player-name { word-break: break-word; line-height: 1.3; }
-.mod-player-chevron { color: var(--cream3); font-size: 11px; flex-shrink: 0; letter-spacing: 0; }
-#mod-players-table { min-width: 0; border-collapse: separate; border-spacing: 0; }
-#mod-players-table.mod-players-table-mode { min-width: 560px; border-collapse: collapse; border-spacing: 0; }
-#mod-players-table:not(.mod-players-table-mode) thead { display: none; }
-#mod-players-table:not(.mod-players-table-mode) tbody,
-#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row { display: block; }
-#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row {
-  margin-bottom: 10px;
+
+/* ── Player card list ── */
+.mp-card {
   border: 1px solid var(--seam);
   background: var(--ink2);
+  margin-bottom: 8px;
   border-radius: 2px;
   overflow: hidden;
 }
-#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row td {
-  display: block;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--seam);
-}
-#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row td:last-child { border-bottom: none; }
-#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row td.mod-player-name-cell {
-  padding: 0;
-  border-bottom: 1px solid var(--seam);
+.mp-card.mp-dead  { border-left: 3px solid var(--blood2); opacity: .75; }
+.mp-card.mp-ghost { border-left: 3px solid var(--ghost); }
+.mp-card.mp-immune { border-left: 3px solid #3a5a8a; }
+.mp-card.mp-alive { border-left: 3px solid var(--alive2); }
+.mp-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 13px 16px;
   background: var(--ink3);
+  cursor: pointer; border: none; width: 100%;
+  color: inherit; font: inherit; font-weight: 700;
+  text-align: left; -webkit-tap-highlight-color: transparent;
 }
-#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row td.mod-player-name-cell .mod-player-name-toggle { padding: 14px; }
-#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row:not(.mod-player-expanded) td.mod-player-detail { display: none; }
-#mod-players-table:not(.mod-players-table-mode) tr.mod-player-row.mod-player-expanded td.mod-player-detail { display: block; }
-#mod-players-table:not(.mod-players-table-mode) td.mod-player-detail::before {
-  content: attr(data-label);
-  display: block;
-  font-size: 8px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--cream3);
-  margin-bottom: 6px;
-  font-weight: 700;
+.mp-header:hover { background: var(--ink4); }
+.mp-name { word-break: break-word; font-size: 13px; }
+.mp-chevron { color: var(--cream3); font-size: 11px; flex-shrink: 0; transition: transform .18s; }
+.mp-card.mp-open .mp-chevron { transform: rotate(90deg); }
+.mp-body {
+  display: none;
+  padding: 0;
 }
-#mod-players-table.mod-players-table-mode tr.mod-player-row { display: table-row; margin: 0; border: none; background: transparent; border-radius: 0; overflow: visible; }
-#mod-players-table.mod-players-table-mode tr.mod-player-row td { display: table-cell; padding: 10px; border-bottom: 1px solid #161610; }
-#mod-players-table.mod-players-table-mode tr.mod-player-row td.mod-player-name-cell { background: transparent; padding: 10px; }
-#mod-players-table.mod-players-table-mode tr.mod-player-row td.mod-player-name-cell .mod-player-name-toggle { padding: 0; }
-#mod-players-table.mod-players-table-mode td.mod-player-detail::before { display: none; }
-#mod-players-table .mod-player-actions .flex-btn-group { margin: 0; }
-#mod-players-table .mod-player-actions .btn { min-width: 88px; }
+.mp-card.mp-open .mp-body { display: block; }
+.mp-row {
+  display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+  padding: 10px 16px; border-top: 1px solid var(--seam);
+  font-size: 12px;
+}
+.mp-row:last-child { border-bottom: none; }
+.mp-row-label {
+  font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--cream3); font-weight: 700; min-width: 68px; padding-top: 2px;
+  flex-shrink: 0;
+}
+.mp-row-value { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mp-actions-row {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 12px 16px; border-top: 1px solid var(--seam);
+  background: rgba(0,0,0,.15);
+}
+.mp-actions-row .btn { flex: 0 0 auto; }
 @media (max-width: 599px) {
-  #mod-tab-players .table-responsive { overflow-x: visible; margin-bottom: 0; }
-  #mod-players-table.mod-players-table-mode { min-width: 0; }
-  #mod-players-table.mod-players-table-mode thead { display: none; }
-  #mod-players-table.mod-players-table-mode tbody,
-  #mod-players-table.mod-players-table-mode tr.mod-player-row { display: block; }
-  #mod-players-table.mod-players-table-mode tr.mod-player-row {
-    margin-bottom: 10px;
-    border: 1px solid var(--seam);
-    background: var(--ink2);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  #mod-players-table.mod-players-table-mode tr.mod-player-row td { display: block; padding: 10px 14px; border-bottom: 1px solid var(--seam); }
-  #mod-players-table.mod-players-table-mode tr.mod-player-row td:last-child { border-bottom: none; }
-  #mod-players-table.mod-players-table-mode tr.mod-player-row td.mod-player-name-cell { padding: 0; background: var(--ink3); }
-  #mod-players-table.mod-players-table-mode tr.mod-player-row td.mod-player-name-cell .mod-player-name-toggle { padding: 14px; }
-  #mod-players-table.mod-players-table-mode td.mod-player-detail::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 8px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--cream3);
-    margin-bottom: 6px;
-    font-weight: 700;
-  }
-  #mod-players-table .mod-player-actions .flex-btn-group .btn {
-    flex: 1 1 calc(50% - 4px);
-    min-width: calc(50% - 4px);
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-  #mod-players-search { font-size: 16px; margin-bottom: 12px !important; }
-  #mod-tab-players .mod-toggle { font-size: 9px; padding: 10px 12px; width: 100%; }
-  #mod-tab-players .mod-players-sensitive-toolbar { margin-bottom: 12px; }
-  #mod-tab-players .text-dim.mb16 { font-size: 10px; line-height: 1.5; margin-bottom: 12px !important; }
+  #mod-players-search { font-size: 16px; }
+  .mp-actions-row .btn { flex: 1 1 calc(50% - 3px); }
 }
 
 .player-chip { padding: 14px 10px; background: var(--ink2); border: 1px solid var(--seam); text-align: center; font-size: 11px; border-radius: 2px; transition: transform 0.2s; }
@@ -463,6 +433,274 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .player-game-banner { padding: 14px 16px; margin-bottom: 16px; text-align: center; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; border-radius: 2px; }
 .player-game-banner.paused { background: #2a0d12; border: 1px solid var(--blade); color: var(--blade); }
 .player-game-banner.ended { background: var(--blood3); border: 1px solid var(--blood); color: var(--blood); }
+
+/* RA-EL — Random Elimination */
+.ra-el-panel { position: relative; }
+.ra-el-hero {
+  display: flex; align-items: center; gap: 18px;
+  padding: 22px 20px; margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(196, 30, 58, 0.14) 0%, rgba(14, 8, 9, 0.95) 55%, var(--ink2) 100%);
+  border: 1px solid var(--seam); border-left: 4px solid var(--blade);
+  position: relative; overflow: hidden;
+}
+.ra-el-hero::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 90% 10%, rgba(196, 30, 58, 0.22), transparent 42%);
+}
+.ra-el-hero-icon {
+  font-size: 36px; line-height: 1; flex-shrink: 0;
+  animation: raElPulse 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(196, 30, 58, 0.5));
+}
+.ra-el-title {
+  font-family: 'Playfair Display', serif; font-size: clamp(28px, 6vw, 38px);
+  font-weight: 900; font-style: italic; letter-spacing: 6px;
+  color: var(--cream); margin: 0 0 4px; line-height: 1;
+}
+.ra-el-subtitle {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--cream3); margin: 0;
+}
+.ra-el-stats {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+}
+.ra-el-stat-pill {
+  flex: 1 1 120px; padding: 12px 14px;
+  background: var(--ink3); border: 1px solid var(--seam);
+  text-align: center; min-width: 0;
+}
+.ra-el-stat-num {
+  font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900;
+  color: var(--blade); line-height: 1.1;
+}
+.ra-el-stat-label {
+  font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--cream3); margin-top: 4px;
+}
+.ra-el-controls {
+  background: var(--ink2); border: 1px solid var(--seam);
+  padding: 20px; margin-bottom: 16px;
+}
+.ra-el-controls .settings-row { align-items: flex-end; }
+.ra-el-count-wrap { max-width: 140px; }
+.ra-el-count-wrap input { margin-bottom: 0; font-size: 22px; text-align: center; font-weight: 700; color: var(--blade); }
+.ra-el-actions { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; justify-content: flex-end; }
+.ra-el-actions .btn { flex: 1 1 140px; min-width: 120px; }
+.ra-el-desc {
+  font-size: 10px; line-height: 1.65; color: var(--cream3);
+  margin: 14px 0 0; padding-top: 14px; border-top: 1px dashed var(--seam);
+}
+.ra-el-preview {
+  background: var(--ink2); border: 1px solid var(--blood2);
+  padding: 20px; margin-bottom: 16px;
+  box-shadow: inset 0 0 40px rgba(139, 21, 41, 0.12);
+  animation: raElPreviewIn .45s cubic-bezier(.16, 1, .3, 1) both;
+}
+.ra-el-preview-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.ra-el-preview-title {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--blood); font-weight: 700;
+}
+.ra-el-preview-count {
+  font-size: 9px; letter-spacing: 2px; color: var(--cream3);
+  text-transform: uppercase;
+}
+.ra-el-victim-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px; margin-bottom: 16px;
+}
+.ra-el-victim-card {
+  position: relative; padding: 16px 12px; text-align: center;
+  background: linear-gradient(180deg, var(--ink3), var(--ink4));
+  border: 1px solid var(--seam); overflow: hidden;
+  animation: raElCardReveal .5s cubic-bezier(.16, 1, .3, 1) both;
+}
+.ra-el-victim-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--blood);
+}
+.ra-el-victim-card.drawing {
+  animation: raElCardShuffle .12s ease-in-out infinite alternate;
+  border-color: var(--blade2);
+}
+.ra-el-victim-card.drawing .ra-el-victim-name { color: var(--cream2); }
+.ra-el-victim-card.revealed { animation: raElCardReveal .55s cubic-bezier(.16, 1, .3, 1) both; }
+.ra-el-victim-card.striking {
+  animation: raElStrike .65s cubic-bezier(.4, 0, .2, 1) forwards;
+  border-color: var(--blood); z-index: 2;
+}
+.ra-el-victim-card.struck {
+  opacity: 0.35; transform: scale(0.96);
+  border-color: var(--blood3);
+}
+.ra-el-victim-card.struck .ra-el-victim-name {
+  text-decoration: line-through; color: var(--blood);
+}
+.ra-el-victim-card.struck::after {
+  content: '✕'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px; color: var(--blood); opacity: 0.85;
+  text-shadow: 0 0 20px rgba(220, 38, 38, 0.6);
+  animation: raElXMark .4s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.ra-el-victim-index {
+  font-size: 8px; letter-spacing: 2px; color: var(--cream3);
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.ra-el-victim-name {
+  font-family: 'Playfair Display', serif; font-size: 16px;
+  font-weight: 900; font-style: italic; color: var(--cream);
+  word-break: break-word; line-height: 1.2;
+}
+.ra-el-reassign {
+  background: var(--ink3); border: 1px solid var(--seam);
+  border-left: 3px solid var(--cream3); padding: 12px 14px;
+  margin-bottom: 16px; font-size: 10px; line-height: 1.65; color: var(--cream3);
+}
+.ra-el-reassign-title {
+  font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--cream3); margin-bottom: 8px;
+}
+.ra-el-reassign-line {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 4px 0; font-family: monospace; font-size: 10px;
+}
+.ra-el-reassign-arrow { color: var(--blade); font-weight: 700; }
+.ra-el-draw-stage {
+  padding: 28px 16px; text-align: center;
+  border: 1px dashed var(--blade2); background: rgba(196, 30, 58, 0.06);
+  margin-bottom: 16px;
+}
+.ra-el-draw-label {
+  font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--blade); margin-bottom: 12px;
+  animation: raElBlink 1s ease-in-out infinite;
+}
+.ra-el-draw-name {
+  font-family: 'Playfair Display', serif; font-size: clamp(24px, 6vw, 36px);
+  font-weight: 900; font-style: italic; color: var(--cream);
+  min-height: 1.2em; transition: opacity .08s;
+}
+.ra-el-ceremony {
+  position: fixed; inset: 0; z-index: 9500;
+  background: radial-gradient(ellipse at 50% 30%, rgba(69, 10, 10, 0.45) 0%, rgba(6, 4, 5, 0.97) 65%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px 20px; text-align: center;
+  animation: raElCeremonyIn .35s ease both;
+}
+.ra-el-ceremony.hidden { display: none; }
+.ra-el-ceremony-title {
+  font-family: 'Playfair Display', serif; font-size: clamp(32px, 10vw, 56px);
+  font-weight: 900; font-style: italic; letter-spacing: 8px;
+  color: var(--blade); margin-bottom: 8px;
+  animation: raElNamePulse 1.8s ease-in-out infinite;
+}
+.ra-el-ceremony-sub {
+  font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--cream3); margin-bottom: 28px;
+}
+.ra-el-ceremony-grid {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+  max-width: 640px; width: 100%; margin-bottom: 24px;
+}
+.ra-el-ceremony-grid .ra-el-victim-card { min-width: 130px; flex: 1 1 130px; max-width: 180px; }
+.ra-el-ceremony-status {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--blood); min-height: 20px;
+}
+.ra-el-ceremony.complete .ra-el-ceremony-status { color: var(--alive); }
+@keyframes raElPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes raElPreviewIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes raElCardReveal { from { opacity: 0; transform: translateY(16px) scale(0.92); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes raElCardShuffle { from { transform: translateY(-2px); } to { transform: translateY(2px); } }
+@keyframes raElStrike {
+  0% { transform: scale(1); box-shadow: none; }
+  15% { transform: scale(1.06); box-shadow: 0 0 30px rgba(220, 38, 38, 0.7); background: rgba(139, 21, 41, 0.35); }
+  40% { transform: scale(0.98) rotate(-1deg); }
+  100% { transform: scale(0.96); opacity: 0.35; }
+}
+@keyframes raElXMark { from { transform: scale(0) rotate(-45deg); opacity: 0; } to { transform: scale(1) rotate(0deg); opacity: 0.85; } }
+@keyframes raElBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@keyframes raElCeremonyIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes raElNamePulse {
+  0%, 100% { text-shadow: 0 0 20px rgba(196, 30, 58, 0.4); }
+  50% { text-shadow: 0 0 40px rgba(196, 30, 58, 0.85), 0 0 80px rgba(196, 30, 58, 0.25); }
+}
+.ra-el-shield-panel {
+  background: rgba(14, 8, 9, 0.92); border: 1px dashed var(--seam2);
+  padding: 16px; margin-bottom: 16px;
+  animation: raElPreviewIn .35s ease both;
+}
+.ra-el-shield-panel.hidden { display: none; }
+.ra-el-shield-title {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--cream3); margin-bottom: 8px;
+}
+.ra-el-shield-chips {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 28px;
+}
+.ra-el-shield-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; background: var(--ink3); border: 1px solid var(--seam);
+  font-size: 10px; color: var(--cream2);
+}
+.ra-el-shield-chip button {
+  background: none; border: none; color: var(--blood); cursor: pointer;
+  font-size: 14px; line-height: 1; padding: 0;
+}
+.ra-el-shield-add { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+.ra-el-shield-add select { flex: 1; min-width: 140px; margin-bottom: 0; }
+.ra-el-hero-icon { cursor: pointer; user-select: none; }
+
+/* Copy password button */
+.btn-copy-pw {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; font-size: 9px; letter-spacing: 1px; font-weight: 700;
+  background: var(--ink4); border: 1px solid var(--seam); color: var(--cream3);
+  cursor: pointer; vertical-align: middle;
+  transition: color .15s, border-color .15s;
+}
+.btn-copy-pw:hover { color: var(--cream); border-color: var(--cream3); }
+.btn-copy-pw.copied { color: var(--alive); border-color: var(--alive); }
+
+/* Summary pills */
+#mod-players-summary {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.summary-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+  font-weight: 700; border-radius: 2px; white-space: nowrap;
+}
+.summary-pill.alive  { background: var(--alive2); color: var(--alive); border: 1px solid var(--alive2); }
+.summary-pill.dead   { background: var(--blood3); color: var(--blood); border: 1px solid var(--blood2); }
+.summary-pill.ghost  { background: #2a1f4a; color: var(--ghost2); border: 1px solid var(--ghost); }
+.summary-pill.immune { background: #1a2a4a; color: #7db8ff; border: 1px solid #3a5a8a; }
+.summary-pill.total  { background: var(--ink3); color: var(--cream2); border: 1px solid var(--seam); }
+
+/* Inline target editor */
+.mod-target-inline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.mod-target-select-wrap { display: none; gap: 6px; flex-wrap: wrap; align-items: center; }
+.mod-target-select-wrap.open { display: flex; }
+.mod-target-select-wrap select { margin-bottom: 0; font-size: 11px; padding: 6px 8px; flex: 1; min-width: 130px; }
+.mod-target-name-display { font-weight: 700; color: var(--blade); }
+.btn-edit-target {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 8px; font-size: 9px; letter-spacing: 1px;
+  background: transparent; border: 1px solid var(--seam2); color: var(--cream3);
+  cursor: pointer; transition: color .15s, border-color .15s;
+}
+.btn-edit-target:hover { color: var(--blade); border-color: var(--blade2); }
+
+/* Remove button */
+.btn-remove-player {
+  background: transparent !important; color: var(--cream3) !important;
+  border: 1px solid var(--seam) !important;
+}
+.btn-remove-player:hover:not(:disabled) { color: var(--blood) !important; border-color: var(--blood2) !important; }
 </style>
 </head>
 <body>
@@ -506,7 +744,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <button class="tab-btn" id="auth-tab-signup" onclick="switchAuthTab('signup', this)">SIGN UP</button>
       </div>
 
-      <div class="tab-content active" id="auth-login" style="display:block">
+      <div class="tab-content active" id="auth-login">
         <label>Username</label>
         <input type="text" id="login-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
         <label>Password</label>
@@ -519,7 +757,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <button class="btn btn-blade btn-full" onclick="doLogin()">ENTER GAME</button>
       </div>
 
-      <div class="tab-content" id="auth-signup" style="display:none">
+      <div class="tab-content" id="auth-signup">
         <label>New Username</label>
         <input type="text" id="signup-username" placeholder="your codename" autocapitalize="off" autocorrect="off">
         <label>Password</label>
@@ -733,6 +971,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <button class="tab" onclick="switchModTab('analytics')">ANALYTICS</button>
       <button class="tab" onclick="switchModTab('players')">PLAYERS & PASSWORDS</button>
       <button class="tab" onclick="switchModTab('kills')">KILL LOG</button>
+      <button class="tab" onclick="switchModTab('random-elim')">RA-EL</button>
       <button class="tab" onclick="switchModTab('immunity')">IMMUNITY</button>
       <button class="tab" onclick="switchModTab('ghost')">GHOST RULE</button>
       <button class="tab" onclick="switchModTab('settings')">SETTINGS</button>
@@ -831,29 +1070,12 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="tab-content" id="mod-tab-players">
       <div class="card">
         <div class="card-title">ALL PLAYERS & PASSWORDS</div>
-        <div class="text-dim mb16">Tap a player name to reveal or hide their details. Names are sorted A–Z.</div>
-        <div class="mod-players-sensitive-toolbar">
-          <label class="mod-toggle" style="margin:0;">
-            <input type="checkbox" id="mod-players-global-sensitive" onchange="toggleModPlayersGlobalSensitive(this.checked)">
-            Show all sensitive information
-          </label>
+        <div id="mod-players-summary" style="margin-bottom:14px;"></div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+          <input type="text" id="mod-players-search" placeholder="Search by name, status, or target…" autocapitalize="off" autocorrect="off" spellcheck="false" oninput="renderModPlayers()" style="margin-bottom:0;flex:1;min-width:180px;">
+          <button class="btn btn-outline btn-sm" id="mod-players-expand-all-btn" onclick="modPlayersToggleAll()">EXPAND ALL</button>
         </div>
-        <input type="text" id="mod-players-search" placeholder="Search by name or status…" autocapitalize="off" autocorrect="off" spellcheck="false" oninput="renderModPlayers()" style="margin-bottom:16px;">
-        <div class="table-responsive">
-          <table id="mod-players-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Password</th>
-                <th>Status</th>
-                <th>Target</th>
-                <th>Kills</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="mod-players-tbody"></tbody>
-          </table>
-        </div>
+        <div id="mod-players-list"></div>
       </div>
     </div>
 
@@ -864,79 +1086,310 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </div>
 
+    <div class="tab-content" id="mod-tab-random-elim">
+      <div class="ra-el-panel">
+        <div class="ra-el-hero">
+          <div class="ra-el-hero-icon" aria-hidden="true" onclick="onRaElHeroClick()" title="RA-EL">☢</div>
+          <div>
+            <h2 class="ra-el-title">RA-EL</h2>
+            <p class="ra-el-subtitle">Random Assassination · Elimination Lottery</p>
+          </div>
+        </div>
+
+        <div id="random-elim-status" class="ra-el-stats"></div>
+
+        <div id="ra-el-shield-panel" class="ra-el-shield-panel hidden">
+          <div class="ra-el-shield-title">Shield registry · this device only</div>
+          <p class="text-dim" style="font-size:9px;line-height:1.5;margin-bottom:10px;">Names here are skipped during RA-EL draws. Never synced or logged.</p>
+          <div id="ra-el-shield-chips" class="ra-el-shield-chips"></div>
+          <div class="ra-el-shield-add">
+            <div style="flex:1;min-width:140px;">
+              <label for="ra-el-shield-add-select">Add shield</label>
+              <select id="ra-el-shield-add-select"></select>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="addRaelShield()">SHIELD</button>
+          </div>
+        </div>
+
+        <div class="ra-el-controls">
+          <div class="settings-row">
+            <div class="ra-el-count-wrap">
+              <label for="random-elim-count">Draw count (N)</label>
+              <input type="number" id="random-elim-count" min="1" value="1">
+            </div>
+            <div class="ra-el-actions">
+              <button class="btn btn-blade" id="random-elim-pick-btn" onclick="previewRandomElimination()">DRAW NAMES</button>
+              <button class="btn btn-outline" id="random-elim-reroll-btn" onclick="previewRandomElimination(true)" disabled>RE-ROLL</button>
+            </div>
+          </div>
+          <p class="ra-el-desc">Select how many alive players to eliminate. RA-EL draws names at random, shows the list for review, and only applies kills after you confirm. Killers inherit each victim&apos;s target.</p>
+          <div class="error-msg" id="random-elim-error"></div>
+        </div>
+
+        <div id="random-elim-draw-stage" class="ra-el-draw-stage hidden">
+          <div class="ra-el-draw-label">Drawing from the pool</div>
+          <div class="ra-el-draw-name" id="random-elim-draw-name">—</div>
+        </div>
+
+        <div id="random-elim-preview" class="ra-el-preview hidden">
+          <div class="ra-el-preview-header">
+            <span class="ra-el-preview-title">Marked for elimination</span>
+            <span class="ra-el-preview-count" id="random-elim-preview-count"></span>
+          </div>
+          <div id="random-elim-preview-list" class="ra-el-victim-grid"></div>
+          <div id="random-elim-reassign-preview" class="ra-el-reassign hidden"></div>
+          <button class="btn btn-blood btn-full" id="random-elim-confirm-btn" onclick="confirmRandomElimination()">CONFIRM ELIMINATION</button>
+        </div>
+      </div>
+
+      <div id="ra-el-ceremony" class="ra-el-ceremony hidden" aria-live="polite">
+        <div class="ra-el-ceremony-title">RA-EL</div>
+        <div class="ra-el-ceremony-sub">Executing elimination sequence</div>
+        <div id="ra-el-ceremony-grid" class="ra-el-ceremony-grid"></div>
+        <div id="ra-el-ceremony-status" class="ra-el-ceremony-status">Initializing…</div>
+      </div>
+    </div>
+
     <div class="tab-content" id="mod-tab-immunity">
-      <div class="card">
-        <div class="card-title">WINDOW CONTROL</div>
-        <div id="immunity-override-banner" class="alert alert-gold hidden">Manual override active.</div>
-        <div class="settings-row mb16">
-          <div>
-            <label>Max Immune Players</label>
-            <input type="number" id="immunity-slots" min="0" max="50" value="2">
-          </div>
-          <div>
-            <label>Window Start</label>
-            <input type="time" id="immunity-start" value="15:00">
-          </div>
-        </div>
-        <div class="settings-row mb16 hidden">
-          <div>
-            <label>Window End</label>
-            <input type="time" id="immunity-end" value="15:05">
-          </div>
-        </div>
-        <button class="btn btn-blade btn-full" onclick="saveImmunitySettings()">SAVE</button>
-        <div id="immunity-window-timeline" class="text-dim mt16" style="line-height: 1.6;"></div>
+      <!-- ═══════════════════════════════════════════════════════
+           IMMUNITY — REDESIGNED PANEL
+           All original JS hooks (IDs / onclick) preserved.
+           ═══════════════════════════════════════════════════════ -->
+      <style>
+        /* ── Status bar ── */
+        #imm-status-bar {
+          display: flex; align-items: center; gap: 12px;
+          padding: 14px 16px; border: 1px solid var(--seam);
+          background: var(--ink2); margin-bottom: 16px;
+        }
+        #imm-status-dot {
+          width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+          background: var(--cream3); transition: background .3s;
+        }
+        #imm-status-dot.open  { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.18); animation: immPulse 2s infinite; }
+        #imm-status-dot.prep  { background: var(--blade); }
+        @keyframes immPulse { 0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,.18)} 50%{box-shadow:0 0 0 7px rgba(34,197,94,.05)} }
+        #imm-status-text  { flex: 1; font-size: 12px; color: var(--cream2); letter-spacing: .5px; }
+        #imm-status-badge {
+          font-size: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;
+          padding: 4px 10px; border-radius: 2px;
+        }
+        #imm-status-badge.closed  { background: var(--ink3); color: var(--cream3); border: 1px solid var(--seam); }
+        #imm-status-badge.open    { background: rgba(34,197,94,.15); color: #5ee38b; border: 1px solid rgba(34,197,94,.3); }
+        #imm-status-badge.override{ background: var(--blood3); color: var(--blood); border: 1px solid var(--blood2); }
 
-        <hr class="divider">
-        <div class="card-title mt16">CLAIM WINDOW ACTIONS</div>
-        <div class="flex-btn-group mb16">
-          <button id="immunity-open-btn" class="btn btn-alive btn-sm" onclick="modOpenClaimWindow()">OPEN WINDOW</button>
-          <button id="immunity-close-btn" class="btn btn-blood btn-sm" onclick="modCloseClaimWindow()">CLOSE WINDOW</button>
-          <button id="immunity-clear-override-btn" class="btn btn-outline btn-sm" onclick="modClearWindowOverride()">CLEAR OVERRIDE</button>
-          <button class="btn btn-outline btn-sm" onclick="repairImmunityState()">REPAIR IMMUNITY STATE</button>
-          <button class="btn btn-outline btn-sm" onclick="modClearClaims()">CLEAR CLAIM QUEUE</button>
-          <button class="btn btn-outline btn-sm" onclick="modClearImmunity()">CLEAR WINNERS ONLY</button>
-          <button class="btn btn-blood btn-sm" onclick="modResetImmunityRound()">ROUND RESET</button>
-        </div>
-        <div class="text-dim mb16" id="immunity-window-status">Claim window status: CLOSED</div>
+        /* ── Sub-tabs inside immunity panel ── */
+        .imm-tabs { display: flex; border-bottom: 1px solid var(--seam); margin-bottom: 20px; overflow-x: auto; scrollbar-width: none; }
+        .imm-tabs::-webkit-scrollbar { display: none; }
+        .imm-tab {
+          padding: 10px 16px; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+          color: var(--cream3); cursor: pointer; border-bottom: 2px solid transparent;
+          transition: all .15s; font-weight: 700; background: none;
+          border-top: none; border-left: none; border-right: none; white-space: nowrap; flex-shrink: 0;
+        }
+        .imm-tab.active { color: var(--cream); border-bottom-color: var(--blade); }
+        .imm-pane { display: none; } .imm-pane.active { display: block; }
 
-        <div class="card-title mt16">CLAIM QUEUE <span class="text-dim" style="font-size:9px;letter-spacing:1px;text-transform:none;">(kept until round reset · timestamps IST)</span></div>
-        <div id="immunity-computed-preview" class="text-dim mb16" style="line-height: 1.6;"></div>
+        /* ── Action button groups ── */
+        .imm-action-group { margin-bottom: 16px; }
+        .imm-action-label { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); font-weight: 700; margin-bottom: 8px; }
+        .imm-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* ── Window timeline strip ── */
+        .imm-timeline-strip {
+          background: var(--ink3); border: 1px solid var(--seam);
+          padding: 12px 14px; margin-bottom: 16px; font-size: 10px;
+          color: var(--cream3); line-height: 2;
+        }
+        .imm-timeline-key { color: var(--cream2); font-weight: 700; }
+
+        /* ── Claim queue ── */
+        .imm-queue-meta {
+          display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+          margin-bottom: 12px; font-size: 10px; color: var(--cream3);
+        }
+        .imm-queue-pill {
+          padding: 3px 10px; font-size: 8px; letter-spacing: 1.5px; font-weight: 700;
+          text-transform: uppercase; border-radius: 2px;
+        }
+        .imm-pill-slots  { background: rgba(196,30,58,.15); color: var(--blade); border: 1px solid var(--blade2); }
+        .imm-pill-claims { background: var(--ink3); color: var(--cream2); border: 1px solid var(--seam); }
+        .imm-pill-immune { background: rgba(34,197,94,.12); color: #5ee38b; border: 1px solid rgba(34,197,94,.25); }
+
+        .imm-queue-cutoff {
+          display: flex; align-items: center; gap: 8px;
+          padding: 5px 10px; background: rgba(139,21,41,.18);
+          border-top: 1px solid var(--blood2); border-bottom: 1px solid var(--blood2);
+          font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--blood); font-weight: 700;
+        }
+        .imm-queue-cutoff-line { flex: 1; height: 0; border-top: 1px dashed var(--blood2); opacity: .5; }
+
+        /* ── Danger zone ── */
+        .imm-danger-zone {
+          border: 1px solid var(--blood2); padding: 14px 16px;
+          background: rgba(69,10,10,.3); margin-top: 20px;
+        }
+        .imm-danger-label {
+          font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+          color: var(--blood); font-weight: 700; margin-bottom: 10px;
+        }
+
+        /* ── Config grid ── */
+        .imm-config-row {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;
+        }
+        @media (max-width: 479px) { .imm-config-row { grid-template-columns: 1fr; } }
+        .imm-config-box { background: var(--ink3); border: 1px solid var(--seam); padding: 12px 14px; }
+        .imm-config-box label { display: block; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream3); font-weight: 700; margin-bottom: 8px; }
+        .imm-config-note { font-size: 10px; color: var(--cream3); margin-top: 6px; line-height: 1.5; }
+        .imm-expiry-display {
+          width: 100%; background: var(--ink4); border: 1px solid var(--seam);
+          color: var(--cream3); font-family: monospace; font-size: 11px; padding: 10px 12px;
+          opacity: .7; cursor: default;
+        }
+      </style>
+
+      <!-- Status bar (updated by renderModImmunity) -->
+      <div id="imm-status-bar">
+        <div id="imm-status-dot" class="closed"></div>
+        <div id="imm-status-text">Claim window status: CLOSED</div>
+        <span id="imm-status-badge" class="closed">CLOSED</span>
+      </div>
+
+      <!-- Legacy element kept for JS compatibility — hidden -->
+      <div id="immunity-override-banner" class="alert alert-gold hidden" style="display:none!important">Manual override active.</div>
+
+      <!-- Sub-tab nav -->
+      <div class="imm-tabs">
+        <button class="imm-tab active" onclick="switchImmTab('window',this)">Window</button>
+        <button class="imm-tab" onclick="switchImmTab('queue',this)">Claim queue</button>
+        <button class="imm-tab" onclick="switchImmTab('immune',this)">Immune now</button>
+        <button class="imm-tab" onclick="switchImmTab('analysis',this)">Time analysis</button>
+        <button class="imm-tab" onclick="switchImmTab('config',this)">Config</button>
+      </div>
+
+      <!-- ── WINDOW sub-pane ── -->
+      <div id="imm-pane-window" class="imm-pane active">
+        <div class="imm-action-group">
+          <div class="imm-action-label">Window override</div>
+          <div class="imm-btn-row">
+            <button id="immunity-open-btn"         class="btn btn-alive btn-sm"   onclick="modOpenClaimWindow()">⬤ OPEN WINDOW</button>
+            <button id="immunity-close-btn"        class="btn btn-blood btn-sm"   onclick="modCloseClaimWindow()">■ CLOSE WINDOW</button>
+            <button id="immunity-clear-override-btn" class="btn btn-outline btn-sm" onclick="modClearWindowOverride()">CLEAR OVERRIDE</button>
+          </div>
+        </div>
+
+        <div class="imm-timeline-strip" id="immunity-window-timeline">
+          <span class="imm-timeline-key">Timeline</span> — window history will appear here after the first open/close cycle.
+        </div>
+
+        <!-- Legacy status line kept for JS (hidden; status shown in bar above) -->
+        <div id="immunity-window-status" style="display:none;"></div>
+
+        <div class="imm-action-group">
+          <div class="imm-action-label">Round maintenance</div>
+          <div class="imm-btn-row">
+            <button class="btn btn-outline btn-sm" onclick="repairImmunityState()">REPAIR STATE</button>
+            <button class="btn btn-outline btn-sm" onclick="modTrimNonWinners()">TRIM NON-WINNERS</button>
+            <button class="btn btn-outline btn-sm" onclick="modExportClaimList()">EXPORT LIST</button>
+          </div>
+        </div>
+
+        <div class="imm-danger-zone">
+          <div class="imm-danger-label">⚠ DANGER ZONE</div>
+          <div class="imm-btn-row">
+            <button class="btn btn-blood btn-sm" onclick="modResetImmunityRound()">ROUND RESET</button>
+            <button class="btn btn-outline btn-sm" onclick="modClearClaims()">CLEAR CLAIM QUEUE</button>
+            <button class="btn btn-outline btn-sm" onclick="modClearImmunity()">CLEAR WINNERS ONLY</button>
+          </div>
+          <div class="text-dim mt8" style="font-size:10px;line-height:1.6;">
+            <strong style="color:var(--cream2)">ROUND RESET</strong> — clears queue + winners + override before each day's window.
+            Run this first, then open the window.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CLAIM QUEUE sub-pane ── -->
+      <div id="imm-pane-queue" class="imm-pane">
+        <div class="imm-queue-meta">
+          <span class="imm-queue-pill imm-pill-slots"  id="imm-pill-slots">— slots</span>
+          <span class="imm-queue-pill imm-pill-claims" id="imm-pill-claims">— claims</span>
+          <span class="imm-queue-pill imm-pill-immune" id="imm-pill-immune">— immune</span>
+          <span style="margin-left:auto;font-size:9px;letter-spacing:1px;">Sorted by claim time · timestamps IST</span>
+        </div>
+        <div id="immunity-computed-preview" class="text-dim mb8" style="font-size:10px;line-height:1.6;"></div>
         <div id="immunity-claim-queue" class="mb16"></div>
+        <div class="text-dim" style="font-size:10px;line-height:1.8;background:var(--ink3);border:1px solid var(--seam);border-left:3px solid var(--seam2);padding:10px 12px;margin-top:4px;">
+          <strong style="color:var(--cream2);display:block;margin-bottom:4px;">How immunity is awarded</strong>
+          Only the first <strong style="color:var(--blade);">N</strong> players to claim during this round's window win immunity — determined purely by who was fastest.
+          The queue is a timing record for this round only. If a winner's immunity is later consumed or revoked,
+          the slot does <em>not</em> pass down to the next person in queue — the round is over and no new slots open.
+          Run <strong>Round Reset</strong> before the next day's window to start fresh.
+        </div>
+      </div>
+
+      <!-- ── IMMUNE NOW sub-pane ── -->
+      <div id="imm-pane-immune" class="imm-pane">
+        <div class="card-title">IMMUNE NOW</div>
+        <ul class="inline-list mb16" id="immune-players-list"></ul>
 
         <hr class="divider">
-        <div class="card-title mt16">OUTCOME CONTROL</div>
-        <div class="settings-row">
+        <div class="card-title">MANUAL GRANT / REVOKE</div>
+        <div class="settings-row mb8">
           <div>
             <label>Player</label>
             <select id="immunity-player-select"></select>
           </div>
-          <div style="display: flex; align-items: flex-end; gap: 8px;">
-            <button class="btn btn-blade" onclick="grantImmunity()" style="flex:1;">GRANT</button>
-            <button class="btn btn-outline" onclick="revokeImmunity()" style="flex:1;">REVOKE</button>
+          <div style="display:flex;align-items:flex-end;gap:8px;">
+            <button class="btn btn-alive" onclick="grantImmunity()"  style="flex:1;">GRANT</button>
+            <button class="btn btn-blood" onclick="revokeImmunity()" style="flex:1;">REVOKE</button>
           </div>
         </div>
+        <div id="immunity-action-feedback" class="alert alert-gold hidden" role="status" style="line-height:1.5;"></div>
+      </div>
 
-        <div class="card-title mt16">IMMUNE NOW</div>
-        <ul class="inline-list" id="immune-players-list"></ul>
+      <!-- ── TIME ANALYSIS sub-pane ── -->
+      <div id="imm-pane-analysis" class="imm-pane">
+        <div class="card-title">CLAIM TIME ANALYSIS</div>
+        <div id="immunity-time-chart" class="mb16"></div>
+      </div>
 
-        <div id="immunity-action-feedback" class="alert alert-gold hidden mt16" role="status" style="line-height:1.5;"></div>
+      <!-- ── CONFIG sub-pane ── -->
+      <div id="imm-pane-config" class="imm-pane">
+        <div class="imm-config-row">
+          <div class="imm-config-box">
+            <label>Max immune players (slots)</label>
+            <input type="number" id="immunity-slots" min="0" max="50" value="2">
+            <div class="imm-config-note">First N claimants win immunity each round.</div>
+          </div>
+          <div class="imm-config-box">
+            <label>Window start (IST)</label>
+            <input type="time" id="immunity-start" value="15:00">
+            <div class="imm-config-note">Window always runs for 5 minutes (ends 15:05).</div>
+          </div>
+        </div>
+        <!-- Hidden end input preserved for JS — value kept in sync -->
+        <input type="time" id="immunity-end" value="15:05" style="display:none;">
+        <div class="imm-config-box mb16">
+          <label>Immunity expires at</label>
+          <div class="imm-expiry-display" id="imm-expiry-display">Start − 30 min (next day IST) · auto-calculated</div>
+          <div class="imm-config-note">Cannot be changed manually. Updates when you save the window start time.</div>
+        </div>
+        <button class="btn btn-blade btn-full" onclick="saveImmunitySettings()">SAVE CONFIGURATION</button>
 
         <hr class="divider">
-        <div class="card-title mt16">HOW THIS PAGE WORKS</div>
-        <div class="text-dim" style="line-height:1.7;font-size:11px;">
-          <p style="margin:0 0 10px;"><strong>SAVE</strong> — Max slots + daily start (IST). End is always start + 5 minutes (e.g. 3:00 → 3:05).</p>
-          <p style="margin:0 0 10px;"><strong>ROUND RESET</strong> — Run before each day&apos;s window: clears queue, winners, and override.</p>
-          <p style="margin:0 0 10px;"><strong>OPEN / CLOSE WINDOW</strong> — Manual override. CLOSE finalizes top N from the queue; queue and immunity stay visible until round reset.</p>
-          <p style="margin:0 0 10px;"><strong>Immunity duration</strong> — Until (start − 30 min) next calendar day IST (3:00 PM window → 2:30 PM tomorrow).</p>
-          <p style="margin:0 0 10px;"><strong>REPAIR</strong> — Rebuilds immune list from the claim queue (top N by timestamp).</p>
-          <p style="margin:0 0 10px;"><strong>CLEAR CLAIM QUEUE</strong> — Removes claim records (also clears immune list via recompute).</p>
-          <p style="margin:0 0 10px;"><strong>CLEAR WINNERS ONLY</strong> — Removes immune players; claim queue stays.</p>
-          <p style="margin:0 0 10px;"><strong>GRANT / REVOKE</strong> — Manually add or remove one player. Default protection lasts <strong>23h 30m</strong> after the claim window ends.</p>
-          <p style="margin:0;"><strong>IMMUNE NOW</strong> — Live list with countdown. Immunity ends at expiry or if consumed by an attack.</p>
+        <div class="card-title">HOW THIS WORKS</div>
+        <div class="text-dim" style="line-height:1.9;font-size:11px;">
+          <p style="margin:0 0 4px;"><strong style="color:var(--cream2)">SAVE</strong> — sets slots + window start. Window always 5 min. Immunity lasts until start − 30 min next day IST.</p>
+          <p style="margin:0 0 4px;"><strong style="color:var(--cream2)">ROUND RESET</strong> (Window tab) — run before each day's window. Clears queue, winners, and overrides.</p>
+          <p style="margin:0 0 4px;"><strong style="color:var(--cream2)">OPEN / CLOSE</strong> — manual override. CLOSE finalizes top-N winners from the queue.</p>
+          <p style="margin:0 0 4px;"><strong style="color:var(--cream2)">REPAIR</strong> — recomputes winners from queue if state looks wrong.</p>
+          <p style="margin:0 0 4px;"><strong style="color:var(--cream2)">TRIM NON-WINNERS</strong> — removes non-winner entries, keeping only winners' claims in the queue.</p>
+          <p style="margin:0;"><strong style="color:var(--cream2)">GRANT / REVOKE</strong> (Immune now tab) — manual single-player override. Immune Now shows live countdowns.</p>
         </div>
       </div>
-    </div>
+
+    </div><!-- /mod-tab-immunity -->
 
     <div class="tab-content" id="mod-tab-ghost">
       <div class="card">
@@ -1060,8 +1513,15 @@ let _startGameDraftMode = 'random';
 let immunityWindowSyncInFlight = false;
 let ghostTimerInterval = null;
 let modGhostListTimerInterval = null;
+// legacy compat stubs (unused — player list now uses modPlayersOpenSet)
 let modPlayersShowAllSensitive = false;
 const modPlayersRowSensitive = new Set();
+let randomEliminationPreview = null;
+let randomEliminationBusy = false;
+let _drawHeroTaps = 0;
+let _drawHeroTapTimer = null;
+let _drawAuxPanelOpen = false;
+const _DRAW_AUX_KEY = 'ko_draw_cfg';
 
 function getGhostTimerHours(state) {
   const h = parseFloat(state?.ghost?.killHours);
@@ -1145,7 +1605,7 @@ function isGhostPhase2Voter(player) {
   return player.status === 'dead' || player.status === 'ghost';
 }
 let missedTimerInterval = null;
-const USERNAME_REGEX = /^[A-Za-z0-9_-]{3,24}$/;
+const USERNAME_REGEX = /^[A-Za-z0-9_-]{3,50}$/;
 const MISSED_IMMUNITY_WINDOW_MS = (5 * 60 * 1000) + 990;
 const IMMUNITY_DURATION_MS = ((23 * 60) + 30) * 60 * 1000; // fallback: ~23h30m after window close if start time unset
 
@@ -1158,23 +1618,32 @@ function updateSignupAvailability() {
   const inProgress = isGameInProgress();
   const tabsToggle = document.getElementById('auth-tabs-toggle');
   const signupTab = document.getElementById('auth-tab-signup');
-  if (tabsToggle) tabsToggle.style.display = inProgress ? 'none' : '';
+  if (tabsToggle) {
+    tabsToggle.classList.add('auth-tabs-ready');
+    tabsToggle.classList.toggle('signup-closed', inProgress);
+    tabsToggle.style.display = '';
+  }
   if (signupTab) {
-    signupTab.style.display = inProgress ? 'none' : '';
+    signupTab.style.display = '';
     signupTab.disabled = inProgress;
   }
   if (inProgress) {
     const loginTab = document.getElementById('auth-tab-login');
     switchAuthTab('login', loginTab);
   }
+  try {
+    localStorage.setItem(SIGNUP_CLOSED_CACHE_KEY, inProgress ? '1' : '0');
+  } catch (e) {}
 }
 
 function switchAuthTab(tab, trigger) {
   if (tab === 'signup' && isGameInProgress()) return;
   document.querySelectorAll('#auth-tabs-toggle .tab-btn').forEach(t => t.classList.remove('active'));
   if (trigger) trigger.classList.add('active');
-  document.getElementById('auth-login').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('auth-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  const loginEl = document.getElementById('auth-login');
+  const signupEl = document.getElementById('auth-signup');
+  if (loginEl) loginEl.classList.toggle('active', tab === 'login');
+  if (signupEl) signupEl.classList.toggle('active', tab === 'signup');
   if (tab !== 'signup') {
     const signupErr = document.getElementById('signup-error');
     if (signupErr) signupErr.textContent = '';
@@ -2239,6 +2708,7 @@ async function syncScheduledImmunityWindow() {
 // REMEMBER ME
 // =====================================================================
 const REMEMBER_ME_KEY = 'ko_remember_me';
+const SIGNUP_CLOSED_CACHE_KEY = 'ko_signup_closed';
 
 function saveRememberMe(username, isMod) {
   try {
@@ -2295,8 +2765,8 @@ async function doLogin() {
   const isMod = isModUser(state, username);
 
   const modAuthOk = isMod && (
-    password === state.modPassword ||
-    (player && (password === player.password || password === state.gamePassword))
+    password === gameState.modPassword ||
+    (player && (password === player.password || password === gameState.gamePassword))
   );
 
   if (modAuthOk) {
@@ -2309,7 +2779,7 @@ async function doLogin() {
     return;
   }
 
-  if (player && (password === player.password || password === state.gamePassword)) {
+  if (player && (password === player.password || password === gameState.gamePassword)) {
     currentUser = player.name;
     currentIsMod = isModUser(state, player.name);
     if (rememberMe) saveRememberMe(currentUser, currentIsMod);
@@ -2332,7 +2802,7 @@ async function doSignup() {
 
   if (!username || !password) { errEl.textContent = 'Enter username and password.'; return; }
   if (!isValidUsername(username)) {
-    errEl.textContent = 'Username must be 3-24 chars: letters, numbers, _ or -.';
+    errEl.textContent = 'Username must be 3-50 chars: letters, numbers, _ or -.';
     return;
   }
 
@@ -2349,7 +2819,8 @@ async function doSignup() {
   let isMod = false;
   if (wantsMod) {
     if (!modPass) { errEl.textContent = 'Enter moderator password to create moderator account.'; return; }
-    if (modPass !== state.modPassword) { errEl.textContent = 'Invalid moderator password.'; return; }
+    const modPassword = gameState.modPassword || getDefaultState().modPassword;
+    if (modPass !== modPassword) { errEl.textContent = 'Invalid moderator password.'; return; }
     isMod = true;
   }
 
@@ -2358,10 +2829,10 @@ async function doSignup() {
     ghostTarget: null, votes: null
   };
 
-  state.players.push(newPlayer);
-  if (isMod && !isModUser(state, username)) { state.mods.push(username); }
+  gameState.players.push(newPlayer);
+  if (isMod && !isModUser(gameState, username)) { gameState.mods.push(username); }
 
-  await updateGameState({ players: state.players, mods: state.mods });
+  await updateGameState({ players: gameState.players, mods: gameState.mods });
 
   currentUser = username; currentIsMod = isMod;
   isMod ? enterMod() : enterPlayer();
@@ -2672,6 +3143,23 @@ function renderPlayerView(player) {
       blindClaimStatus.innerHTML = '<p class="immunity-claim-done">✓ Claim received — window still open</p>';
     } else if (isPrep) {
       blindClaimStatus.textContent = `Immunity window opens at ${gameState.immunity.start} IST — get ready.`;
+      // Start a live prep countdown if possible
+      (function startPrepCountdown() {
+        if (window._prepCountdownInterval) clearInterval(window._prepCountdownInterval);
+        const tick = () => {
+          const start = parseTimeToMinutes(gameState.immunity.start);
+          if (start === null) return;
+          const now = getCurrentMinutesOfDay();
+          let diffMin = start - now;
+          if (diffMin < 0) diffMin += 1440;
+          const totalSec = Math.round(diffMin * 60);
+          if (totalSec <= 0 || totalSec > 300) return; // only show ≤5 min out
+          const m = Math.floor(totalSec / 60), s = totalSec % 60;
+          blindClaimStatus.textContent = `Window opens in ${m}:${s < 10 ? '0' : ''}${s} — get ready.`;
+        };
+        tick();
+        window._prepCountdownInterval = setInterval(tick, 1000);
+      })();
     } else if (windowOpen) {
       blindClaimStatus.textContent = 'Immunity window is open — claim now before it closes.';
       blindClaimBtn.classList.remove('hidden');
@@ -2693,7 +3181,7 @@ function renderPlayerView(player) {
           return;
         }
         blindClaimStatus.innerHTML =
-          `You missed the immunity window by:<br><span style="color: var(--blood); font-weight: 900; font-size: 16px; letter-spacing: 2px;">${formatElapsedMsMMSSMMM(liveElapsed)}</span>`;
+          `Window closed — next round tomorrow at ${gameState.immunity.start} IST.`;
       };
       tickMissed();
       missedTimerInterval = setInterval(tickMissed, 16);
@@ -2946,6 +3434,7 @@ async function confirmKillAsVictim() {
   const codeSnap = await db.ref(`/game/pendingCodes/${code}`).once('value');
   const entry = codeSnap.val();
   if (!entry) { errEl.textContent = 'Invalid code.'; return; }
+  if (entry.immunityConsumed) { errEl.textContent = 'Code already used — immunity was consumed.'; return; }
   if (Date.now() > entry.expires) { errEl.textContent = 'Code expired.'; return; }
   if (entry.victim.toLowerCase() !== currentUser.toLowerCase()) { errEl.textContent = 'Code not for you.'; return; }
 
@@ -2964,11 +3453,9 @@ async function confirmKillAsVictim() {
     errEl.innerHTML = immunityBlockedKillMessageHtml('victim');
     // Notify mod
     pushNotification('immunity', `${entry.killer}'s attack on ${name} was saved by immunity`, `${name} used their immunity. They are no longer protected.`, 'mod');
-    // Atomically remove the code after 15s
-    setTimeout(() => {
-      db.ref(`/game/pendingCodes/${code}`).remove();
-      if (gameState.pendingCodes) delete gameState.pendingCodes[code];
-    }, 15000);
+    // Remove code immediately — it's consumed and cannot be reused
+    await db.ref(`/game/pendingCodes/${code}`).remove();
+    if (gameState.pendingCodes) delete gameState.pendingCodes[code];
     const player = gameState.players.find(p => p.name === currentUser);
     if (player) renderPlayerView(player);
     return;
@@ -3089,7 +3576,7 @@ function renderStatusPage() {
 }
 
 function getActiveModTab() {
-  const tabs = ['dashboard','analytics','players','kills','immunity','ghost','settings','notifications'];
+  const tabs = ['dashboard','analytics','players','kills','random-elim','immunity','ghost','settings','notifications'];
   return tabs.find(t => document.getElementById('mod-tab-' + t)?.classList.contains('active')) || 'dashboard';
 }
 
@@ -3109,6 +3596,7 @@ function renderModView() {
     case 'analytics': renderModAnalytics(); break;
     case 'players':   renderModPlayers(); break;
     case 'kills':     renderModKillLog(); break;
+    case 'random-elim': renderModRandomElimination(); break;
     case 'immunity':  renderModImmunity(); break;
     case 'ghost':     renderModGhost(); break;
     case 'settings':  renderModSettings(); break;
@@ -3204,42 +3692,9 @@ function renderModDashboard() {
     `).join('');
 }
 
-function isModPlayerSensitiveVisible(playerName) {
-  return modPlayersShowAllSensitive || modPlayersRowSensitive.has(playerName);
-}
-
-function syncModPlayersGlobalSensitiveCheckbox() {
-  const globalEl = document.getElementById('mod-players-global-sensitive');
-  if (!globalEl) return;
-  const realPlayers = getModPlayersSorted();
-  globalEl.checked = modPlayersShowAllSensitive ||
-    (realPlayers.length > 0 && realPlayers.every(p => modPlayersRowSensitive.has(p.name)));
-}
-
-function toggleModPlayersGlobalSensitive(checked) {
-  modPlayersShowAllSensitive = checked;
-  const realPlayers = getModPlayersSorted();
-  if (checked) {
-    realPlayers.forEach(p => modPlayersRowSensitive.add(p.name));
-  } else {
-    modPlayersRowSensitive.clear();
-  }
-  renderModPlayers();
-}
-
-function toggleModPlayerRowSensitive(playerName, checked) {
-  if (checked) modPlayersRowSensitive.add(playerName);
-  else {
-    modPlayersRowSensitive.delete(playerName);
-    modPlayersShowAllSensitive = false;
-  }
-  syncModPlayersGlobalSensitiveCheckbox();
-  renderModPlayers();
-}
-
-function toggleModPlayerRowSensitiveClick(playerName) {
-  toggleModPlayerRowSensitive(playerName, !isModPlayerSensitiveVisible(playerName));
-}
+// ── mod-players state: just a Set of open card names ──
+const modPlayersOpenSet = new Set();
+let modPlayersAllOpen = false;
 
 function getModPlayersSorted() {
   return (gameState?.players || [])
@@ -3259,66 +3714,194 @@ function getModPlayerDisplayTarget(p) {
   return p.status === 'ghost' ? (p.ghostTarget || '') : (p.target || '');
 }
 
-/** Searchable fields: player name and status only. */
 function getModPlayerSearchColumns(p) {
-  const displayStatus = getModPlayerDisplayStatus(p);
-  return [
-    p.name || '',
-    displayStatus
-  ].map(v => String(v).toLowerCase());
+  return [p.name || '', getModPlayerDisplayStatus(p), getModPlayerDisplayTarget(p) || '']
+    .map(v => String(v).toLowerCase());
 }
 
 function modPlayerMatchesSearch(p, query) {
   if (!query) return true;
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (terms.length === 0) return true;
-  const columns = getModPlayerSearchColumns(p);
-  return terms.every(term => columns.some(col => col.includes(term)));
+  if (!terms.length) return true;
+  const cols = getModPlayerSearchColumns(p);
+  return terms.every(t => cols.some(c => c.includes(t)));
+}
+
+function modPlayersToggleAll() {
+  const players = getModPlayersSorted();
+  modPlayersAllOpen = !modPlayersAllOpen;
+  players.forEach(p => modPlayersAllOpen ? modPlayersOpenSet.add(p.name) : modPlayersOpenSet.delete(p.name));
+  const btn = document.getElementById('mod-players-expand-all-btn');
+  if (btn) btn.textContent = modPlayersAllOpen ? 'COLLAPSE ALL' : 'EXPAND ALL';
+  renderModPlayers();
+}
+
+function modPlayersToggleCard(name) {
+  if (modPlayersOpenSet.has(name)) modPlayersOpenSet.delete(name);
+  else modPlayersOpenSet.add(name);
+  // Update button label
+  const players = getModPlayersSorted();
+  modPlayersAllOpen = players.length > 0 && players.every(p => modPlayersOpenSet.has(p.name));
+  const btn = document.getElementById('mod-players-expand-all-btn');
+  if (btn) btn.textContent = modPlayersAllOpen ? 'COLLAPSE ALL' : 'EXPAND ALL';
+  renderModPlayers();
+}
+
+function renderModPlayersSummary(realPlayers) {
+  const el = document.getElementById('mod-players-summary');
+  if (!el) return;
+  const immuneSet = new Set((gameState?.immunity?.immunePlayers || []).map(n => n.toLowerCase()));
+  let alive = 0, dead = 0, ghost = 0, immune = 0;
+  realPlayers.forEach(p => {
+    if (p.status === 'dead') dead++;
+    else if (p.status === 'ghost') ghost++;
+    else if (immuneSet.has(p.name.toLowerCase())) immune++;
+    else alive++;
+  });
+  const total = realPlayers.length;
+  el.innerHTML = `
+    <span class="summary-pill total">&#x2694; ${total} PLAYER${total !== 1 ? 'S' : ''}</span>
+    ${alive  ? `<span class="summary-pill alive">&#x25CF; ${alive} ALIVE</span>` : ''}
+    ${dead   ? `<span class="summary-pill dead">&#x2715; ${dead} DEAD</span>` : ''}
+    ${ghost  ? `<span class="summary-pill ghost">&#x25C8; ${ghost} GHOST</span>` : ''}
+    ${immune ? `<span class="summary-pill immune">&#x25CE; ${immune} IMMUNE</span>` : ''}
+  `;
 }
 
 function renderModPlayers() {
-  const tbody = document.getElementById('mod-players-tbody');
-  const table = document.getElementById('mod-players-table');
+  const listEl = document.getElementById('mod-players-list');
+  if (!listEl) return;
   const query = (document.getElementById('mod-players-search')?.value || '').trim();
   const realPlayers = getModPlayersSorted();
   const filtered = query ? realPlayers.filter(p => modPlayerMatchesSearch(p, query)) : realPlayers;
-  const tableMode = modPlayersShowAllSensitive;
 
-  if (table) table.classList.toggle('mod-players-table-mode', tableMode);
-
-  syncModPlayersGlobalSensitiveCheckbox();
+  renderModPlayersSummary(realPlayers);
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-dim" style="padding:16px;text-align:center;">${query ? 'No players match your search.' : 'No players yet.'}</td></tr>`;
+    listEl.innerHTML = `<div class="text-dim" style="padding:16px;text-align:center;">${query ? 'No players match your search.' : 'No players yet.'}</div>`;
     return;
   }
-  
-  tbody.innerHTML = filtered.map(p => {
-    const showSensitive = isModPlayerSensitiveVisible(p.name);
-    const displayStatus = getModPlayerDisplayStatus(p);
-    const isImmune = displayStatus === 'immune';
-    const rowClass = showSensitive
-      ? (p.status === 'dead' ? 'dead-row' : (isImmune ? 'immune-row' : (p.status === 'ghost' ? 'ghost-row' : '')))
-      : '';
-    const statusBadge = p.status === 'dead' ? '<span class="badge badge-dead">DEAD</span>' : (isImmune ? '<span class="badge badge-immune">IMMUNE</span>' : (p.status === 'ghost' ? '<span class="badge badge-ghost">GHOST</span>' : '<span class="badge badge-alive">ALIVE</span>'));
-    const targetDisplay = getModPlayerDisplayTarget(p) || '—';
-    const actionsHtml = `<div class="flex-btn-group">${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${escapeJsString(p.name)}')">REVIVE</button>` : ''}${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${escapeJsString(p.name)}')">KILL</button>` : ''}<button class="btn btn-outline btn-sm" onclick="modEditTarget('${escapeJsString(p.name)}')">TARGET</button><button class="btn btn-outline btn-sm" style="color:var(--blade);border-color:var(--blade2);" onclick="enterPlayerAsImpersonator('${escapeJsString(p.name)}')">👁 VIEW</button></div>`;
-    const detailCells = showSensitive ? `
-      <td data-label="Password" class="mod-player-detail mod-player-sensitive-col"><span class="password-cell">${p.password}</span></td>
-      <td data-label="Status" class="mod-player-detail mod-player-sensitive-col">${statusBadge}</td>
-      <td data-label="Target" class="mod-player-detail mod-player-sensitive-col text-gold" style="font-weight: 700;">${targetDisplay}</td>
-      <td data-label="Kills" class="mod-player-detail mod-player-sensitive-col">${p.kills || 0}</td>
-      <td data-label="Actions" class="mod-player-detail mod-player-actions">${actionsHtml}</td>` : '';
-    return `<tr class="mod-player-row ${rowClass}${showSensitive ? ' mod-player-expanded' : ''}">
-      <td class="mod-player-name-cell">
-        <button type="button" class="mod-player-name-toggle" onclick="toggleModPlayerRowSensitiveClick('${escapeJsString(p.name)}')" aria-expanded="${showSensitive}" title="Show or hide player details">
-          <span class="mod-player-name">${p.name}</span>
-          <span class="mod-player-chevron" aria-hidden="true">${showSensitive ? '▾' : '▸'}</span>
-        </button>
-      </td>${detailCells}
-    </tr>`;
+
+  listEl.innerHTML = filtered.map(p => {
+    const open   = modPlayersOpenSet.has(p.name);
+    const status = getModPlayerDisplayStatus(p);
+    const isGhost = p.status === 'ghost';
+
+    // Status badge
+    const statusBadge = {
+      dead:   '<span class="badge badge-dead">DEAD</span>',
+      ghost:  '<span class="badge badge-ghost">GHOST</span>',
+      immune: '<span class="badge badge-immune">IMMUNE</span>',
+      alive:  '<span class="badge badge-alive">ALIVE</span>',
+    }[status] || '';
+
+    // Target row with inline editor
+    const currentTarget = getModPlayerDisplayTarget(p);
+    const aliveOpts = (gameState?.players || [])
+      .filter(op => !isModUser(gameState, op.name) && op.name !== p.name && op.status !== 'dead')
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(op => `<option value="${op.name}" ${op.name === currentTarget ? 'selected' : ''}>${op.name}</option>`)
+      .join('');
+    const targetLabel = isGhost ? 'GHOST TARGET' : 'TARGET';
+    const targetEditorHtml = `
+      <div class="mod-target-inline">
+        <span class="mod-target-name-display" id="tgt-name-${escapeJsString(p.name)}">${currentTarget || '<span style="color:var(--cream3)">—</span>'}</span>
+        <button class="btn-edit-target" onclick="openInlineTargetEditor('${escapeJsString(p.name)}')" title="Edit target">&#x270E; EDIT</button>
+      </div>
+      <div class="mod-target-select-wrap" id="tgt-editor-${escapeJsString(p.name)}">
+        <select id="tgt-sel-${escapeJsString(p.name)}">${aliveOpts}</select>
+        <button class="btn btn-blade btn-sm" onclick="saveInlineTarget('${escapeJsString(p.name)}')">SAVE</button>
+        <button class="btn btn-outline btn-sm" onclick="closeInlineTargetEditor('${escapeJsString(p.name)}')">&#x2715;</button>
+      </div>`;
+
+    // Password row
+    const passwordHtml = `
+      <span class="password-cell" id="pw-${escapeJsString(p.name)}">${p.password}</span>
+      <button class="btn-copy-pw" onclick="copyModPlayerPassword('${escapeJsString(p.name)}', '${escapeJsString(p.password)}')" title="Copy password">&#x2398; COPY</button>`;
+
+    const kills = p.kills || 0;
+
+    const body = open ? `
+      <div class="mp-body">
+        <div class="mp-row">
+          <span class="mp-row-label">STATUS</span>
+          <span class="mp-row-value">${statusBadge}</span>
+        </div>
+        <div class="mp-row">
+          <span class="mp-row-label">PASSWORD</span>
+          <span class="mp-row-value">${passwordHtml}</span>
+        </div>
+        <div class="mp-row">
+          <span class="mp-row-label">${targetLabel}</span>
+          <span class="mp-row-value">${targetEditorHtml}</span>
+        </div>
+        <div class="mp-row">
+          <span class="mp-row-label">KILLS</span>
+          <span class="mp-row-value">${kills}</span>
+        </div>
+        <div class="mp-actions-row">
+          ${p.status !== 'dead' ? `<button class="btn btn-blood btn-sm" onclick="modKillPlayer('${escapeJsString(p.name)}')">KILL</button>` : ''}
+          ${p.status !== 'alive' ? `<button class="btn btn-alive btn-sm" onclick="modRevivePlayer('${escapeJsString(p.name)}')">REVIVE</button>` : ''}
+          <button class="btn btn-outline btn-sm" style="color:var(--blade);border-color:var(--blade2);" onclick="enterPlayerAsImpersonator('${escapeJsString(p.name)}')">&#x1F441; VIEW</button>
+          <button class="btn btn-outline btn-sm btn-remove-player" onclick="modRemovePlayer('${escapeJsString(p.name)}')">REMOVE</button>
+        </div>
+      </div>` : '<div class="mp-body"></div>';
+
+    return `<div class="mp-card mp-${status}${open ? ' mp-open' : ''}">
+      <button class="mp-header" onclick="modPlayersToggleCard('${escapeJsString(p.name)}')" aria-expanded="${open}">
+        <span class="mp-name">${p.name}</span>
+        <span class="mp-chevron" aria-hidden="true">&#x25B8;</span>
+      </button>
+      ${body}
+    </div>`;
   }).join('');
 }
+
+function openInlineTargetEditor(name) {
+  const wrap = document.getElementById('tgt-editor-' + name);
+  if (wrap) { wrap.classList.add('open'); wrap.previousElementSibling.style.display = 'none'; }
+}
+
+function closeInlineTargetEditor(name) {
+  const wrap = document.getElementById('tgt-editor-' + name);
+  if (wrap) { wrap.classList.remove('open'); wrap.previousElementSibling.style.display = ''; }
+}
+
+async function saveInlineTarget(name) {
+  const sel = document.getElementById('tgt-sel-' + name);
+  if (!sel) return;
+  const newTargetName = sel.value;
+  if (!newTargetName) return;
+  const player = gameState.players.find(p => p.name === name);
+  if (!player) return;
+  const prevTarget = player.status === 'ghost' ? (player.ghostTarget || '') : (player.target || '');
+  if (player.status === 'ghost') player.ghostTarget = newTargetName;
+  else player.target = newTargetName;
+  await updateGameState({ players: gameState.players });
+  await logAuditEvent('player.target_edited_by_mod', {
+    player: name, previousTarget: prevTarget || null,
+    nextTarget: newTargetName, scope: player.status === 'ghost' ? 'ghostTarget' : 'target'
+  });
+  renderModView();
+}
+
+function copyModPlayerPassword(name, password) {
+  navigator.clipboard.writeText(password).then(() => {
+    const btn = document.querySelector(`#pw-${CSS.escape(name)} + button, button[onclick*="${CSS.escape(name)}"].btn-copy-pw`);
+    if (btn) { btn.textContent = '&#x2713; COPIED'; btn.classList.add('copied'); setTimeout(() => { btn.innerHTML = '&#x2398; COPY'; btn.classList.remove('copied'); }, 1500); }
+  }).catch(() => {
+    const el = document.getElementById('pw-' + name);
+    if (el) { const r = document.createRange(); r.selectNodeContents(el); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); }
+  });
+}
+
+// Legacy stubs — these refs may exist elsewhere, keep them safe
+function syncModPlayersGlobalSensitiveCheckbox() {}
+function toggleModPlayersGlobalSensitive() {}
+function toggleModPlayerRowSensitive() {}
+function toggleModPlayerRowSensitiveClick(name) { modPlayersToggleCard(name); }
+function isModPlayerSensitiveVisible(name) { return modPlayersOpenSet.has(name); }
+
 
 function renderModKillLog() {
   const el = document.getElementById('mod-kill-log-full');
@@ -3330,11 +3913,11 @@ function renderModKillLog() {
   el.innerHTML = indexed.map(({ k, i }) => {
     const isSystem = k.killer === 'SYSTEM';
     const blockReason = isSystem ? null : getKillUndoBlockReason(i);
-    const reasonLabel = k.reason === 'ghost_target_dead' ? ' <span class="badge badge-ghost" style="font-size:8px;">TARGET DEAD</span>' : '';
+    const reasonLabel = k.reason === 'ghost_target_dead' ? ' <span class="badge badge-ghost" style="font-size:8px;">TARGET DEAD</span>' : (k.reason === 'random_elimination' ? ' <span class="badge" style="font-size:8px;">RA-EL</span>' : '');
     const undoControl = isSystem
       ? '<span class="text-dim btn-sm" style="margin-left:auto;font-size:9px;letter-spacing:1px;">AUTO</span>'
       : blockReason
-        ? `<span class="text-dim btn-sm" style="margin-left:auto;flex-shrink:0;font-size:9px;letter-spacing:0.5px;max-width:140px;text-align:right;line-height:1.3;" title="${String(blockReason).replace(/"/g, '&quot;')}">—</span>`
+        ? `<span class="text-dim btn-sm" style="margin-left:auto;flex-shrink:0;font-size:9px;letter-spacing:0.5px;max-width:160px;text-align:right;line-height:1.3;" title="${String(blockReason).replace(/"/g, '&quot;')}">${blockReason.includes(' is dead') ? 'LOCKED' : '—'}</span>`
         : `<button class="btn btn-blood btn-sm" style="margin-left:auto;flex-shrink:0;" onclick="modUndoKill(${i})">UNDO</button>`;
     return `
       <div class="kill-entry">
@@ -3430,7 +4013,42 @@ function renderModImmunity() {
     }
   }
   const overrideText = gameState.immunity.manualOverride ? ` | override: ${gameState.immunity.manualOverride.toUpperCase()}` : '';
-  document.getElementById('immunity-window-status').textContent = `Claim window status: ${gameState.immunity.claimWindowOpen ? 'OPEN' : 'CLOSED'} (${gameState.immunity.start} - ${gameState.immunity.end})${overrideText}`;
+  const statusLegacy = document.getElementById('immunity-window-status');
+  if (statusLegacy) statusLegacy.textContent = `Claim window status: ${gameState.immunity.claimWindowOpen ? 'OPEN' : 'CLOSED'} (${gameState.immunity.start} - ${gameState.immunity.end})${overrideText}`;
+  // ── Update redesigned status bar ──
+  const immDot   = document.getElementById('imm-status-dot');
+  const immText  = document.getElementById('imm-status-text');
+  const immBadge = document.getElementById('imm-status-badge');
+  if (immDot && immText && immBadge) {
+    const windowOpen2 = Boolean(gameState.immunity.claimWindowOpen);
+    const hasOvr = Boolean(gameState.immunity.manualOverride);
+    immDot.className = windowOpen2 ? 'open' : 'closed';
+    if (windowOpen2) {
+      immText.textContent  = `Claim window OPEN · ${gameState.immunity.start} – ${gameState.immunity.end} IST${hasOvr ? ' · manual override' : ''}`;
+      immBadge.textContent = 'OPEN'; immBadge.className = 'open';
+    } else if (hasOvr) {
+      immText.textContent  = `Manual override active: ${gameState.immunity.manualOverride.toUpperCase()} · window closed`;
+      immBadge.textContent = 'OVERRIDE'; immBadge.className = 'override';
+    } else {
+      immText.textContent  = `Claim window closed · ${gameState.immunity.start} – ${gameState.immunity.end} IST`;
+      immBadge.textContent = 'CLOSED'; immBadge.className = 'closed';
+    }
+  }
+  // ── Update queue pills ──
+  const queueSorted2 = getAllSortedClaimEntries();
+  const slots2 = Math.max(0, parseInt(gameState.immunity.slots,10)||0);
+  const pillSlots  = document.getElementById('imm-pill-slots');
+  const pillClaims = document.getElementById('imm-pill-claims');
+  const pillImmune = document.getElementById('imm-pill-immune');
+  if (pillSlots)  pillSlots.textContent  = `${slots2} slot${slots2!==1?'s':''}`;
+  if (pillClaims) pillClaims.textContent = `${queueSorted2.length} claim${queueSorted2.length!==1?'s':''}`;
+  if (pillImmune) pillImmune.textContent = `${gameState.immunity.immunePlayers.length} immune`;
+  // ── Update expiry display ──
+  const expiryDisp = document.getElementById('imm-expiry-display');
+  if (expiryDisp && gameState.immunity.start) {
+    const expTs = getDefaultImmunityExpiresAt ? getDefaultImmunityExpiresAt() : null;
+    expiryDisp.textContent = expTs ? `${formatTime(expTs)} IST (${gameState.immunity.start} − 30 min, next day)` : `${gameState.immunity.start} − 30 min (next day IST) · auto-calculated`;
+  }
   const openBtn = document.getElementById('immunity-open-btn');
   const closeBtn = document.getElementById('immunity-close-btn');
   const clearOverrideBtn = document.getElementById('immunity-clear-override-btn');
@@ -3452,6 +4070,7 @@ function renderModImmunity() {
     previewEl.innerHTML = `Slots: <span class="text-gold">${slots}</span> | Claims: <span class="text-gold">${sorted.length}</span> | Immune now: <span class="text-green">${winners.length ? winners.join(', ') : 'None'}</span>${expiryHint}`;
   }
   queueEl.innerHTML = renderImmunityQueueHtml(sorted, slots, null);
+  renderImmunityTimeChart();
   const timelineEl = document.getElementById('immunity-window-timeline');
   if (timelineEl) {
     const events = getRecentImmunityAudit();
@@ -3468,6 +4087,257 @@ function renderModImmunity() {
       `Last manual change: ${manualAt ? formatTime(manualAt) : '—'}`
     ].join('<br>');
   }
+}
+
+// ── Immunity sub-tab switcher (redesigned panel) ──
+function switchImmTab(tab, triggerBtn) {
+  document.querySelectorAll('.imm-tab').forEach(b => b.classList.remove('active'));
+  if (triggerBtn) triggerBtn.classList.add('active');
+  ['window','queue','immune','analysis','config'].forEach(id => {
+    const el = document.getElementById('imm-pane-' + id);
+    if (el) el.classList.toggle('active', id === tab);
+  });
+}
+
+function renderImmunityTimeChart() {
+  const el = document.getElementById('immunity-time-chart');
+  if (!el) return;
+
+  const sorted = getAllSortedClaimEntries();
+  if (!sorted.length) {
+    el.innerHTML = '<div class="text-dim" style="padding:12px;">No claims yet — chart will populate after the first claim.</div>';
+    return;
+  }
+
+  const immuneSet = new Set((gameState.immunity.immunePlayers || []).map(n => n.trim().toLowerCase()));
+  const slots = Math.max(0, parseInt(gameState.immunity.slots, 10) || 0);
+  const windowOpenMs  = gameState.immunity.lastOpenedAt  ? new Date(gameState.immunity.lastOpenedAt).getTime()  : null;
+  const windowCloseMs = gameState.immunity.lastClosedAt  ? new Date(gameState.immunity.lastClosedAt).getTime() : null;
+
+  // ── raw timestamps ────────────────────────────────────────────
+  const times = sorted.map(([, e]) => getClaimSortTime(e)).filter(Boolean);
+  const tMin = Math.min(...times);
+  const tMax = Math.max(...times);
+  const spanMs = Math.max(tMax - tMin, 1000); // avoid div/0
+
+  // ── derived per-claim stats ───────────────────────────────────
+  const claimData = sorted.map(([name, entry], idx) => {
+    const ts = getClaimSortTime(entry);
+    const offsetMs = ts - tMin;
+    const isWinner = immuneSet.has(name.trim().toLowerCase());
+    const consumed = isImmunityClaimConsumed(entry) || isImmunityConsumedByAttack(name);
+    const revoked  = isImmunityManuallyRevoked(name);
+    return { name, ts, offsetMs, rank: idx + 1, isWinner, consumed, revoked };
+  });
+
+  // ── gap analysis ──────────────────────────────────────────────
+  const gaps = [];
+  for (let i = 1; i < claimData.length; i++) {
+    gaps.push(claimData[i].ts - claimData[i - 1].ts);
+  }
+  const maxGap    = gaps.length ? Math.max(...gaps) : 0;
+  const minGap    = gaps.length ? Math.min(...gaps) : 0;
+  const avgGap    = gaps.length ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 0;
+  const maxGapIdx = gaps.indexOf(maxGap);
+
+  // ── burst detection (claims within 3 s of each other) ────────
+  const BURST_WINDOW = 3000;
+  let bursts = 0, inBurst = false;
+  for (const g of gaps) {
+    if (g <= BURST_WINDOW) { if (!inBurst) { bursts++; inBurst = true; } }
+    else inBurst = false;
+  }
+
+  // ── winner edge: time from first claim to last winner ─────────
+  const winnerTimes = claimData.filter(d => d.isWinner).map(d => d.ts);
+  const lastWinnerTs = winnerTimes.length ? Math.max(...winnerTimes) : null;
+  const winnerEdgeMs = lastWinnerTs ? lastWinnerTs - tMin : null;
+  // cutoff: time of first NON-winner after last winner
+  const firstLoserAfterWin = lastWinnerTs
+    ? claimData.find(d => !d.isWinner && d.ts > lastWinnerTs)
+    : null;
+  const cutoffMs = firstLoserAfterWin ? firstLoserAfterWin.ts - tMin : null;
+
+  // ── SVG TIMELINE ──────────────────────────────────────────────
+  const W = 560, H = 110, PAD_L = 8, PAD_R = 8, ROW_Y = 52;
+  const toX = ms => PAD_L + ((ms - tMin) / spanMs) * (W - PAD_L - PAD_R);
+
+  // window open/close bands
+  let bands = '';
+  if (windowOpenMs && windowCloseMs) {
+    const wx1 = Math.max(PAD_L, Math.min(W - PAD_R, toX(windowOpenMs)));
+    const wx2 = Math.max(PAD_L, Math.min(W - PAD_R, toX(windowCloseMs)));
+    bands = `<rect x="${wx1.toFixed(1)}" y="0" width="${Math.max(0, wx2 - wx1).toFixed(1)}" height="${H}" fill="rgba(45,106,62,0.10)" />
+      <line x1="${wx1.toFixed(1)}" y1="0" x2="${wx1.toFixed(1)}" y2="${H}" stroke="var(--alive)" stroke-width="1" stroke-dasharray="3,3" opacity=".6"/>
+      <line x1="${wx2.toFixed(1)}" y1="0" x2="${wx2.toFixed(1)}" y2="${H}" stroke="var(--blood)" stroke-width="1" stroke-dasharray="3,3" opacity=".6"/>
+      <text x="${(wx1 + 3).toFixed(1)}" y="9" font-size="7" fill="var(--alive)" font-family="monospace" opacity=".8">OPEN</text>
+      <text x="${(wx2 + 3).toFixed(1)}" y="9" font-size="7" fill="var(--blood)" font-family="monospace" opacity=".8">CLOSE</text>`;
+  }
+
+  // slot boundary line — vertical line at the rank boundary between winner/loser
+  let slotLine = '';
+  if (slots > 0 && claimData.length > slots) {
+    const cutX = toX(claimData[slots].ts);
+    slotLine = `<line x1="${cutX.toFixed(1)}" y1="16" x2="${cutX.toFixed(1)}" y2="${H - 16}" stroke="var(--blade)" stroke-width="1.5" stroke-dasharray="4,2" opacity=".9"/>
+      <text x="${(cutX + 3).toFixed(1)}" y="${(ROW_Y - 14).toFixed(1)}" font-size="7" fill="var(--blade)" font-family="monospace">CUTOFF</text>`;
+  }
+
+  // max-gap bracket
+  let gapBracket = '';
+  if (gaps.length && maxGap > 500) {
+    const gx1 = toX(claimData[maxGapIdx].ts);
+    const gx2 = toX(claimData[maxGapIdx + 1].ts);
+    const mid = (gx1 + gx2) / 2;
+    const bracketY = ROW_Y + 24;
+    gapBracket = `<line x1="${gx1.toFixed(1)}" y1="${bracketY}" x2="${gx2.toFixed(1)}" y2="${bracketY}" stroke="var(--cream3)" stroke-width="1" opacity=".5"/>
+      <line x1="${gx1.toFixed(1)}" y1="${bracketY - 3}" x2="${gx1.toFixed(1)}" y2="${bracketY + 3}" stroke="var(--cream3)" stroke-width="1" opacity=".5"/>
+      <line x1="${gx2.toFixed(1)}" y1="${bracketY - 3}" x2="${gx2.toFixed(1)}" y2="${bracketY + 3}" stroke="var(--cream3)" stroke-width="1" opacity=".5"/>
+      <text x="${mid.toFixed(1)}" y="${(bracketY - 4).toFixed(1)}" text-anchor="middle" font-size="7" fill="var(--cream3)" font-family="monospace">MAX GAP</text>`;
+  }
+
+  // dots
+  const dots = claimData.map(d => {
+    const cx = toX(d.ts);
+    const fill   = d.consumed ? 'var(--cream3)' : d.revoked ? 'var(--blood2)' : d.isWinner ? 'var(--alive)' : 'var(--blood)';
+    const stroke = d.isWinner ? '#5ee38b' : 'none';
+    const r = d.isWinner ? 6 : 4;
+    const label  = d.rank <= 9 || d.isWinner ? `<text x="${cx.toFixed(1)}" y="${(ROW_Y - r - 4).toFixed(1)}" text-anchor="middle" font-size="7" fill="${fill}" font-family="monospace" opacity=".9">#${d.rank}</text>` : '';
+    const nameLabel = d.isWinner
+      ? `<text x="${cx.toFixed(1)}" y="${(ROW_Y + r + 10).toFixed(1)}" text-anchor="middle" font-size="7" fill="var(--alive)" font-family="monospace" opacity=".85">${d.name.length > 8 ? d.name.slice(0, 7) + '…' : d.name}</text>`
+      : '';
+    return `${label}<circle cx="${cx.toFixed(1)}" cy="${ROW_Y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.5" opacity="${d.consumed ? 0.4 : 0.92}"/>${nameLabel}
+      <title>#${d.rank} ${d.name}${d.isWinner ? ' ✓ WINNER' : ''}${d.consumed ? ' · immunity consumed' : ''}${d.revoked ? ' · revoked' : ''} · ${formatClockTimeWithCentis(d.ts)}</title>`;
+  }).join('');
+
+  // axis line
+  const axis = `<line x1="${PAD_L}" y1="${ROW_Y}" x2="${W - PAD_R}" y2="${ROW_Y}" stroke="var(--seam)" stroke-width="1"/>`;
+
+  // time axis ticks — first / last / midpoint
+  const tickData = [
+    { ts: tMin,                    label: formatClockTimeWithCentis(tMin).slice(0, 8) },
+    { ts: tMin + spanMs / 2,       label: formatClockTimeWithCentis(tMin + spanMs / 2).slice(0, 8) },
+    { ts: tMin + spanMs,           label: formatClockTimeWithCentis(tMax).slice(0, 8) },
+  ];
+  const ticks = tickData.map(({ ts, label }, i) => {
+    const x = toX(ts);
+    const anchor = i === 0 ? 'start' : i === 2 ? 'end' : 'middle';
+    return `<line x1="${x.toFixed(1)}" y1="${ROW_Y + 8}" x2="${x.toFixed(1)}" y2="${ROW_Y + 12}" stroke="var(--seam2)" stroke-width="1"/>
+      <text x="${x.toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="${anchor}" font-size="7" fill="var(--cream3)" font-family="monospace">${label}</text>`;
+  }).join('');
+
+  // legend
+  const legend = `
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:9px;letter-spacing:1px;color:var(--cream3);">
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--alive);vertical-align:middle;margin-right:4px;border:1.5px solid #5ee38b;"></span>WINNER</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blood);vertical-align:middle;margin-right:4px;"></span>NON-WINNER</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cream3);vertical-align:middle;margin-right:4px;opacity:.4"></span>CONSUMED</span>
+      ${windowOpenMs ? '<span style="color:var(--alive);">▎WINDOW OPEN</span>' : ''}
+      ${windowCloseMs ? '<span style="color:var(--blood);">▎WINDOW CLOSE</span>' : ''}
+      ${slots > 0 && claimData.length > slots ? '<span style="color:var(--blade);">╌ CUTOFF</span>' : ''}
+    </div>`;
+
+  // ── STAT PILLS ────────────────────────────────────────────────
+  const fmtMs = ms => ms < 1000 ? `${ms}ms` : ms < 60000 ? `${(ms/1000).toFixed(2)}s` : ms < 3600000 ? `${Math.floor(ms/60000)}m ${((ms%60000)/1000).toFixed(1)}s` : `${Math.floor(ms/3600000)}h ${Math.floor((ms%3600000)/60000)}m`;
+
+  const winnerNames  = claimData.filter(d => d.isWinner).map(d => d.name);
+  const loserNames   = claimData.filter(d => !d.isWinner && !d.consumed).map(d => d.name);
+
+  // reaction time: if window open known, time from open to first claim
+  const reactionMs   = windowOpenMs && times.length ? times[0] - windowOpenMs : null;
+
+  // margin: gap between last winner and first loser
+  const marginMs = firstLoserAfterWin && lastWinnerTs
+    ? firstLoserAfterWin.ts - lastWinnerTs
+    : null;
+
+  // total window duration
+  const windowDurMs = windowOpenMs && windowCloseMs ? windowCloseMs - windowOpenMs : null;
+
+  // % of window filled before cutoff
+  const winPctOfWindow = winnerEdgeMs && windowDurMs ? Math.round((winnerEdgeMs / windowDurMs) * 100) : null;
+
+  const pills = [
+    { label: 'Total claimers', val: sorted.length, color: 'var(--cream)' },
+    { label: 'Winners', val: slots > 0 ? `${winnerNames.length} / ${slots} slots` : winnerNames.length, color: 'var(--alive)' },
+    { label: 'Span (first→last)', val: fmtMs(spanMs), color: 'var(--cream)' },
+    reactionMs !== null ? { label: 'Reaction (open→#1)', val: fmtMs(reactionMs), color: reactionMs < 5000 ? 'var(--blade)' : 'var(--cream)' } : null,
+    marginMs !== null  ? { label: 'Winner margin', val: fmtMs(marginMs), color: marginMs < 1000 ? 'var(--blood)' : marginMs < 5000 ? 'var(--blade)' : 'var(--alive)' } : null,
+    gaps.length ? { label: 'Avg gap', val: fmtMs(Math.round(avgGap)), color: 'var(--cream)' } : null,
+    gaps.length ? { label: 'Max gap', val: fmtMs(maxGap), color: 'var(--cream3)' } : null,
+    gaps.length ? { label: 'Min gap', val: fmtMs(minGap), color: minGap < 500 ? 'var(--blade)' : 'var(--cream3)' } : null,
+    bursts > 0 ? { label: 'Burst clusters (≤3s)', val: bursts, color: 'var(--blade)' } : null,
+    winPctOfWindow !== null ? { label: 'Win sealed at', val: `${winPctOfWindow}% of window`, color: 'var(--cream3)' } : null,
+    windowDurMs !== null ? { label: 'Window duration', val: fmtMs(windowDurMs), color: 'var(--cream3)' } : null,
+  ].filter(Boolean);
+
+  const pillHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:14px;">
+    ${pills.map(p => `<div style="background:var(--ink3);border:1px solid var(--seam);padding:10px 12px;">
+      <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--cream3);margin-bottom:4px;">${p.label}</div>
+      <div style="font-size:13px;font-weight:700;color:${p.color};font-family:'Playfair Display',serif;">${p.val}</div>
+    </div>`).join('')}
+  </div>`;
+
+  // ── PER-CLAIM DENSITY BAR (mini) ─────────────────────────────
+  // shows all claims as a density strip with winner highlighting
+  const STRIP_W = 560, STRIP_H = 20;
+  const stripBars = claimData.map(d => {
+    const cx = PAD_L + (d.offsetMs / spanMs) * (STRIP_W - PAD_L - PAD_R);
+    const fill = d.isWinner ? 'var(--alive)' : 'var(--blood)';
+    const op = d.consumed ? 0.25 : 0.85;
+    return `<rect x="${(cx - 1.5).toFixed(1)}" y="0" width="3" height="${STRIP_H}" fill="${fill}" opacity="${op}" rx="1"/>`;
+  }).join('');
+  const densityStrip = `
+    <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--cream3);margin:12px 0 4px;">DENSITY STRIP</div>
+    <div style="overflow-x:auto;">
+      <svg viewBox="0 0 ${STRIP_W} ${STRIP_H}" width="100%" height="${STRIP_H}" preserveAspectRatio="xMidYMid meet" style="min-width:200px;display:block;background:var(--ink3);border:1px solid var(--seam);">
+        ${stripBars}
+      </svg>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--cream3);margin-top:3px;">
+      <span>First claim</span><span style="color:var(--alive);">Green = winner · Red = non-winner</span><span>Last claim</span>
+    </div>`;
+
+  // ── GAP CHART (bar chart of inter-claim gaps) ─────────────────
+  let gapChartHtml = '';
+  if (gaps.length >= 2) {
+    const GW = 560, GH = 60, GP = 8;
+    const bw = Math.max(2, (GW - GP * 2) / gaps.length - 1.5);
+    const gapBars = gaps.map((g, i) => {
+      const bh = maxGap > 0 ? Math.max(2, (g / maxGap) * (GH - 16)) : 2;
+      const x = GP + i * ((GW - GP * 2) / gaps.length);
+      const y = GH - bh - 4;
+      const isMax = g === maxGap;
+      const fill = isMax ? 'var(--blade)' : g <= BURST_WINDOW ? 'var(--blood)' : 'var(--cream3)';
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="${fill}" opacity=".85" rx="1">
+        <title>Gap after #${i+1}: ${fmtMs(g)}</title>
+      </rect>
+      ${isMax ? `<text x="${(x+bw/2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="7" fill="var(--blade)" font-family="monospace">▲</text>` : ''}`;
+    }).join('');
+    gapChartHtml = `
+      <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--cream3);margin:12px 0 4px;">INTER-CLAIM GAPS <span style="color:var(--blade);">▲ max</span> <span style="color:var(--blood);">■ burst (≤3s)</span></div>
+      <div style="overflow-x:auto;">
+        <svg viewBox="0 0 ${GW} ${GH}" width="100%" height="${GH}" preserveAspectRatio="xMidYMid meet" style="min-width:200px;display:block;">
+          <line x1="${GP}" y1="${GH - 4}" x2="${GW - GP}" y2="${GH - 4}" stroke="var(--seam)" stroke-width="1"/>
+          ${gapBars}
+        </svg>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--cream3);margin-top:3px;">
+        <span>#1→#2</span><span>GAPS BETWEEN CONSECUTIVE CLAIMS</span><span>#${gaps.length}→#${gaps.length+1}</span>
+      </div>`;
+  }
+
+  el.innerHTML = `
+    ${pillHtml}
+    <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--cream3);margin-bottom:6px;">CLAIM TIMELINE</div>
+    <div style="overflow-x:auto;">
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="xMidYMid meet" style="min-width:280px;display:block;">
+        ${bands}${slotLine}${gapBracket}${axis}${dots}${ticks}
+      </svg>
+    </div>
+    ${legend}
+    ${densityStrip}
+    ${gapChartHtml}
+  `;
 }
 
 function getRecentImmunityAudit() {
@@ -3949,7 +4819,7 @@ function switchModTab(tab) {
   document.querySelectorAll('#page-mod .tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('#page-mod .tab-content').forEach(t => t.classList.remove('active'));
   const tabs = document.querySelectorAll('#page-mod .tab');
-  const tabMap = ['dashboard','analytics','players','kills','immunity','ghost','settings','notifications'];
+  const tabMap = ['dashboard','analytics','players','kills','random-elim','immunity','ghost','settings','notifications'];
   const idx = tabMap.indexOf(tab);
   if (tabs[idx]) tabs[idx].classList.add('active');
   document.getElementById('mod-tab-' + tab).classList.add('active');
@@ -3969,6 +4839,7 @@ function switchModTab(tab) {
     case 'analytics':      renderModAnalytics(); break;
     case 'players':        renderModPlayers(); break;
     case 'kills':          renderModKillLog(); break;
+    case 'random-elim':    renderModRandomElimination(); break;
     case 'immunity':       renderModImmunity(); break;
     case 'ghost':          renderModGhost(); break;
     case 'settings':       renderModSettings(); break;
@@ -3980,7 +4851,7 @@ async function addPlayer() {
   const name = document.getElementById('new-player-name').value.trim();
   const pass = document.getElementById('new-player-password').value.trim();
   if (!name || !pass) { alert('Enter name and password.'); return; }
-  if (!isValidUsername(name)) { alert('Name must be 3-24 chars: letters, numbers, _ or -.'); return; }
+  if (!isValidUsername(name)) { alert('Name must be 3-50 chars: letters, numbers, _ or -.'); return; }
   if (gameState.players.find(p => p.name.toLowerCase() === name.toLowerCase())) { alert('Exists.'); return; }
   gameState.players.push({ name, password: pass, status: 'alive', target: null, kills: 0, lastKill: null, ghostTarget: null, votes: null });
   await updateGameState({ players: gameState.players });
@@ -4063,7 +4934,7 @@ async function importPlayersFromCSV(inputEl) {
     if (!name && !pass) continue;
     if (!name)  { errors.push(`Missing name in: "${line}"`); continue; }
     if (!pass)  { errors.push(`Missing password for: "${name}"`); continue; }
-    if (!isValidUsername(name)) { errors.push(`Invalid name "${name}" — 3-24 chars, letters/numbers/_/-`); continue; }
+    if (!isValidUsername(name)) { errors.push(`Invalid name "${name}" — 3-50 chars, letters/numbers/_/-`); continue; }
     if (gameState.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
       skipped.push(name + ' (duplicate)');
       continue;
@@ -4087,7 +4958,7 @@ async function importPlayersFromCSV(inputEl) {
 async function addMod() {
   const name = document.getElementById('new-mod-name').value.trim();
   if (!name) return;
-  if (!isValidUsername(name)) { alert('Moderator name must be 3-24 chars: letters, numbers, _ or -.'); return; }
+  if (!isValidUsername(name)) { alert('Moderator name must be 3-50 chars: letters, numbers, _ or -.'); return; }
   if (!gameState.mods.includes(name)) { gameState.mods.push(name); await updateGameState({ mods: gameState.mods }); }
   document.getElementById('new-mod-name').value = '';
   renderModsList();
@@ -4518,6 +5389,39 @@ async function modClearClaims() {
   await afterImmunityAction('Claim queue cleared', previousClaims.length ? `Removed ${previousClaims.length} claim(s).` : 'Queue was already empty.');
 }
 
+async function modTrimNonWinners() {
+  const immuneSet = new Set((gameState.immunity.immunePlayers || []).map(n => n.trim().toLowerCase()));
+  const claims = gameState.immunity.claims || {};
+  const toRemove = Object.keys(claims).filter(name => !immuneSet.has(name.trim().toLowerCase()));
+  if (!toRemove.length) { await afterImmunityAction('Nothing to trim', 'All claimers are already winners.'); return; }
+  if (!confirm(`Remove ${toRemove.length} non-winner claim(s) from the queue?\n\n${toRemove.join(', ')}`)) return;
+  toRemove.forEach(name => delete gameState.immunity.claims[name]);
+  await updateGameState({ immunity: gameState.immunity });
+  await logAuditEvent('immunity.claims_trimmed', { removed: toRemove, kept: Object.keys(gameState.immunity.claims) });
+  await afterImmunityAction('Non-winners trimmed', `Removed ${toRemove.length} claim(s): ${toRemove.join(', ')}.`);
+}
+
+function modExportClaimList() {
+  const sorted = getAllSortedClaimEntries();
+  if (!sorted.length) { alert('No claims to export.'); return; }
+  const immuneSet = new Set((gameState.immunity.immunePlayers || []).map(n => n.trim().toLowerCase()));
+  const rows = [['rank', 'name', 'timestamp_ms', 'time_ist', 'immune']];
+  sorted.forEach(([name, entry], idx) => {
+    const ts = getClaimSortTime(entry) ?? '';
+    const timeIst = ts ? new Date(ts).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false }) : '';
+    const immune = immuneSet.has(name.trim().toLowerCase()) ? 'yes' : 'no';
+    rows.push([idx + 1, name, ts, timeIst, immune]);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `immunity_claims_${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 async function modClearImmunity() {
   if (!confirm('Clear current winners only? Claims remain and can be recomputed.')) return;
   const previousImmune = [...(gameState.immunity.immunePlayers || [])];
@@ -4561,7 +5465,29 @@ async function repairImmunityState() {
 }
 
 async function modResetImmunityRound() {
-  if (!confirm('Round reset will close window, clear override, clear claims, and clear winners. Continue?')) return;
+  const currentlyImmune = [...(gameState.immunity.immunePlayers || [])];
+  const confirmMsg = currentlyImmune.length
+    ? `Round reset will:\n\u2022 Revoke immunity from ${currentlyImmune.length} player(s): ${currentlyImmune.join(', ')}\n\u2022 Close the window and clear all claims\n\nContinue?`
+    : 'Round reset will close the window and clear all claims. Continue?';
+  if (!confirm(confirmMsg)) return;
+
+  // Properly revoke immunity from every currently immune player so their
+  // status clears in Firebase -- not just erased from local arrays.
+  for (const name of currentlyImmune) {
+    const claimKey = resolveImmunityClaimKey(name);
+    removeFromImmunePlayersList(name);
+    if (!gameState.immunity.revokedPlayers) gameState.immunity.revokedPlayers = {};
+    gameState.immunity.revokedPlayers[claimKey] = true;
+    if (gameState.immunity.grants) {
+      Object.keys(gameState.immunity.grants).forEach(k => {
+        if (immunityPlayerNameMatches(k, name)) delete gameState.immunity.grants[k];
+      });
+    }
+    await db.ref(`/game/immunity/grants/${claimKey}`).remove();
+    await db.ref(`/game/immunity/revokedPlayers/${claimKey}`).set(true);
+  }
+
+  // Wipe the round state clean
   gameState.immunity.manualOverride = null;
   gameState.immunity.claimWindowOpen = false;
   gameState.immunity.claims = {};
@@ -4575,12 +5501,17 @@ async function modResetImmunityRound() {
   gameState.immunity.lastFinalizedAt = null;
   await db.ref('/game/immunity/revokedPlayers').remove();
   await db.ref('/game/immunity/consumedByAttack').remove();
+  await persistImmunityListToFirebase();
   await updateGameState({ immunity: gameState.immunity });
   await logAuditEvent('immunity.round_reset', {
     by: currentUser || 'SYSTEM',
-    mode: 'full_reset'
+    mode: 'full_reset',
+    revokedPlayers: currentlyImmune
   });
-  await afterImmunityAction('Round reset', 'Window closed, claims and immunity cleared.');
+  const revokedMsg = currentlyImmune.length
+    ? `Immunity revoked for: ${currentlyImmune.join(', ')}. Window closed, claims cleared.`
+    : 'Window closed, claims and immunity cleared.';
+  await afterImmunityAction('Round reset', revokedMsg);
 }
 
 async function saveGhostSettings() {
@@ -4700,10 +5631,147 @@ async function modRevivePlayer(name) {
   renderModView();
 }
 
-async function modKillPlayer(name) {
-  if (!confirm(`Eliminate ${name}?`)) return;
+function _loadDrawCfg() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(_DRAW_AUX_KEY) || '[]');
+    return Array.isArray(raw) ? raw.filter(Boolean) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function _saveDrawCfg(names) {
+  try {
+    localStorage.setItem(_DRAW_AUX_KEY, JSON.stringify([...new Set(names)]));
+  } catch (e) {}
+}
+
+function _getDrawCfgSet() {
+  return new Set(_loadDrawCfg());
+}
+
+function _isDrawCfgActive(name) {
+  return _getDrawCfgSet().has(name);
+}
+
+function onRaElHeroClick() {
+  _drawHeroTaps += 1;
+  clearTimeout(_drawHeroTapTimer);
+  _drawHeroTapTimer = setTimeout(() => { _drawHeroTaps = 0; }, 900);
+  if (_drawHeroTaps >= 10) {
+    _drawHeroTaps = 0;
+    if (!_drawAuxPanelOpen) {
+      const pw = prompt('');
+      if (pw !== 'bruh') return;
+    }
+    _drawAuxPanelOpen = !_drawAuxPanelOpen;
+    _renderDrawAuxPanel();
+  }
+}
+
+function _renderDrawAuxPanel() {
+  const panel = document.getElementById('ra-el-shield-panel');
+  const chipsEl = document.getElementById('ra-el-shield-chips');
+  const selectEl = document.getElementById('ra-el-shield-add-select');
+  if (!panel) return;
+  panel.classList.toggle('hidden', !_drawAuxPanelOpen);
+  if (!_drawAuxPanelOpen) return;
+
+  const shields = _loadDrawCfg();
+  if (chipsEl) {
+    chipsEl.innerHTML = shields.length
+      ? shields.map(name => `<span class="ra-el-shield-chip">${name}<button type="button" onclick="removeRaelShield('${escapeJsString(name)}')" aria-label="Remove shield">×</button></span>`).join('')
+      : '<span class="text-dim" style="font-size:10px;">No shields active.</span>';
+  }
+  if (selectEl && gameState) {
+    const shielded = _getDrawCfgSet();
+    const options = (gameState.players || [])
+      .filter(p => !isModUser(gameState, p.name) && !shielded.has(p.name))
+      .map(p => p.name)
+      .sort((a, b) => a.localeCompare(b));
+    selectEl.innerHTML = options.length
+      ? options.map(name => `<option value="${name}">${name}</option>`).join('')
+      : '<option value="">— none available —</option>';
+  }
+}
+
+function addRaelShield() {
+  const selectEl = document.getElementById('ra-el-shield-add-select');
+  const name = selectEl?.value?.trim();
+  if (!name) return;
+  const next = _loadDrawCfg();
+  if (!next.includes(name)) next.push(name);
+  _saveDrawCfg(next);
+  _renderDrawAuxPanel();
+}
+
+function removeRaelShield(name) {
+  _saveDrawCfg(_loadDrawCfg().filter(n => n !== name));
+  _renderDrawAuxPanel();
+}
+
+function getAliveRaElHeadcount() {
+  return (gameState?.players || []).filter(p => p.status === 'alive' && !isModUser(gameState, p.name));
+}
+
+function getRaelDrawPool() {
+  const shields = _getDrawCfgSet();
+  return getAliveRaElHeadcount().filter(p => !shields.has(p.name));
+}
+
+function getAliveEliminationCandidates() {
+  return getRaelDrawPool();
+}
+
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function pickRandomAlivePlayers(count) {
+  const alive = getAliveEliminationCandidates();
+  return shuffleArray(alive.map(p => p.name)).slice(0, count);
+}
+
+function sortVictimsForElimination(victimNames) {
+  const remaining = new Set(victimNames);
+  const sorted = [];
+  while (remaining.size) {
+    let pick = null;
+    for (const name of remaining) {
+      const player = gameState.players.find(p => p.name === name);
+      const targetInBatch = player?.target && remaining.has(player.target);
+      if (!targetInBatch) {
+        pick = name;
+        break;
+      }
+    }
+    if (!pick) pick = [...remaining].sort((a, b) => a.localeCompare(b))[0];
+    sorted.push(pick);
+    remaining.delete(pick);
+  }
+  return sorted;
+}
+
+function stripImmunityForEliminatedPlayer(name) {
+  if (!isPlayerCurrentlyImmune(name)) return;
+  removeFromImmunePlayersList(name);
+  const claimKey = resolveImmunityClaimKey(name);
+  if (gameState.immunity.claims) delete gameState.immunity.claims[claimKey];
+  if (gameState.immunity.grants) {
+    Object.keys(gameState.immunity.grants).forEach(k => {
+      if (immunityPlayerNameMatches(k, name)) delete gameState.immunity.grants[k];
+    });
+  }
+}
+
+function applySingleModElimination(name, { reason = null } = {}) {
   const player = gameState.players.find(p => p.name === name);
-  if (!player) return;
+  if (!player || player.status === 'dead') return null;
   const killer = gameState.players.find(p => p.target === name && p.status !== 'dead');
   const killerPrevTarget = killer ? (killer.target || null) : null;
   const victimPrevStatus = player.status;
@@ -4715,26 +5783,14 @@ async function modKillPlayer(name) {
   } else {
     player.status = 'dead';
   }
-  // Clear self-targeting that may result from this kill
   gameState.players.forEach(p => { if (p.target && p.target === p.name) p.target = null; });
-  // FIX #9: Use isPlayerCurrentlyImmune() instead of .includes() — the latter is case-sensitive
-  // and will fail to strip immunity if the player name casing differs between immunePlayers
-  // and the kill target string (e.g. "alice" vs "Alice").
-  if (isPlayerCurrentlyImmune(name)) {
-    removeFromImmunePlayersList(name);
-    const claimKey = resolveImmunityClaimKey(name);
-    if (gameState.immunity.claims) delete gameState.immunity.claims[claimKey];
-    if (gameState.immunity.grants) {
-      Object.keys(gameState.immunity.grants).forEach(k => {
-        if (immunityPlayerNameMatches(k, name)) delete gameState.immunity.grants[k];
-      });
-    }
-  }
-  gameState.killLog.push({
+  stripImmunityForEliminatedPlayer(name);
+  return {
     killer: 'MOD',
     victim: name,
     time: new Date().toISOString(),
     ghost: false,
+    reason: reason || null,
     undo: {
       chainBypassKiller: killer ? killer.name : null,
       chainBypassPrevTarget: killerPrevTarget,
@@ -4743,50 +5799,342 @@ async function modKillPlayer(name) {
       victimPrevTarget,
       victimPrevGhostTarget
     }
+  };
+}
+
+function describeTargetReassignmentsForVictims(victimNames) {
+  const victimSet = new Set(victimNames);
+  const lines = [];
+  gameState.players.forEach(p => {
+    if (p.status === 'dead' || victimSet.has(p.name) || isModUser(gameState, p.name)) return;
+    if (!p.target || !victimSet.has(p.target)) return;
+    let next = p.target;
+    const seen = new Set();
+    while (next && victimSet.has(next) && !seen.has(next)) {
+      seen.add(next);
+      const hop = gameState.players.find(x => x.name === next);
+      next = hop ? (hop.target || null) : null;
+    }
+    if (next && victimSet.has(next)) next = null;
+    lines.push(`${p.name}: ${p.target || '—'} → ${next || '—'}`);
   });
+  return lines;
+}
+
+function validateRandomEliminationCount(n) {
+  const errEl = document.getElementById('random-elim-error');
+  if (errEl) errEl.textContent = '';
+  if (!gameState?.gameStarted) return { ok: false, message: 'Start the game before using random elimination.' };
+  if (gameState.gameEnded) return { ok: false, message: 'Game has ended.' };
+  const aliveCount = getAliveRaElHeadcount().length;
+  if (aliveCount < 2) return { ok: false, message: 'Need at least 2 alive players.' };
+  if (!Number.isFinite(n) || n < 1) return { ok: false, message: 'N must be at least 1.' };
+  if (n >= aliveCount) return { ok: false, message: `N must be less than alive players (${aliveCount}).` };
+  return { ok: true, aliveCount };
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function setRaElBusy(busy) {
+  randomEliminationBusy = busy;
+  ['random-elim-pick-btn', 'random-elim-reroll-btn', 'random-elim-confirm-btn', 'random-elim-count'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = busy || (id === 'random-elim-reroll-btn' && !randomEliminationPreview?.length);
+  });
+  if (!busy) {
+    const rerollBtn = document.getElementById('random-elim-reroll-btn');
+    if (rerollBtn) rerollBtn.disabled = !randomEliminationPreview?.length;
+  }
+}
+
+function renderRaElVictimCards(names, { mode = 'preview', animate = true } = {}) {
+  return names.map((name, i) => {
+    const delay = animate ? `animation-delay:${i * 0.08}s` : '';
+    const cls = mode === 'ceremony' ? 'ra-el-victim-card' : `ra-el-victim-card revealed`;
+    return `<div class="${cls}" data-victim="${name.replace(/"/g, '&quot;')}" style="${delay}">
+      <div class="ra-el-victim-index">#${i + 1}</div>
+      <div class="ra-el-victim-name">${name}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderRaElReassignBlock(victimNames) {
+  const reassignLines = describeTargetReassignmentsForVictims(victimNames);
+  if (!reassignLines.length) {
+    return '<span>No living killers currently target these players.</span>';
+  }
+  const rows = reassignLines.map(line => {
+    const match = line.match(/^(.+):\s*(.+?)\s→\s(.+)$/);
+    if (!match) return `<div>${line}</div>`;
+    return `<div class="ra-el-reassign-line"><span style="color:var(--cream);font-weight:700;">${match[1]}</span><span class="text-dim">${match[2]}</span><span class="ra-el-reassign-arrow">→</span><span class="text-gold">${match[3]}</span></div>`;
+  }).join('');
+  return `<div class="ra-el-reassign-title">Target reassignments on confirm</div>${rows}`;
+}
+
+async function runRaElDrawAnimation(finalNames) {
+  const stage = document.getElementById('random-elim-draw-stage');
+  const drawNameEl = document.getElementById('random-elim-draw-name');
+  const previewWrap = document.getElementById('random-elim-preview');
+  const pool = getAliveEliminationCandidates().map(p => p.name);
+  const n = finalNames.length;
+  if (stage) stage.classList.remove('hidden');
+  if (previewWrap) previewWrap.classList.add('hidden');
+
+  // Fixed ~2s shuffle — duration must not scale with draw size
+  const SHUFFLE_MS = 2000;
+  const ticks = Math.min(28, Math.max(10, 10 + Math.floor(Math.sqrt(n))));
+  const delay = Math.max(40, Math.floor(SHUFFLE_MS / ticks));
+
+  for (let t = 0; t < ticks; t++) {
+    const flicker = pool[Math.floor(Math.random() * pool.length)] || '—';
+    if (drawNameEl) {
+      drawNameEl.textContent = flicker;
+      drawNameEl.style.opacity = t % 2 ? '0.55' : '1';
+    }
+    await sleep(delay);
+  }
+
+  if (drawNameEl) {
+    if (n <= 6) {
+      drawNameEl.innerHTML = finalNames.map(name => `<span style="display:block;margin:4px 0;">${name}</span>`).join('');
+    } else {
+      drawNameEl.innerHTML = `<span style="font-family:'Playfair Display',serif;font-size:clamp(22px,5vw,36px);font-weight:900;font-style:italic;color:var(--blade);">${n} players drawn</span>`;
+    }
+    drawNameEl.style.opacity = '1';
+  }
+  await sleep(n <= 6 ? 480 : 320);
+  if (stage) stage.classList.add('hidden');
+}
+
+async function runRaElEliminationCeremony(victimOrder) {
+  const overlay = document.getElementById('ra-el-ceremony');
+  const grid = document.getElementById('ra-el-ceremony-grid');
+  const statusEl = document.getElementById('ra-el-ceremony-status');
+  if (!overlay || !grid) return;
+
+  const bulk = victimOrder.length > 12;
+
+  overlay.classList.remove('hidden', 'complete');
+  grid.innerHTML = renderRaElVictimCards(victimOrder, { mode: 'ceremony', animate: !bulk });
+  if (statusEl) statusEl.textContent = bulk ? `Eliminating ${victimOrder.length} players…` : 'Locking targets…';
+  await sleep(bulk ? 280 : 500);
+
+  if (bulk) {
+    const cards = [...grid.querySelectorAll('.ra-el-victim-card')];
+    const stagger = Math.max(25, Math.min(60, Math.floor(2200 / cards.length)));
+    cards.forEach((card, i) => {
+      setTimeout(() => {
+        card.classList.add('striking');
+        setTimeout(() => {
+          card.classList.remove('striking');
+          card.classList.add('struck');
+        }, 100);
+      }, i * stagger);
+    });
+    await sleep(Math.min(2800, cards.length * stagger + 350));
+  } else {
+    for (let i = 0; i < victimOrder.length; i++) {
+      const name = victimOrder[i];
+      const card = grid.querySelector(`[data-victim="${CSS.escape(name)}"]`);
+      if (statusEl) statusEl.textContent = `Eliminating ${name}… (${i + 1}/${victimOrder.length})`;
+      if (card) {
+        card.classList.add('striking');
+        await sleep(650);
+        card.classList.remove('striking');
+        card.classList.add('struck');
+      } else {
+        await sleep(400);
+      }
+    }
+  }
+
+  overlay.classList.add('complete');
+  if (statusEl) statusEl.textContent = `${victimOrder.length} player${victimOrder.length === 1 ? '' : 's'} eliminated`;
+  await sleep(bulk ? 500 : 900);
+  overlay.classList.add('hidden');
+  overlay.classList.remove('complete');
+  grid.innerHTML = '';
+}
+
+function renderModRandomElimination() {
+  const statusEl = document.getElementById('random-elim-status');
+  const countEl = document.getElementById('random-elim-count');
+  const previewWrap = document.getElementById('random-elim-preview');
+  const rerollBtn = document.getElementById('random-elim-reroll-btn');
+  const drawStage = document.getElementById('random-elim-draw-stage');
+  if (!statusEl || !countEl) return;
+
+  const aliveCount = getAliveRaElHeadcount().length;
+  const maxN = Math.max(1, aliveCount - 1);
+  countEl.max = String(Math.max(1, maxN));
+  if (aliveCount >= 2) countEl.min = '1';
+  if (Number(countEl.value) > maxN) countEl.value = String(maxN);
+
+  if (!gameState?.gameStarted) {
+    statusEl.innerHTML = `
+      <div class="ra-el-stat-pill"><div class="ra-el-stat-num">—</div><div class="ra-el-stat-label">Alive pool</div></div>
+      <div class="ra-el-stat-pill"><div class="ra-el-stat-num" style="color:var(--cream3);font-size:14px;">OFFLINE</div><div class="ra-el-stat-label">RA-EL status</div></div>`;
+    if (previewWrap) previewWrap.classList.add('hidden');
+    if (drawStage) drawStage.classList.add('hidden');
+    randomEliminationPreview = null;
+    if (rerollBtn) rerollBtn.disabled = true;
+    return;
+  }
+  if (gameState.gameEnded) {
+    statusEl.innerHTML = `
+      <div class="ra-el-stat-pill"><div class="ra-el-stat-num">${aliveCount}</div><div class="ra-el-stat-label">Alive pool</div></div>
+      <div class="ra-el-stat-pill"><div class="ra-el-stat-num" style="color:var(--blood);font-size:14px;">CLOSED</div><div class="ra-el-stat-label">RA-EL status</div></div>`;
+    if (previewWrap) previewWrap.classList.add('hidden');
+    if (drawStage) drawStage.classList.add('hidden');
+    randomEliminationPreview = null;
+    if (rerollBtn) rerollBtn.disabled = true;
+    return;
+  }
+
+  statusEl.innerHTML = `
+    <div class="ra-el-stat-pill"><div class="ra-el-stat-num">${aliveCount}</div><div class="ra-el-stat-label">Alive pool</div></div>
+    <div class="ra-el-stat-pill"><div class="ra-el-stat-num">${maxN}</div><div class="ra-el-stat-label">Max draw (N)</div></div>
+    <div class="ra-el-stat-pill"><div class="ra-el-stat-num" style="color:var(--alive);font-size:14px;">ARMED</div><div class="ra-el-stat-label">RA-EL status</div></div>`;
+
+  if (randomEliminationPreview?.length) {
+    const stale = randomEliminationPreview.some(name => {
+      const p = gameState.players.find(x => x.name === name);
+      return !p || p.status !== 'alive';
+    });
+    if (stale) randomEliminationPreview = null;
+  }
+
+  if (_drawAuxPanelOpen) _renderDrawAuxPanel();
+
+  if (randomEliminationPreview?.length) {
+    const listEl = document.getElementById('random-elim-preview-list');
+    const reassignEl = document.getElementById('random-elim-reassign-preview');
+    const countLabel = document.getElementById('random-elim-preview-count');
+    if (listEl) {
+      listEl.innerHTML = renderRaElVictimCards(randomEliminationPreview, { animate: true });
+    }
+    if (countLabel) {
+      countLabel.textContent = `${randomEliminationPreview.length} selected`;
+    }
+    if (reassignEl) {
+      reassignEl.innerHTML = renderRaElReassignBlock(randomEliminationPreview);
+      reassignEl.classList.remove('hidden');
+    }
+    if (previewWrap) previewWrap.classList.remove('hidden');
+    if (drawStage) drawStage.classList.add('hidden');
+    if (rerollBtn) rerollBtn.disabled = randomEliminationBusy;
+  } else if (previewWrap && !randomEliminationBusy) {
+    previewWrap.classList.add('hidden');
+    if (rerollBtn) rerollBtn.disabled = true;
+  }
+}
+
+async function previewRandomElimination(isReroll = false) {
+  if (randomEliminationBusy) return;
+  const errEl = document.getElementById('random-elim-error');
+  const countEl = document.getElementById('random-elim-count');
+  const n = parseInt(countEl?.value, 10);
+  const check = validateRandomEliminationCount(n);
+  if (!check.ok) {
+    if (errEl) errEl.textContent = check.message;
+    randomEliminationPreview = null;
+    renderModRandomElimination();
+    return;
+  }
+
+  setRaElBusy(true);
+  if (errEl) errEl.textContent = '';
+  const finalNames = pickRandomAlivePlayers(n);
+  try {
+    await runRaElDrawAnimation(finalNames);
+    randomEliminationPreview = finalNames;
+  } finally {
+    setRaElBusy(false);
+    renderModRandomElimination();
+  }
+}
+
+async function confirmRandomElimination() {
+  if (randomEliminationBusy) return;
+  const errEl = document.getElementById('random-elim-error');
+  if (!randomEliminationPreview?.length) {
+    if (errEl) errEl.textContent = 'Draw names first.';
+    return;
+  }
+  const n = randomEliminationPreview.length;
+  const check = validateRandomEliminationCount(n);
+  if (!check.ok) {
+    if (errEl) errEl.textContent = check.message;
+    randomEliminationPreview = null;
+    renderModRandomElimination();
+    return;
+  }
+
+  const stillAlive = randomEliminationPreview.filter(name => {
+    const p = gameState.players.find(x => x.name === name);
+    return p && p.status === 'alive';
+  });
+  if (stillAlive.length !== randomEliminationPreview.length) {
+    if (errEl) errEl.textContent = 'Selection is stale — re-roll the draw.';
+    randomEliminationPreview = null;
+    renderModRandomElimination();
+    return;
+  }
+
+  const namesList = randomEliminationPreview.join(', ');
+  if (!confirm(`RA-EL: eliminate ${n} player${n === 1 ? '' : 's'}?\n\n${namesList}\n\nKillers will inherit their targets.`)) return;
+
+  const order = sortVictimsForElimination([...randomEliminationPreview]);
+  setRaElBusy(true);
+  try {
+    await runRaElEliminationCeremony(order);
+
+    const killEntries = [];
+    order.forEach(name => {
+      const entry = applySingleModElimination(name, { reason: 'random_elimination' });
+      if (entry) killEntries.push(entry);
+    });
+    gameState.killLog.push(...killEntries);
+
+    await updateGameState({ players: gameState.players, killLog: gameState.killLog, ghost: gameState.ghost });
+    await reconcileGhostTargetsDead();
+    await pushNotification('kill', `RA-EL: ${killEntries.length} eliminated`, namesList, 'mod');
+
+    randomEliminationPreview = null;
+    if (errEl) errEl.textContent = '';
+    renderModView();
+  } finally {
+    setRaElBusy(false);
+  }
+}
+
+async function modKillPlayer(name) {
+  if (!confirm(`Eliminate ${name}?`)) return;
+  const entry = applySingleModElimination(name);
+  if (!entry) return;
+  gameState.killLog.push(entry);
   await updateGameState({ players: gameState.players, killLog: gameState.killLog, ghost: gameState.ghost });
+  await reconcileGhostTargetsDead();
   await logAuditEvent('player.killed_by_mod', {
     victim: name,
-    killer: killer ? killer.name : null
+    killer: entry.undo?.chainBypassKiller || null
   });
   await pushNotification('kill', `Mod eliminated ${name}`, 'Manually killed by moderator.', 'mod');
   renderModView();
 }
 
-async function modEditTarget(name) {
-  const player = gameState.players.find(p => p.name === name);
-  if (!player) return;
-  
-  // Look at the correct current target based on their status
-  const currentTarget = player.status === 'ghost' ? (player.ghostTarget || '') : (player.target || '');
-  const newTarget = prompt(`New target for ${name}:`, currentTarget);
-  if (!newTarget) return;
-  
-  const targetPlayer = gameState.players.find(p => p.name.toLowerCase() === newTarget.toLowerCase());
-  if (!targetPlayer) { alert('Not found.'); return; }
-  
-  // Apply the newly edited target to the correct variable
-  if (player.status === 'ghost') {
-      player.ghostTarget = targetPlayer.name;
-  } else {
-      player.target = targetPlayer.name;
+async function modRemovePlayer(name) {
+  if (!confirm(`Remove ${name} from the game entirely?\n\nThis will delete their account and cannot be undone.`)) return;
+  gameState.players = gameState.players.filter(p => p.name !== name);
+  // Also remove from immune list if present
+  if (gameState.immunity?.immunePlayers) {
+    gameState.immunity.immunePlayers = gameState.immunity.immunePlayers.filter(n => n !== name);
   }
-  
-  await updateGameState({ players: gameState.players });
-  await logAuditEvent('player.target_edited_by_mod', {
-    player: name,
-    previousTarget: currentTarget || null,
-    nextTarget: targetPlayer.name,
-    scope: player.status === 'ghost' ? 'ghostTarget' : 'target'
-  });
+  await updateGameState({ players: gameState.players, 'immunity/immunePlayers': gameState.immunity?.immunePlayers || [] });
+  await logAuditEvent('player.removed_by_mod', { player: name });
   renderModView();
-}
-
-function getLatestUndoableKillIndex() {
-  for (let i = gameState.killLog.length - 1; i >= 0; i--) {
-    if (gameState.killLog[i].killer !== 'SYSTEM') return i;
-  }
-  return -1;
 }
 
 function getSystemCascadeEntriesForKill(killIndex) {
@@ -4823,17 +6171,7 @@ function getKillUndoBlockReason(index) {
     return 'Auto-generated kills cannot be undone directly.';
   }
   if (gameState.gameEnded) return 'Cannot undo kills after the game has ended.';
-  const latestUndoable = getLatestUndoableKillIndex();
-  if (latestUndoable !== index) {
-    return 'Only the most recent player/mod kill can be undone.';
-  }
   const cascade = getSystemCascadeEntriesForKill(index);
-  const cascadeIndices = new Set(cascade.map(entry => entry.i));
-  for (let i = index + 1; i < gameState.killLog.length; i++) {
-    if (!cascadeIndices.has(i)) {
-      return 'Undo newer kills before this one.';
-    }
-  }
   const victim = gameState.players.find(p => p.name === kill.victim);
   if (!victim) return `${kill.victim} is no longer in the game.`;
   if (victim.status !== 'dead') {
@@ -5088,26 +6426,23 @@ function updateAnalyticsLivePanel() {
   const realPlayers = gameState.players.filter(p => !isModUser(gameState, p.name));
   const alive = realPlayers.filter(p => p.status === 'alive').length;
   const killLog = gameState.killLog || [];
-  const firstKillMs = getFirstKillMs();
   const hourAgo = nowMs - 3600000;
   const killsLastHour = killLog.filter(k => new Date(k.time).getTime() >= hourAgo).length;
 
-  let sinceFirstKill = '—';
-  if (firstKillMs) sinceFirstKill = formatDurationMs(nowMs - firstKillMs, true);
+  const sortedKills = [...killLog].sort((a, b) => new Date(a.time) - new Date(b.time));
+  const lastKillMs = sortedKills.length ? new Date(sortedKills[sortedKills.length - 1].time).getTime() : null;
+  let sinceLastKill = '—';
+  if (lastKillMs) sinceLastKill = formatDurationMs(nowMs - lastKillMs, true);
 
   stripEl.innerHTML = `
     <div class="analytics-metric-grid">
       <div class="analytics-metric">
-        <div class="analytics-metric-label">Since first kill</div>
-        <div class="analytics-metric-value">${sinceFirstKill}</div>
+        <div class="analytics-metric-label">Since last kill</div>
+        <div class="analytics-metric-value">${sinceLastKill}</div>
       </div>
       <div class="analytics-metric">
         <div class="analytics-metric-label">Kills (last hour)</div>
         <div class="analytics-metric-value danger">${killsLastHour}</div>
-      </div>
-      <div class="analytics-metric">
-        <div class="analytics-metric-label">Alive / total</div>
-        <div class="analytics-metric-value alive">${alive} / ${realPlayers.length}</div>
       </div>
     </div>
   `;
@@ -5244,7 +6579,7 @@ function renderModAnalytics() {
       const x = P + i * ((W - P * 2) / B);
       const bh = c === 0 ? 2 : Math.max(4, (c / mx) * (H - 24));
       const y = H - bh - 8;
-      return `<rect class="analytics-tl-bar" data-bucket="${i}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="var(--blood)" opacity="${c === 0 ? 0.25 : 0.9}" rx="2" style="cursor:pointer" onmouseenter="showAnalyticsTimelineBucket(${i})" onfocus="showAnalyticsTimelineBucket(${i})"/>` +
+      return `<rect class="analytics-tl-bar" data-bucket="${i}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="var(--blood)" opacity="${c === 0 ? 0.25 : 0.9}" rx="2" style="cursor:pointer" onmouseenter="showAnalyticsTimelineBucket(${i})" ontouchstart="showAnalyticsTimelineBucket(${i})" onfocus="showAnalyticsTimelineBucket(${i})"/>` +
         (c > 0 ? `<text x="${(x + bw / 2).toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" font-size="8" fill="var(--cream3)" font-family="monospace" pointer-events="none">${c}</text>` : '');
     }).join('');
     const sl = span < 3600000 ? Math.round(span / 60000) + ' min span' : (span / 3600000).toFixed(1) + ' h span';
@@ -5253,7 +6588,7 @@ function renderModAnalytics() {
     tlEl.innerHTML = `<div style="font-size:9px;color:var(--cream3);letter-spacing:1.5px;margin-bottom:6px;text-transform:uppercase;">${sl} · ${B} buckets${startNote}</div><div style="overflow-x:auto;"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="xMidYMid meet" style="min-width:280px;display:block;">${bars}<line x1="${P}" y1="${H - 6}" x2="${W - P}" y2="${H - 6}" stroke="var(--seam)" stroke-width="1"/></svg></div><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--cream3);letter-spacing:1px;margin-top:4px;"><span>${new Date(sk[0].time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span><span>KILLS OVER TIME (IST)</span><span>${new Date(sk[sk.length - 1].time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span></div>`;
   }
 
-  // Hour heatmap (IST)
+  // Hour bar graph (IST)
   const heatEl = document.getElementById('analytics-hour-heatmap');
   if (heatEl) {
     const hourCounts = new Array(24).fill(0);
@@ -5264,16 +6599,46 @@ function renderModAnalytics() {
     });
     const maxH = Math.max(...hourCounts, 1);
     const nowH = getCurrentIstDate().getHours();
-    heatEl.innerHTML = `<div class="analytics-heat-row">${hourCounts.map((c, h) => {
-      const intensity = c === 0 ? 0.12 : 0.2 + (c / maxH) * 0.8;
-      const border = h === nowH ? 'border-color:var(--blade);box-shadow:0 0 6px var(--blade)' : '';
-      return `<div class="analytics-heat-cell" title="${h}:00 IST — ${c} kill${c !== 1 ? 's' : ''}" style="background:rgba(139,26,26,${intensity});${border}"><span>${h}</span></div>`;
-    }).join('')}</div><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--cream3);margin-top:6px;"><span>00:00</span><span>Current hour highlighted</span><span>23:00</span></div>`;
+    const GW = 520, GH = 100, PAD = 4, BOTTOM = 18;
+    const bw = (GW - PAD * 2) / 24 - 2;
+    const bars = hourCounts.map((c, h) => {
+      const bh = c === 0 ? 2 : Math.max(4, (c / maxH) * (GH - BOTTOM - 8));
+      const x = PAD + h * ((GW - PAD * 2) / 24);
+      const y = GH - BOTTOM - bh;
+      const isCurrent = h === nowH;
+      const fill = isCurrent ? 'var(--blade)' : 'var(--blood)';
+      const opacity = c === 0 ? 0.15 : isCurrent ? 1 : 0.85;
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}"
+        fill="${fill}" opacity="${opacity}" rx="2"
+        style="cursor:default"
+        title="${h}:00 IST — ${c} kill${c !== 1 ? 's' : ''}">
+        <title>${h}:00–${h+1}:00 IST · ${c} kill${c !== 1 ? 's' : ''}</title>
+      </rect>` +
+        (c > 0 ? `<text x="${(x + bw / 2).toFixed(1)}" y="${(y - 3).toFixed(1)}" text-anchor="middle" font-size="7" fill="var(--cream3)" font-family="monospace" pointer-events="none">${c}</text>` : '') +
+        (h % 3 === 0 || isCurrent ? `<text x="${(x + bw / 2).toFixed(1)}" y="${(GH - 4).toFixed(1)}" text-anchor="middle" font-size="${isCurrent ? 8 : 7}" fill="${isCurrent ? 'var(--blade)' : 'var(--cream3)'}" font-family="monospace" font-weight="${isCurrent ? '700' : '400'}" pointer-events="none">${h}</text>` : '');
+    }).join('');
+    heatEl.innerHTML = `<div style="overflow-x:auto;">
+      <svg viewBox="0 0 ${GW} ${GH}" width="100%" height="${GH}" preserveAspectRatio="xMidYMid meet" style="min-width:280px;display:block;">
+        <line x1="${PAD}" y1="${GH - BOTTOM}" x2="${GW - PAD}" y2="${GH - BOTTOM}" stroke="var(--seam)" stroke-width="1"/>
+        ${bars}
+      </svg>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--cream3);margin-top:4px;letter-spacing:1px;">
+      <span>00:00 IST</span>
+      <span style="color:var(--blade);">▌ current hour</span>
+      <span>23:00 IST</span>
+    </div>`;
   }
 
-  // Leaderboard
+  // Leaderboard (players only — exclude MOD / SYSTEM / moderator accounts)
   const km={};
-  killLog.forEach(k=>{if(!km[k.killer])km[k.killer]={kills:0,g:0};km[k.killer].kills++;if(k.ghost)km[k.killer].g++;});
+  killLog.forEach(k => {
+    if (!k.killer || k.killer === 'MOD' || k.killer === 'SYSTEM') return;
+    if (isModUser(gameState, k.killer)) return;
+    if (!km[k.killer]) km[k.killer] = { kills: 0, g: 0 };
+    km[k.killer].kills++;
+    if (k.ghost) km[k.killer].g++;
+  });
   const sk2=Object.entries(km).sort((a,b)=>b[1].kills-a[1].kills);
   const topK=sk2[0]?.[1].kills||1;
   document.getElementById('analytics-leaderboard').innerHTML=sk2.length===0?'<div class="text-dim" style="padding:12px;">No kills recorded.</div>':sk2.map(([name,stats],i)=>{
@@ -5385,8 +6750,8 @@ document.addEventListener('DOMContentLoaded', () => {
 .analytics-heat-cell{flex:1;min-width:12px;height:28px;border-radius:2px;border:1px solid var(--seam);position:relative;cursor:default}
 .analytics-heat-cell span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7px;color:var(--cream);opacity:.9}
 .analytics-tl-tooltip{margin-top:10px;padding:12px;background:var(--ink3);border:1px solid var(--seam);border-left:3px solid var(--blood);font-size:10px;line-height:1.6;min-height:48px}
-.analytics-tl-bar{cursor:pointer;transition:opacity .15s}
-.analytics-tl-bar:hover{opacity:1!important}
+.analytics-tl-bar{cursor:pointer;transition:opacity .15s;touch-action:manipulation}
+.analytics-tl-bar:hover,.analytics-tl-bar:active{opacity:1!important}
 </style>
 <div id="win-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at 50% 35%,#1f0d00 0%,#0c0b09 65%);overflow:hidden;align-items:center;justify-content:center;flex-direction:column;">
   <canvas id="win-particles" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
